@@ -1,0 +1,67 @@
+// Firestore Security Rules
+// Paste into Firebase Console > Firestore Database > Rules
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // User profiles: public read, owner-only write
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Prediction markets: public read, any signed-in user can create
+    match /markets/{marketId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Social feed posts
+    match /feed/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.keys().hasAll(['uid', 'displayName', 'handle', 'text', 'createdAt'])
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() <= 500;
+      allow update, delete: if request.auth != null
+                             && resource.data.uid == request.auth.uid;
+    }
+
+    // Likes / reposts: one doc per user, keyed by uid
+    match /feed/{postId}/likes/{uid} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /feed/{postId}/reposts/{uid} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Replies to feed posts
+    match /feed/{postId}/replies/{replyId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasAll(['uid', 'text', 'createdAt'])
+                    && request.resource.data.text is string
+                    && request.resource.data.text.size() <= 500;
+      allow update, delete: if request.auth != null
+                             && resource.data.uid == request.auth.uid;
+    }
+
+    // Market comments (userAddress holds the Firebase uid)
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow delete: if request.auth != null
+                    && request.auth.uid == resource.data.userAddress;
+    }
+
+    // News items, written from the admin panel
+    match /news/{newsId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

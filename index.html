@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="https://depmm6vsligdwkty.public.blob.vercel-storage.com/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rivarly</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --color-background-body: #F9FAFB;
+        --color-background-card: #FFFFFF;
+        --color-background-hover: #F3F4F6;
+        --color-text-primary: #111827;
+        --color-text-secondary: #6B7280;
+        --color-border-default: #E5E7EB;
+        --color-base-blue: #0052FF;
+        --color-base-green: #22C55E;
+        --color-base-red: #EF4444;
+      }
+      .dark {
+        --color-background-body: #111827;
+        --color-background-card: #1F2937;
+        --color-background-hover: #374151;
+        --color-text-primary: #F9FAFB;
+        --color-text-secondary: #9CA3AF;
+        --color-border-default: #374151;
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+              display: ['Poppins', 'sans-serif'],
+            },
+            colors: {
+              'base-blue': 'var(--color-base-blue)',
+              'base-green': 'var(--color-base-green)',
+              'base-red': 'var(--color-base-red)',
+              'background-body': 'var(--color-background-body)',
+              'background-card': 'var(--color-background-card)',
+              'background-hover': 'var(--color-background-hover)',
+              'text-primary': 'var(--color-text-primary)',
+              'text-secondary': 'var(--color-text-secondary)',
+              'border-default': 'var(--color-border-default)',
+            },
+          },
+        },
+      }
+    </script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

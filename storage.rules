@@ -1,0 +1,42 @@
+// Firebase Storage Security Rules
+// Paste into Firebase Console > Storage > Rules
+//
+// Uploads are written to `{folder}/{uid}/{filename}` by services/feed.ts,
+// where folder is one of posts | comments | avatars.
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Feed post media, 10MB max
+    match /posts/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.size < 10 * 1024 * 1024
+                    && (request.resource.contentType.matches('image/.*')
+                        || request.resource.contentType.matches('video/.*'));
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Comment media, 5MB max
+    match /comments/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.size < 5 * 1024 * 1024
+                    && (request.resource.contentType.matches('image/.*')
+                        || request.resource.contentType.matches('video/.*'));
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Profile avatars, images only, 2MB max
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.size < 2 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

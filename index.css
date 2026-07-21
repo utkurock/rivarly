@@ -1,0 +1,490 @@
+/* Global styles for the Base Prediction Market app */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f8f9fa;
+  color: #111827;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom font classes */
+.font-display {
+  font-family: 'Poppins', sans-serif;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Dark mode styles */
+.dark body {
+  background-color: #111827;
+  color: #F9FAFB;
+}
+
+/* Light mode specific styles */
+.light body {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+/* Light mode component backgrounds */
+.light .bg-\[#1a1f2e\] {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-\[#1e2532\] {
+  background-color: #ffffff !important;
+}
+
+.light .bg-\[#1E2430\] {
+  background-color: #ffffff !important;
+}
+
+.light .bg-gray-800 {
+  background-color: #e9ecef !important;
+}
+
+.light .bg-gray-700 {
+  background-color: #dee2e6 !important;
+}
+
+.light .bg-gray-600 {
+  background-color: #adb5bd !important;
+}
+
+.light .bg-gray-900 {
+  background-color: #ffffff !important;
+}
+
+.light .bg-gray-100 {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-gray-50 {
+  background-color: #ffffff !important;
+}
+
+/* Light mode text colors */
+.light .text-white {
+  color: #111827 !important;
+}
+
+/* Keep white text on black/dark backgrounds in light mode */
+.light .bg-black .text-white,
+.light .bg-black.text-white,
+.light .bg-gray-900 .text-white,
+.light .bg-gray-900.text-white,
+.light [class*="bg-black"] .text-white,
+.light [class*="bg-black"].text-white,
+.light [class*="bg-gray-900"] .text-white,
+.light [class*="bg-gray-900"].text-white {
+  color: #ffffff !important;
+}
+
+/* Force white text on black backgrounds */
+.bg-black,
+.bg-gray-900 {
+  color: #ffffff !important;
+}
+
+.bg-black .text-white,
+.bg-gray-900 .text-white,
+.bg-black.text-white,
+.bg-gray-900.text-white {
+  color: #ffffff !important;
+}
+
+.light .text-gray-400 {
+  color: #6c757d !important;
+}
+
+.light .text-gray-300 {
+  color: #495057 !important;
+}
+
+.light .text-gray-500 {
+  color: #6c757d !important;
+}
+
+.light .text-gray-200 {
+  color: #495057 !important;
+}
+
+.light .text-gray-100 {
+  color: #495057 !important;
+}
+
+/* Light mode borders */
+.light .border-gray-800 {
+  border-color: #e9ecef !important;
+}
+
+.light .border-white\/5 {
+  border-color: #e9ecef !important;
+}
+
+.light .border-white\/10 {
+  border-color: #dee2e6 !important;
+}
+
+.light .border-gray-200 {
+  border-color: #e9ecef !important;
+}
+
+.light .border-gray-300 {
+  border-color: #dee2e6 !important;
+}
+
+/* Light mode hover states */
+.light .hover\:bg-gray-700:hover {
+  background-color: #dee2e6 !important;
+}
+
+.light .hover\:bg-gray-600:hover {
+  background-color: #adb5bd !important;
+}
+
+.light .hover\:bg-gray-800:hover {
+  background-color: #e9ecef !important;
+}
+
+.light .hover\:bg-gray-900:hover {
+  background-color: #f8fafc !important;
+}
+
+/* Light mode button styles */
+.light .bg-blue-500 {
+  background-color: #3b82f6 !important;
+}
+
+.light .bg-emerald-500 {
+  background-color: #10b981 !important;
+}
+
+.light .bg-emerald-600 {
+  background-color: #059669 !important;
+}
+
+.light .bg-red-500 {
+  background-color: #ef4444 !important;
+}
+
+.light .bg-green-500 {
+  background-color: #22c55e !important;
+}
+
+.light .bg-yellow-500 {
+  background-color: #eab308 !important;
+}
+
+/* Light mode shadows and borders */
+.light .shadow-sm {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+}
+
+.light .shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Light mode specific component overrides */
+.light .bg-\[#2A3242\] {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-\[#333B4D\] {
+  background-color: #e9ecef !important;
+}
+
+.light .text-white\/70 {
+  color: #495057 !important;
+}
+
+.light .text-white\/50 {
+  color: #6c757d !important;
+}
+
+.light .text-blue-400 {
+  color: #3b82f6 !important;
+}
+
+.light .text-emerald-400 {
+  color: #10b981 !important;
+}
+
+.light .text-red-400 {
+  color: #ef4444 !important;
+}
+
+.light .text-green-400 {
+  color: #22c55e !important;
+}
+
+.light .text-yellow-400 {
+  color: #eab308 !important;
+}
+
+/* Light mode divide colors */
+.light .divide-white\/5 > * + * {
+  border-color: #e9ecef !important;
+}
+
+.light .divide-gray-800 > * + * {
+  border-color: #e9ecef !important;
+}
+
+/* Light mode backdrop blur */
+.light .backdrop-blur-lg {
+  backdrop-filter: blur(16px);
+}
+
+.light .backdrop-blur-md {
+  backdrop-filter: blur(12px);
+}
+
+/* Light mode sidebar specific */
+.light .bg-background-card {
+  background-color: #ffffff !important;
+}
+
+.light .bg-background-hover {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-background-body {
+  background-color: #ffffff !important;
+}
+
+.light .text-text-primary {
+  color: #111827 !important;
+}
+
+.light .text-text-secondary {
+  color: #6c757d !important;
+}
+
+.light .border-border-default {
+  border-color: #e9ecef !important;
+}
+
+.light .bg-base-blue {
+  background-color: #3b82f6 !important;
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F3F4F6;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6B7280;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #9CA3AF;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #111827;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #F9FAFB;
+}
+
+/* Smooth scrolling for all scrollable elements */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Enhanced smooth scrolling for containers */
+.smooth-scroll,
+[style*="scrollBehavior"] {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Momentum scrolling for iOS */
+@supports (-webkit-overflow-scrolling: touch) {
+  .smooth-scroll,
+  [style*="scrollBehavior"] {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Responsive viewport units for better scaling */
+@media (max-width: 640px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  body {
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 1919px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1920px) {
+  body {
+    font-size: 17px;
+  }
+}
+
+@media (min-width: 2560px) {
+  body {
+    font-size: 18px;
+  }
+}
+
+/* Mobile touch targets - minimum 44px for better accessibility */
+@media (max-width: 768px) {
+  button, 
+  a,
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+  }
+}
+
+/* Market Ticker Infinite Scroll Animation */
+@keyframes infinite-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+.animate-infinite-scroll {
+  animation: infinite-scroll 25s linear infinite;
+  will-change: transform;
+}
+
+.animate-infinite-scroll:hover {
+  animation-play-state: paused;
+}
+
+/* Hide scrollbar for mobile category filters */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-track {
+  display: none !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar-thumb {
+  display: none !important;
+}
+
+/* Hide scrollbar for horizontal scroll on mobile */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Solana Wallet Adapter Button Custom Styles */
+.wallet-adapter-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wallet-adapter-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.wallet-adapter-button:not([disabled]):hover {
+  opacity: 0.9;
+}
+
+.wallet-adapter-button-start-icon,
+.wallet-adapter-button-end-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.wallet-adapter-modal {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.wallet-adapter-modal-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.dark .wallet-adapter-modal-container {
+  background: #1F2937;
+}
+
+.wallet-adapter-modal-button {
+  background: #f8f9fa;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+}
+
+.wallet-adapter-modal-button:hover {
+  background: #e9ecef;
+  border-color: #d1d5db;
+}
+
+.dark .wallet-adapter-modal-button {
+  background: #374151;
+  border-color: #4b5563;
+  color: white;
+}
+
+.dark .wallet-adapter-modal-button:hover {
+  background: #4b5563;
+  border-color: #6b7280;
+}

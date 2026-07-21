@@ -1,0 +1,465 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { useQuery } from '@tanstack/react-query';
+import { getPricePoints } from '../services/commentsService';
+import { db } from '../firebase';
+import type { Market } from '../types';
+import { useCountdown } from '../hooks/useCountdown';
+import { useFirebase } from '../contexts/FirebaseContext';
+
+async function fetchMarket(marketId: string): Promise<Market | null> {
+  const snap = await getDoc(doc(db, 'markets', marketId));
+  return snap.exists() ? ({ id: snap.id, ...(snap.data() as any) }) as Market : null;
+}
+
+async function fetchComments(marketId: string) {
+  try {
+    const q = query(
+      collection(db, 'comments'),
+      where('marketId', '==', marketId),
+      orderBy('timestamp', 'desc')
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...(d.data() as any) }));
+  } catch (e: any) {
+    console.warn('Comments query failed:', e?.message);
+    return [];
+  }
+}
+
+const MarketDetail: React.FC = () => {
+  // Params first
+  const { marketId = '' } = useParams<{ marketId: string }>();
+  const hasMarketId = Boolean(marketId);
+
+  // Identity
+  const { user, userProfile } = useFirebase();
+  const userKey = userProfile?.uid ?? user?.uid ?? null;
+
+  // Local state
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState('');
+  const [liveComments, setLiveComments] = useState<any[] | null>(null);
+  const [livePrices, setLivePrices] = useState<any[] | null>(null);
+
+  // Queries (stable order)
+  const marketQ = useQuery({
+    queryKey: ['market', marketId],
+    queryFn: () => fetchMarket(marketId),
+    enabled: hasMarketId,
+    staleTime: 30000,
+  });
+
+  const commentsQ = useQuery({
+    queryKey: ['comments', marketId],
+    queryFn: () => fetchComments(marketId),
+    enabled: hasMarketId,
+    staleTime: 30000,
+  });
+
+  const pricesQ = useQuery({
+    queryKey: ['prices', marketId],
+    queryFn: () => getPricePoints(marketId),
+    enabled: hasMarketId,
+    staleTime: 30000,
+  });
+
+  // Derived
+  const market = marketQ.data ?? null;
+  const resolvesAtSafe = useMemo<number | null>(() => {
+    if (!market?.resolvesAt) return null;
+    const t = typeof market.resolvesAt === 'number' ? market.resolvesAt : new Date(market.resolvesAt).getTime();
+    return Number.isFinite(t) ? t : null;
+  }, [market?.resolvesAt]);
+
+  const safeProbability = useMemo(() => {
+    const p = (market as any)?.probability;
+    return typeof p === 'number' && isFinite(p) ? p : 0.5;
+  }, [market]);
+
+  const toJsDate = (val: any): Date | null => {
+    try {
+      if (!val) return null;
+      if (typeof val.toDate === 'function') return val.toDate();
+      if (typeof val === 'number' || typeof val === 'string') return new Date(val);
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Volume metrics from the market document
+  const volume24h = useMemo(() => {
+    return Number((market as any)?.metrics?.volume24hUSD || 0);
+  }, [market]);
+
+  const totalVolume = useMemo(() => {
+    if ((market as any)?.metrics?.totalVolumeUSD) {
+      return Number((market as any).metrics.totalVolumeUSD);
+    }
+    return Number((market as any)?.volumeUSD || 0);
+  }, [market]);
+
+  // Hooks always called
+  const countdown = useCountdown(resolvesAtSafe);
+
+  // Effects
+  useEffect(() => {
+    if (hasMarketId && marketQ.isError) setErrorMsg('Failed to load market.');
+  }, [hasMarketId, marketQ.isError]);
+
+  // Live comments subscription so new comments appear immediately for everyone
+  useEffect(() => {
+    if (!hasMarketId) return;
+
+    let unsubscribe: (() => void) | null = null;
+    let isSubscribed = true;
+
+    const qWithOrder = query(
+      collection(db, 'comments'),
+      where('marketId', '==', marketId),
+      orderBy('timestamp', 'desc')
+    );
+
+    // Primary listener with orderBy (needs composite index)
+    unsubscribe = onSnapshot(qWithOrder, (snap) => {
+      if (!isSubscribed) return;
+      const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+      setLiveComments(rows);
+    }, () => {
+      if (!isSubscribed) return;
+      // Cleanup previous subscription before creating fallback
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+      // Fallback: subscribe without order (no index required), then sort client-side
+      const qSimple = query(collection(db, 'comments'), where('marketId', '==', marketId));
+      unsubscribe = onSnapshot(qSimple, (snap2) => {
+        if (!isSubscribed) return;
+        const rows2 = snap2.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+        rows2.sort((a: any, b: any) => {
+          const ta = (toJsDate(a.timestamp) || toJsDate(a.createdAt) || new Date(0)).getTime();
+          const tb = (toJsDate(b.timestamp) || toJsDate(b.createdAt) || new Date(0)).getTime();
+          return tb - ta;
+        });
+        setLiveComments(rows2);
+      });
+    });
+
+    return () => {
+      isSubscribed = false;
+      if (unsubscribe) unsubscribe();
+    };
+  }, [hasMarketId, marketId]);
+
+  // Live prices subscription so chart updates immediately (with index fallback)
+  useEffect(() => {
+    if (!hasMarketId) return;
+
+    let unsubscribe: (() => void) | null = null;
+    let isSubscribed = true;
+
+    const qPrices = query(collection(db, 'prices'), where('marketId', '==', marketId), orderBy('timestamp', 'asc'));
+    unsubscribe = onSnapshot(qPrices, (snap) => {
+      if (!isSubscribed) return;
+      const rows = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+      setLivePrices(rows);
+    }, () => {
+      if (!isSubscribed) return;
+      // Cleanup previous subscription before creating fallback
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+      // Fallback without orderBy (no index required); sort client-side
+      const qSimple = query(collection(db, 'prices'), where('marketId', '==', marketId));
+      unsubscribe = onSnapshot(qSimple, (snap2) => {
+        if (!isSubscribed) return;
+        const rows2 = snap2.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+        rows2.sort((a: any, b: any) => {
+          const ta = (toJsDate(a.timestamp) || new Date(0)).getTime();
+          const tb = (toJsDate(b.timestamp) || new Date(0)).getTime();
+          return ta - tb;
+        });
+        setLivePrices(rows2);
+      }, () => {
+        if (!isSubscribed) return;
+        setLivePrices(null);
+      });
+    });
+
+    return () => {
+      isSubscribed = false;
+      if (unsubscribe) unsubscribe();
+    };
+  }, [hasMarketId, marketId]);
+
+  // Early renders AFTER hooks
+  if (!hasMarketId) return <div className="p-6 text-white/70">Market ID missing.</div>;
+  if (marketQ.isLoading) return <div className="p-6 text-white/70">Loading market…</div>;
+  if (!market) return <div className="p-6 text-white/70">{errorMsg || 'Market not found.'}</div>;
+
+  const chartDataRaw = (livePrices ?? pricesQ.data ?? []).map((p: any) => {
+    const d = (typeof p?.timestamp?.toDate === 'function') ? p.timestamp.toDate() : new Date(p.timestamp);
+    const ts = d.getTime();
+    return {
+      ts,
+      label: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      price: Number(p.price),
+    };
+  });
+  const chartData = chartDataRaw.length > 0 ? chartDataRaw : [
+    { ts: Date.now() - 60000, label: new Date(Date.now() - 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), price: safeProbability },
+  ];
+
+  const creatorProfile = (market as any).creatorProfile;
+  const creatorName = creatorProfile?.username || 'Anonymous';
+
+  return (
+    <div className="min-h-screen bg-[#f8f9fa] text-gray-900">
+      <div className="max-w-[1600px] mx-auto px-4 py-4 md:py-6">
+        <Link to="/" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 md:mb-6 transition-colors">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+          Back to Markets
+        </Link>
+
+        {/* Mobile: Flex column with custom order, Desktop: Grid layout */}
+        <div className="flex flex-col lg:grid lg:grid-cols-[1fr_400px] gap-4 md:gap-6">
+          {/* Left side content wrapper - Desktop only */}
+          <div className="contents lg:block lg:space-y-4 lg:space-y-6 lg:min-w-0 lg:order-1">
+            <div className="space-y-3 md:space-y-4">
+              <div className="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-700 text-xs md:text-sm font-medium">
+                {market.category}
+              </div>
+              <h1 className="text-xl md:text-3xl font-semibold tracking-tight text-gray-900">{market.title || (market as any).question || 'Untitled Market'}</h1>
+              <div className="flex items-center gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-2">
+                  {/* Creator Avatar */}
+                  {creatorProfile?.avatar && creatorProfile.avatar.trim() !== '' ? (
+                    <img
+                      src={creatorProfile.avatar}
+                      alt={creatorName}
+                      className="w-6 h-6 rounded-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
+                  ) : (
+                    <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-semibold text-[10px]">
+                        {creatorName.slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <span>Created by <span className="font-medium text-gray-900">{creatorName}</span></span>
+                </div>
+                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
+                <div className={`px-2 py-1 rounded-md text-xs font-mono font-medium ${countdown.isExpired ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-gray-100 text-gray-700 border border-gray-200'}`}>
+                  {countdown.isExpired ? '00:00:00:00' : `${String(countdown.days).padStart(2,'0')}:${String(countdown.hours).padStart(2,'0')}:${String(countdown.minutes).padStart(2,'0')}:${String(countdown.seconds).padStart(2,'0')}`}
+                </div>
+              </div>
+            </div>
+
+            {/* Price History Chart - Mobile order-1 */}
+            <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm order-1 lg:order-none">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Price History</h3>
+              <div className="h-64 min-h-[256px] w-full">
+                <ResponsiveContainer width="100%" height="100%" minHeight={256}>
+                  <LineChart data={chartData}>
+                    <XAxis dataKey="ts" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} tickFormatter={(v: number) => new Date(v).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} type="number" domain={['dataMin', 'dataMax']} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} domain={[0,1]} />
+                    <Tooltip formatter={(v: any) => [`${Math.round(Number(v) * 100)}%`, 'Price']} labelFormatter={(l: any) => new Date(Number(l)).toLocaleTimeString()} />
+                    <Line type="monotone" dataKey="price" stroke="#3B82F6" strokeWidth={2} dot isAnimationActive animationDuration={500} animationEasing="ease-in-out" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Details card split into Sources and Info - Mobile order-4 */}
+            <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm order-4 lg:order-none">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <div className="text-gray-600 text-sm mb-2 font-medium">Sources</div>
+                  {Array.isArray((market as any).sources) && (market as any).sources.length > 0 ? (
+                    <div className="space-y-2">
+                      {(market as any).sources.map((source: string, i: number) => (
+                        <div key={i} className="p-2 bg-gray-50 rounded-md break-all border border-gray-200">
+                          <a href={source} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700">{source}</a>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-gray-500 text-sm">No sources provided.</div>
+                  )}
+                </div>
+                <div>
+                  <div className="text-gray-600 text-sm mb-2 font-medium">Info</div>
+                  {(market as any).info ? (
+                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">{(market as any).info}</p>
+                  ) : (
+                    <div className="text-gray-500 text-sm">No description provided.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Comments - Mobile order-6 */}
+            <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm order-6 lg:order-none">
+              <h3 className="text-lg font-semibold mb-4 text-gray-900">Comments</h3>
+              {/* Input */}
+              <div className="flex gap-3 mb-6">
+                {/* User Avatar */}
+                {userProfile?.avatar && userProfile.avatar.trim() !== '' ? (
+                  <img
+                    src={userProfile.avatar}
+                    alt={userProfile.username || 'You'}
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-semibold text-[10px]">
+                      {userProfile?.username?.slice(0, 2).toUpperCase() || '??'}
+                    </span>
+                  </div>
+                )}
+                <div className="flex-1 flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Add a comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-300 focus:bg-white"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!userKey || !newComment.trim()) return;
+                      try {
+                        const { addComment } = await import('../services/commentsService');
+                        await addComment(
+                          market.id,
+                          userKey,
+                          newComment.trim(),
+                          userProfile ? {
+                            username: userProfile.username || 'Anonymous',
+                            avatar: userProfile.avatar || '',
+                          } : undefined
+                        );
+                        setNewComment('');
+                        commentsQ.refetch();
+                      } catch (e) {
+                        // eslint-disable-next-line no-console
+                        console.error('Failed to post comment', e);
+                      }
+                    }}
+                    disabled={!userKey || !newComment.trim()}
+                    className="px-4 py-2 bg-black hover:bg-gray-800 disabled:bg-gray-200 disabled:text-gray-500 !text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                  >
+                    Post
+                  </button>
+                </div>
+              </div>
+              {/* List */}
+              <div className="space-y-4">
+                {commentsQ.isLoading && !liveComments ? (
+                  <p className="text-gray-500 text-center py-8">Loading comments...</p>
+                ) : !(liveComments?.length ?? commentsQ.data?.length) ? (
+                  <p className="text-gray-500 text-center py-8">No comments yet. Be the first to comment!</p>
+                ) : (
+                  (liveComments ?? commentsQ.data)?.map((comment: any) => {
+                    const commentUserProfile = comment.userProfile;
+                    const hasAvatar = commentUserProfile?.avatar && commentUserProfile.avatar.trim() !== '';
+
+                    return (
+                    <div key={comment.id} className="flex gap-3">
+                      {/* User avatar - use profile avatar if available */}
+                      {hasAvatar ? (
+                        <img
+                          src={commentUserProfile.avatar}
+                          alt={commentUserProfile.username || 'User'}
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-8 h-8 bg-gray-200 rounded-full flex-shrink-0 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-sm font-medium text-gray-900">
+                            {commentUserProfile?.username || 'Anonymous'}
+                          </span>
+                          <span className="text-xs text-gray-500">{(toJsDate(comment.createdAt) || toJsDate(comment.timestamp) || new Date()).toLocaleTimeString()}</span>
+                        </div>
+                        <p className="text-gray-700">{comment.content || comment.text || ''}</p>
+                      </div>
+                    </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Sidebar wrapper - Desktop only */}
+          <div className="contents lg:block lg:order-2 lg:space-y-4 lg:sticky lg:top-4 lg:self-start">
+            {/* Probability Card - Mobile order-2 */}
+            <div className="rounded-xl bg-white border border-gray-200 overflow-hidden shadow-sm order-2 lg:order-none">
+              <div className="text-center py-8">
+                <div className="text-6xl font-bold text-gray-900 mb-2">{Math.round(safeProbability * 100)}%</div>
+                <div className="text-sm text-gray-500">Current Probability</div>
+                <div className="w-full bg-gray-100 rounded-full h-1.5 mt-4 max-w-xs mx-auto">
+                  <div
+                    className={`h-1.5 rounded-full transition-all duration-500 ${market.status === 'resolved_yes' ? 'bg-black' : market.status === 'resolved_no' ? 'bg-gray-400' : 'bg-black'}`}
+                    style={{ width: `${Math.round(safeProbability * 100)}%` }}
+                  />
+                </div>
+                <div className="mt-6 grid grid-cols-2 gap-3 max-w-xs mx-auto">
+                  <div className="py-3 rounded-lg font-semibold" style={{ backgroundColor: 'rgba(35, 221, 154, 0.2)', color: '#23DD9A' }}>
+                    YES {Math.round(safeProbability * 100)}%
+                  </div>
+                  <div className="py-3 rounded-lg font-semibold" style={{ backgroundColor: 'rgba(255, 16, 16, 0.2)', color: '#FF1010' }}>
+                    NO {Math.round((1 - safeProbability) * 100)}%
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Overview - Mobile order-5 */}
+            <div className="rounded-xl bg-white border border-gray-200 p-5 space-y-4 shadow-sm order-5 lg:order-none">
+              <h3 className="text-lg font-semibold text-gray-900">Overview</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-lg bg-gray-50 border border-gray-200 p-3">
+                  <div className="text-gray-600 text-xs">24h Volume</div>
+                  <div className="text-gray-900 text-lg font-semibold">${volume24h.toFixed(2)}</div>
+                </div>
+                <div className="rounded-lg bg-gray-50 border border-gray-200 p-3">
+                  <div className="text-gray-600 text-xs">Total Volume</div>
+                  <div className="text-gray-900 text-lg font-semibold">${totalVolume.toFixed(2)}</div>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-gray-200 space-y-2">
+                <div className="flex justify-between"><span className="text-gray-600">Creator</span><span className="text-gray-900">{creatorName}</span></div>
+                <div className="flex justify-between"><span className="text-gray-600">Expires</span><span className="text-gray-900">{new Date(market.resolvesAt || '').toLocaleDateString()}</span></div>
+                <div className="flex justify-between items-center"><span className="text-gray-600">Status</span><span className={`px-2 py-1 rounded-md text-xs font-medium border ${countdown.isExpired ? 'bg-yellow-50 text-yellow-700 border-yellow-300' : 'bg-blue-50 text-blue-700 border-blue-300'}`}>{countdown.isExpired ? 'Pending Resolution' : 'Open'}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MarketDetail;

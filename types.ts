@@ -1,0 +1,108 @@
+export interface Market {
+  id: string;
+  title: string;
+  category: 'Crypto' | 'Technology' | 'App' | 'Other';
+  probability: number;           // 0..1
+  sourceUrl?: string;            // external source link
+  sources?: string[];            // array of source URLs
+  info?: string;                 // market info/analysis
+  resolvesAt: string;            // ISO date
+  status: 'open' | 'expired' | 'pending_resolution' | 'resolved_yes' | 'resolved_no';
+  // Legacy fields for backward compatibility
+  question?: string;             // maps to title
+  creator?: string;
+  creatorProfile?: {
+    username: string;
+    avatar?: string;
+  };
+  yesPrice?: number;
+  noPrice?: number;
+  imageUrl?: string;
+  trending?: boolean;
+  yesBets?: number;
+  noBets?: number;
+  volumeUSD?: number;
+  metrics?: {
+    volume24hUSD: number;
+    totalVolumeUSD: number;
+    feesUSD: number;
+    feesPct: number;
+  };
+}
+
+export interface NewMarket {
+  question: string;
+  category: string;
+  expiryDate: string;
+  sources?: string[];
+  info?: string;
+}
+
+export interface UserProfile {
+  uid?: string;
+  username: string;
+  displayName?: string; // Alias for username, used in posts
+  handle?: string; // Unique username handle (e.g., "johndoe" without @)
+  avatar: string;
+  avatarUrl?: string; // Alias for avatar, used in posts
+  bio?: string;
+  xHandle?: string;
+}
+
+export interface Post {
+  id: string;
+  user: UserProfile;
+  timestamp: string;
+  content: string;
+  images?: string[]; // Array of image URLs
+  market?: Market;
+  likes: number;
+  comments: number;
+  likedBy: string[]; // Array of user ids who liked this post
+  commentCount: number; // Actual comment count
+  shares?: number; // Number of shares
+  sharedBy?: string[]; // Array of user ids who shared this post
+}
+
+export interface MarketComment {
+  id: string;
+  marketId: string;
+  userAddress: string;
+  content: string;
+  timestamp: string;
+  createdAt: Date;
+}
+
+// Admin Dashboard Types
+export interface AdminStats {
+  totalUsers: number;
+  totalMarkets: number;
+  totalVolume: number; // All time
+  dailyVolume: number;
+  weeklyVolume: number;
+  activeMarkets: number;
+  resolvedMarkets: number;
+  pendingResolution: number;
+}
+
+export interface NewsItem {
+  id: string;
+  title: string;
+  image: string;
+  description: string;
+  link: string;
+  source: string; // News source (e.g., Cointelegraph, CoinDesk, etc.)
+  category: string; // Token: BTC, ETH, SOL, XRP, etc.
+  publishedAt: string; // ISO date
+  createdAt: string; // ISO date
+  createdBy: string; // Admin user id
+}
+
+export interface MarketWithCreator extends Market {
+  creatorAddress: string;
+  creatorUsername?: string;
+  creatorAvatar?: string;
+  createdAt: Date;
+  totalBets: number;
+  participantCount: number;
+}
