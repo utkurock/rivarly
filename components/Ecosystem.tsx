@@ -194,7 +194,7 @@ const Ecosystem: React.FC = () => {
 
           {/* Category filter */}
           {!loading && !failed && categories.length > 1 && (
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1 -mb-1">
+            <div className="mt-4 flex gap-2 overflow-x-auto ecosystem-tabs">
               {categories.map(cat => (
                 <button
                   key={cat}
@@ -212,6 +212,12 @@ const Ecosystem: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Hide the horizontal scrollbar under the category tabs (still scrollable). */}
+      <style>{`
+        .ecosystem-tabs { scrollbar-width: none; -ms-overflow-style: none; }
+        .ecosystem-tabs::-webkit-scrollbar { display: none; }
+      `}</style>
 
       {/* Body */}
       <div className="max-w-6xl mx-auto px-4 lg:px-6 py-6">

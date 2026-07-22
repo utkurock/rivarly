@@ -69,7 +69,8 @@ const MarketTicker: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  if (isLoading || markets.length === 0) {
+  // While the first fetch is in flight, show a slim loading strip.
+  if (isLoading) {
     return (
       <div className="bg-white border-b border-gray-200 overflow-hidden h-10 md:h-12 z-10">
         <div className="flex items-center justify-center h-full">
@@ -78,6 +79,10 @@ const MarketTicker: React.FC = () => {
       </div>
     );
   }
+
+  // No open markets to show — collapse the ticker entirely instead of leaving a
+  // permanent "loading" strip stuck at the top of every page.
+  if (markets.length === 0) return null;
 
   // Create enough duplicates for seamless infinite scroll
   const duplicateCount = markets.length < 5 ? 6 : 3; // More duplicates for fewer items
