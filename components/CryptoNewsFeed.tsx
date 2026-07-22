@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { getAllNews, getNewsByCategory } from '../services/newsService';
+import { fetchPublicNews, fetchStellarNews, hasPublicNews } from '../services/publicNewsService';
+import { isFirebaseConfigured } from '../firebase';
 import type { NewsItem } from '../types';
 import { formatTimeAgo } from '../utils/time';
+
+// Merge admin-curated and public news, drop duplicate links, newest first.
+const mergeNews = (...lists: NewsItem[][]): NewsItem[] => {
+  const seen = new Set<string>();
+  const merged: NewsItem[] = [];
+  for (const item of lists.flat()) {
+    const key = item.link || item.id;
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(item);
+  }
+  return merged.sort(
+    (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+  );
+};
 
 const CryptoNewsFeed: React.FC = () => {
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
@@ -10,30 +27,45 @@ const CryptoNewsFeed: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch news from Firestore
+  // Fetch admin-curated (Firestore) news and public (CryptoPanic) news, then merge.
   useEffect(() => {
+    let cancelled = false;
+
     const fetchNews = async () => {
       setLoading(true);
       setError(null);
-      try {
-        if (selectedCurrency && selectedCurrency !== 'ALL') {
-          const filteredNews = await getNewsByCategory(selectedCurrency);
-          setNews(filteredNews);
-        } else {
-          const allNews = await getAllNews();
-          setNews(allNews);
-        }
-      } catch (err) {
-        setError('Failed to load news');
-      } finally {
-        setLoading(false);
+
+      const currency = selectedCurrency && selectedCurrency !== 'ALL' ? selectedCurrency : undefined;
+
+      // Admin news from Firestore — skipped when Firebase isn't configured.
+      const adminPromise: Promise<NewsItem[]> = isFirebaseConfigured
+        ? (currency ? getNewsByCategory(currency) : getAllNews()).catch(() => [])
+        : Promise.resolve([]);
+
+      // Public news — general feed plus a dedicated Stellar pull so XLM always shows.
+      const publicPromise: Promise<NewsItem[]> = currency
+        ? fetchPublicNews(currency)
+        : Promise.all([fetchPublicNews(), fetchStellarNews()]).then(([a, b]) => [...a, ...b]);
+
+      const [adminNews, publicNews] = await Promise.all([adminPromise, publicPromise]);
+      if (cancelled) return;
+
+      const merged = mergeNews(adminNews, publicNews);
+      setNews(merged);
+      if (merged.length === 0 && !isFirebaseConfigured && !hasPublicNews) {
+        setError('No news source is configured. Add a Firebase project or a CryptoPanic token.');
       }
+      setLoading(false);
     };
 
     fetchNews();
+    return () => {
+      cancelled = true;
+    };
   }, [selectedCurrency]);
 
   const currencies = [
+    { code: 'XLM', name: 'Stellar', icon: '✦' },
     { code: 'BTC', name: 'Bitcoin', icon: '₿' },
     { code: 'ETH', name: 'Ethereum', icon: 'Ξ' },
     { code: 'SOL', name: 'Solana', icon: '◎' },
@@ -58,7 +90,7 @@ const CryptoNewsFeed: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Crypto News</h1>
-          <p className="text-gray-600 mb-6">Latest crypto news from trusted sources</p>
+          <p className="text-gray-600 mb-6">Live headlines from public sources, plus curated picks — featuring Stellar (XLM)</p>
           
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-3">

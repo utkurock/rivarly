@@ -10,7 +10,7 @@ browsable prediction markets, a curated crypto news section, and user profiles.
 
 - **Social feed** — posts with images, likes, reposts, replies
 - **Markets** — browse, filter and create prediction markets (no on-chain trading yet)
-- **News** — crypto news items curated through the admin panel
+- **News** — live public crypto headlines (Stellar/XLM featured) merged with admin-curated items
 - **Profiles** — Firebase anonymous auth, follow/unfollow
 - **Admin panel** — password-gated market and news management
 
@@ -34,6 +34,11 @@ cp .env.example .env
 
 `VITE_ADMIN_PASSWORD` gates the admin panel. Every `VITE_*` variable is bundled into
 the client build, so treat this as a soft gate rather than a real secret.
+
+`VITE_CRYPTOPANIC_TOKEN` is optional. With a free token from
+[cryptopanic.com](https://cryptopanic.com/developers/api/), the Hot News page pulls
+live public headlines — including a dedicated Stellar (XLM) feed — and merges them with
+admin-curated items. Without it, only admin-curated news shows.
 
 ### 3. Run
 
