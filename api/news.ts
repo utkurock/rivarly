@@ -1,7 +1,7 @@
 import { getNews } from './_news';
 
 // Same-origin public news endpoint. Aggregates public crypto RSS feeds server-side,
-// tags each item and returns JSON — no API key, no third-party proxy.
+// tags each item and returns JSON. No API key, no third-party proxy.
 export const config = { runtime: 'edge' };
 
 export default async function handler(req: Request): Promise<Response> {

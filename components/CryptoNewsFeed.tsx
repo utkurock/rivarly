@@ -38,12 +38,12 @@ const CryptoNewsFeed: React.FC = () => {
 
       const currency = selectedCurrency && selectedCurrency !== 'ALL' ? selectedCurrency : undefined;
 
-      // Admin news from Firestore — skipped when Firebase isn't configured.
+      // Admin news from Firestore, skipped when Firebase isn't configured.
       const adminPromise: Promise<NewsItem[]> = isFirebaseConfigured
         ? (currency ? getNewsByCategory(currency) : getAllNews()).catch(() => [])
         : Promise.resolve([]);
 
-      // Public news — general feed plus a dedicated Stellar pull so XLM always shows.
+      // Public news: general feed plus a dedicated Stellar pull so XLM always shows.
       const publicPromise: Promise<NewsItem[]> = currency
         ? fetchPublicNews(currency)
         : Promise.all([fetchPublicNews(), fetchStellarNews()]).then(([a, b]) => [...a, ...b]);
@@ -67,7 +67,6 @@ const CryptoNewsFeed: React.FC = () => {
     { code: 'BTC', name: 'Bitcoin' },
     { code: 'ETH', name: 'Ethereum' },
     { code: 'SOL', name: 'Solana' },
-    { code: 'XRP', name: 'XRP' },
   ];
 
   const handleImageError = (id: string) => {
@@ -88,7 +87,7 @@ const CryptoNewsFeed: React.FC = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-4">Crypto News</h1>
-          <p className="text-gray-600 mb-6">Live headlines from public sources, plus curated picks — featuring Stellar (XLM)</p>
+          <p className="text-gray-600 mb-6">Live crypto headlines from public sources. Click a project to see its own news.</p>
           
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-3">

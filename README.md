@@ -8,11 +8,11 @@ browsable prediction markets, a curated crypto news section, and user profiles.
 
 ## Features
 
-- **Social feed** — posts with images, likes, reposts, replies
-- **Markets** — browse, filter and create prediction markets (no on-chain trading yet)
-- **News** — live public crypto headlines (Stellar/XLM featured) merged with admin-curated items
-- **Profiles** — Firebase anonymous auth, follow/unfollow
-- **Admin panel** — password-gated market and news management
+- **Social feed**: posts with images, likes, reposts, replies
+- **Markets**: browse, filter and create prediction markets (no on-chain trading yet)
+- **News**: live public crypto headlines (Stellar/XLM featured) merged with admin-curated items
+- **Profiles**: Firebase anonymous auth, follow/unfollow
+- **Admin panel**: password-gated market and news management
 
 ## Setup
 
@@ -36,11 +36,11 @@ cp .env.example .env
 the client build, so treat this as a soft gate rather than a real secret.
 
 The Hot News page pulls live public headlines from several **crypto publisher RSS
-feeds** (Cointelegraph, Decrypt, CryptoSlate, NewsBTC, Bitcoinist) — no API key. Each
-item keeps its article image and gets coin tags (XLM, BTC, …) derived from the
+feeds** (Cointelegraph, Decrypt, CryptoSlate, NewsBTC, Bitcoinist) with no API key. Each
+item keeps its article image and gets coin tags (XLM, BTC, and so on) derived from the
 headline, so filtering by Stellar (XLM) or any coin works, and admin-curated items are
 merged in. Because those feeds have no CORS headers, the browser calls our own
-`/api/news` endpoint, which fetches and aggregates them server-side — no third-party
+`/api/news` endpoint, which fetches and aggregates them server-side, with no third-party
 proxy. On Vercel this runs as the Edge function in [`api/news.ts`](api/news.ts); under
 `npm run dev` a Vite middleware serves the same route. Nothing to configure.
 
@@ -61,7 +61,7 @@ App.tsx            # routes and layout
 index.tsx          # entry point
 firebase.ts        # Firebase app, auth, Firestore and Storage handles
 types.ts           # shared domain types
-components/        # UI — feed, markets, news, profile, admin
+components/        # UI: feed, markets, news, profile, admin
 contexts/          # Firebase, user, theme and toast providers
 hooks/             # data hooks (infinite markets, countdown, modal)
 services/          # Firestore/Storage access layer
@@ -83,7 +83,7 @@ CSS variables there and in `index.css`.
 | `comments` | Market comments |
 | `news` | News items created in the admin panel |
 
-Some fields carry legacy names from an earlier wallet-based version — `userAddress`,
+Some fields carry legacy names from an earlier wallet-based version. `userAddress`,
 for example, now stores a Firebase uid.
 
 ## Tech stack

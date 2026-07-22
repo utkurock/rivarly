@@ -55,10 +55,6 @@ const COIN_FEEDS: Record<string, Feed[]> = {
     { url: 'https://cointelegraph.com/rss/tag/solana', source: 'Cointelegraph' },
     { url: 'https://bitcoinist.com/tag/solana/feed/', source: 'Bitcoinist' },
   ],
-  XRP: [
-    { url: 'https://cointelegraph.com/rss/tag/ripple', source: 'Cointelegraph' },
-    { url: 'https://bitcoinist.com/tag/xrp/feed/', source: 'Bitcoinist' },
-  ],
 };
 
 // Coin detection for tagging. Order controls chip order.
@@ -67,7 +63,6 @@ const COINS: { code: string; re: RegExp }[] = [
   { code: 'BTC', re: /\b(btc|bitcoin)\b/i },
   { code: 'ETH', re: /\b(eth|ethereum|ether)\b/i },
   { code: 'SOL', re: /\b(sol|solana)\b/i },
-  { code: 'XRP', re: /\b(xrp|ripple)\b/i },
 ];
 
 const UA = 'Mozilla/5.0 (compatible; Rivarly/1.0; +https://github.com/utkurock/rivarly)';
@@ -176,7 +171,7 @@ export async function getNews(currency?: string): Promise<PublicNewsItem[]> {
   if (cached && Date.now() - cached.t < CACHE_TTL_MS) return cached.data;
 
   // For a coin filter, pull its dedicated tag feed (whose items are about that
-  // coin even if the headline omits the name — so force the tag there) AND scan
+  // coin even if the headline omits the name, so force the tag there) AND scan
   // general feeds for items that genuinely mention the coin (no forced tag).
   const coinFeeds = code ? COIN_FEEDS[code] || [] : [];
   const results = await Promise.all([

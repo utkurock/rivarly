@@ -21,7 +21,7 @@ const NewsManagement: React.FC = () => {
     publishedAt: new Date().toISOString().slice(0, 16), // YYYY-MM-DDTHH:MM format
   });
 
-  const categories = ['BTC', 'ETH', 'SOL', 'XRP', 'ALL'];
+  const categories = ['BTC', 'ETH', 'SOL', 'XLM', 'ALL'];
 
   // Fetch all news
   useEffect(() => {

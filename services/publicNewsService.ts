@@ -1,11 +1,11 @@
 import type { NewsItem } from '../types';
 
-// Public crypto news from Google News — free and keyless.
+// Public crypto news, free and keyless.
 //
-// The browser calls our own same-origin /api/news endpoint, which fetches Google
-// News RSS server-side, adds an image and coin tags to each item, and returns JSON
-// (Vercel Edge function in api/news.ts; a Vite middleware serves it in dev). No
-// third-party proxy involved.
+// The browser calls our own same-origin /api/news endpoint, which aggregates
+// public crypto RSS feeds server-side, adds an image and coin tags to each item,
+// and returns JSON (Vercel Edge function in api/news.ts; a Vite middleware serves
+// it in dev). No third-party proxy involved.
 
 // Public news is always available.
 export const hasPublicNews = true;

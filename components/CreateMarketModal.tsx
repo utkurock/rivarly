@@ -117,7 +117,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
               />
               {!question.trim() && <p className="mt-1.5 text-xs text-amber-600">Question is required.</p>}
               {!!question.trim() && (question.trim().length < 8 || question.trim().length > 180) && (
-                <p className="mt-1.5 text-xs text-amber-600">Question must be 8–180 characters.</p>
+                <p className="mt-1.5 text-xs text-amber-600">Question must be 8 to 180 characters.</p>
               )}
             </div>
 
