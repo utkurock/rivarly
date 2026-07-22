@@ -509,8 +509,9 @@ const Profile: React.FC = () => {
                         />
                     </div>
 
-                    {/* Body */}
-                    <div className="px-4 md:px-8 pb-6">
+                    {/* Body — relative z-10 so the avatar/content paints above the
+                        positioned cover (a positioned sibling would otherwise cover it) */}
+                    <div className="relative z-10 px-4 md:px-8 pb-6">
                         {/* Avatar + primary action */}
                         <div className="flex items-end justify-between -mt-12 md:-mt-16">
                             {hasCustomAvatar ? (
