@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { doc, getDoc, collection, query, where, orderBy, limit, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useUser } from '../contexts/UserContext';
 import { useFirebase } from '../contexts/FirebaseContext';
-import { getUserLikedPosts, getUserComments, getUserPosts, getUserReposts, formatTimeAgo } from '../services/feed';
+import { getUserLikedPosts, getUserComments, getUserPosts, getUserReposts, getUserMarkets, formatTimeAgo } from '../services/feed';
+import type { UserMarket } from '../services/feed';
 import { followUser, unfollowUser, isFollowing, getFollowersCount, getFollowingCount, subscribeToFollowStatus } from '../services/followService';
 import type { UserProfile } from '../types';
 import type { FeedPost, FeedReply } from '../services/feed';
@@ -41,6 +42,42 @@ const EmptyState: React.FC<{ title: string; subtitle: string; children: React.Re
     </div>
 );
 
+// Human-readable label + colour for a market status.
+const MARKET_STATUS_STYLES: Record<string, { label: string; className: string }> = {
+    open: { label: 'Open', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+    expired: { label: 'Ended', className: 'bg-gray-100 text-gray-600 border-gray-200' },
+    pending_resolution: { label: 'Pending', className: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+    resolved_yes: { label: 'Resolved YES', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    resolved_no: { label: 'Resolved NO', className: 'bg-rose-50 text-rose-700 border-rose-200' },
+};
+
+// Compact card for a market shown on a profile's activity tab.
+const MarketActivityCard: React.FC<{ market: UserMarket }> = ({ market }) => {
+    const status = MARKET_STATUS_STYLES[market.status] || MARKET_STATUS_STYLES.open;
+    const yesPct = Math.round(market.probability * 100);
+
+    return (
+        <Link
+            to={`/market/${market.id}`}
+            className="block bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md transition-all"
+        >
+            <div className="flex items-start justify-between gap-3 mb-3">
+                <p className="text-sm md:text-[15px] font-semibold text-gray-900 leading-snug line-clamp-2">
+                    {market.title}
+                </p>
+                <span className={`shrink-0 px-2 py-0.5 rounded-md text-xs font-medium border ${status.className}`}>
+                    {status.label}
+                </span>
+            </div>
+            <div className="flex items-center gap-3 text-xs">
+                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded font-medium">{market.category}</span>
+                <span className="text-emerald-600 font-semibold">YES {yesPct}%</span>
+                <span className="text-rose-500 font-semibold">NO {100 - yesPct}%</span>
+            </div>
+        </Link>
+    );
+};
+
 const Profile: React.FC = () => {
     const { userId } = useParams<{ userId?: string }>();
 
@@ -71,6 +108,7 @@ const Profile: React.FC = () => {
     // Activity tab state
     const [likedPosts, setLikedPosts] = useState<FeedPost[]>([]);
     const [userComments, setUserComments] = useState<Array<FeedReply & { postId: string }>>([]);
+    const [createdMarkets, setCreatedMarkets] = useState<UserMarket[]>([]);
     const [isLoadingActivity, setIsLoadingActivity] = useState(false);
 
     // Posts tab state with infinite scroll
@@ -350,21 +388,25 @@ const Profile: React.FC = () => {
         }
     }, [userProfile?.username, userProfile?.handle]); // Include handle in dependencies
 
-    // Load user activity (likes, comments) - ultra fast with minimal data
+    // Load the viewed user's activity (likes, comments, created markets).
+    // Keyed on viewingUserId so it reflects whoever's profile is open, not the
+    // signed-in user.
     useEffect(() => {
         const fetchUserActivity = async () => {
-            if (!user?.uid) return;
+            if (!viewingUserId) return;
 
             setIsLoadingActivity(true);
             try {
                 // Fetch more posts to catch likes (50 posts checked, returns all liked ones)
-                const [liked, comments] = await Promise.all([
-                    getUserLikedPosts(user.uid, 50),
-                    getUserComments(user.uid, 50),
+                const [liked, comments, markets] = await Promise.all([
+                    getUserLikedPosts(viewingUserId, 50),
+                    getUserComments(viewingUserId, 50),
+                    getUserMarkets(viewingUserId),
                 ]);
 
                 setLikedPosts(liked);
                 setUserComments(comments);
+                setCreatedMarkets(markets);
             } catch (error) {
                 console.error('Error fetching activity:', error);
             } finally {
@@ -373,9 +415,12 @@ const Profile: React.FC = () => {
         };
 
         if (activeTab === 'activity') {
+            setLikedPosts([]);
+            setUserComments([]);
+            setCreatedMarkets([]);
             fetchUserActivity();
         }
-    }, [user?.uid, activeTab]);
+    }, [viewingUserId, activeTab]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -487,6 +532,8 @@ const Profile: React.FC = () => {
     }, [viewingUserId, user?.uid]);
 
     const profile = isViewingOwnProfile ? userProfile : viewingProfile;
+    const displayNameForHeadings = profile?.username || 'This user';
+    const possessive = isViewingOwnProfile ? 'Your' : `${displayNameForHeadings}'s`;
     const handleText = profile?.handle && profile.handle.trim() ? `@${profile.handle}` : '@anonymous';
     const hasCustomAvatar = !!profile?.avatar && profile.avatar.trim() !== '' && !profile.avatar.startsWith('blob:');
 
@@ -667,6 +714,33 @@ const Profile: React.FC = () => {
                                 </div>
                             ) : (
                                 <>
+                                    {/* Markets Section — the user's market/bet activity */}
+                                    <div>
+                                        <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                            <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v18h18M7 15l3-3 3 3 5-6" />
+                                            </svg>
+                                            {possessive} markets
+                                            <span className="text-gray-400 font-normal">({createdMarkets.length})</span>
+                                        </h3>
+                                        {createdMarkets.length > 0 ? (
+                                            <div className="space-y-3">
+                                                {createdMarkets.map(market => (
+                                                    <MarketActivityCard key={market.id} market={market} />
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <EmptyState
+                                                title="No markets yet"
+                                                subtitle={isViewingOwnProfile ? 'Markets you create will appear here.' : 'This user has not created any markets yet.'}
+                                            >
+                                                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v18h18M7 15l3-3 3 3 5-6" />
+                                                </svg>
+                                            </EmptyState>
+                                        )}
+                                    </div>
+
                                     {/* Liked Posts Section */}
                                     <div>
                                         <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -685,7 +759,7 @@ const Profile: React.FC = () => {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <EmptyState title="No liked posts yet" subtitle="Posts you like will appear here.">
+                                            <EmptyState title="No liked posts yet" subtitle={isViewingOwnProfile ? 'Posts you like will appear here.' : 'Posts this user likes will appear here.'}>
                                                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                                 </svg>
@@ -699,7 +773,7 @@ const Profile: React.FC = () => {
                                             <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                             </svg>
-                                            Your comments
+                                            {possessive} comments
                                             <span className="text-gray-400 font-normal">({userComments.length})</span>
                                         </h3>
                                         {userComments.length > 0 ? (
@@ -729,7 +803,7 @@ const Profile: React.FC = () => {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <EmptyState title="No comments yet" subtitle="Your comments will appear here.">
+                                            <EmptyState title="No comments yet" subtitle={isViewingOwnProfile ? 'Your comments will appear here.' : 'This user has not commented yet.'}>
                                                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                                 </svg>

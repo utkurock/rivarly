@@ -851,6 +851,51 @@ export const getUserPosts = async (uid: string): Promise<FeedPost[]> => {
   }
 };
 
+// A market as surfaced on a user's activity tab (the markets they created).
+export interface UserMarket {
+  id: string;
+  title: string;
+  category: string;
+  probability: number;
+  status: string;
+  resolvesAt?: string;
+  createdAt?: Timestamp;
+}
+
+// Get markets created by a user (their "market activity").
+// Filtered client-side by creator to avoid needing a composite index.
+export const getUserMarkets = async (uid: string): Promise<UserMarket[]> => {
+  try {
+    const marketsQuery = query(collection(db, 'markets'), where('creator', '==', uid));
+    const snapshot = await getDocs(marketsQuery);
+
+    const markets: UserMarket[] = snapshot.docs.map((d) => {
+      const data: any = d.data();
+      return {
+        id: d.id,
+        title: data.title || data.question || 'Untitled market',
+        category: data.category || 'Other',
+        probability: typeof data.probability === 'number' ? data.probability : 0.5,
+        status: data.status || 'open',
+        resolvesAt: data.resolvesAt,
+        createdAt: data.createdAt as Timestamp,
+      };
+    });
+
+    // Newest first (sort client-side to avoid a composite index).
+    markets.sort((a, b) => {
+      const aTime = a.createdAt?.toMillis?.() || 0;
+      const bTime = b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+
+    return markets;
+  } catch (error) {
+    console.error('Error getting user markets:', error);
+    return [];
+  }
+};
+
 export async function searchUsers(q: string): Promise<Array<{ uid: string; username: string; displayName?: string; handle?: string; avatar?: string }>> {
   const term = q.trim().toLowerCase();
   if (!term) return [];
