@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { NewMarket } from '../types';
 import { CATEGORIES } from '../constants';
+import DateTimePicker from './DateTimePicker';
 
 interface CreateMarketModalProps {
   isOpen: boolean;
@@ -8,16 +9,8 @@ interface CreateMarketModalProps {
   onCreateMarket: (market: NewMarket) => void;
 }
 
-// Format a Date as a `datetime-local` value (YYYY-MM-DDTHH:mm) in the user's
-// local time. datetime-local inputs are always local wall-clock, so we must
-// not use toISOString() directly (that is UTC and shifts the value).
-const toLocalInputValue = (d: Date): string => {
-  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 16);
-};
-
 const ONE_HOUR_MS = 60 * 60 * 1000;
-// Upper bound so the year spinner can't run off to years like 123213.
+// Upper bound so the picker can't run off to absurd years like 123213.
 const MAX_YEARS_AHEAD = 5;
 
 const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, onCreateMarket }) => {
@@ -46,41 +39,25 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
     }
   }, [isOpen]);
 
-  // Allowed expiry window: from 1 hour ahead up to MAX_YEARS_AHEAD, in local
-  // time. Recomputed each time the modal opens so it stays current.
-  const { minExpiry, maxExpiry } = useMemo(() => {
+  // Allowed expiry window: from 1 hour ahead up to MAX_YEARS_AHEAD.
+  // Recomputed each time the modal opens so it stays current.
+  const { minDate, maxDate } = useMemo(() => {
     const now = Date.now();
     const max = new Date(now);
     max.setFullYear(max.getFullYear() + MAX_YEARS_AHEAD);
-    return {
-      minExpiry: toLocalInputValue(new Date(now + ONE_HOUR_MS)),
-      maxExpiry: toLocalInputValue(max),
-    };
+    return { minDate: new Date(now + ONE_HOUR_MS), maxDate: max };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const basicsValid = useMemo(() => {
     const q = question.trim();
     if (q.length < 8 || q.length > 180) return false;
-    // datetime-local is local wall-clock; parse it as local time (no 'Z').
     const expiry = new Date(expiryDate).getTime();
     if (!expiry) return false;
     if (expiry < Date.now() + ONE_HOUR_MS) return false;
-    if (expiry > new Date(maxExpiry).getTime()) return false;
+    if (expiry > maxDate.getTime()) return false;
     return true;
-  }, [question, expiryDate, maxExpiry]);
-
-  // Native datetime-local lets you TYPE any year (min/max only flag validity,
-  // they don't stop keystrokes). Snap the value back into range when the field
-  // loses focus, so an out-of-range year like 1121 auto-corrects to the min.
-  const clampExpiryToRange = () => {
-    if (!expiryDate) return;
-    const t = new Date(expiryDate).getTime();
-    if (Number.isNaN(t)) { setExpiryDate(''); return; }
-    const minT = new Date(minExpiry).getTime();
-    const maxT = new Date(maxExpiry).getTime();
-    if (t < minT) setExpiryDate(minExpiry);
-    else if (t > maxT) setExpiryDate(maxExpiry);
-  };
+  }, [question, expiryDate, maxDate]);
 
   const handleCreate = async () => {
     if (!basicsValid || isSubmitting) return;
@@ -177,22 +154,14 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Expiry Date <span className="text-red-500">*</span>
               </label>
-              <input
-                type="datetime-local"
+              <DateTimePicker
                 value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
-                onBlur={clampExpiryToRange}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-black transition-colors"
-                min={minExpiry}
-                max={maxExpiry}
+                onChange={setExpiryDate}
+                min={minDate}
+                max={maxDate}
+                placeholder="Select expiry date & time"
               />
               <p className="text-xs text-gray-500 mt-1.5">Minimum: 1 hour from now · up to {MAX_YEARS_AHEAD} years ahead</p>
-              {!!expiryDate && new Date(expiryDate).getTime() < Date.now() + ONE_HOUR_MS && (
-                <p className="mt-1.5 text-xs text-amber-600">Choose a time at least +1 hour from now.</p>
-              )}
-              {!!expiryDate && new Date(expiryDate).getTime() > new Date(maxExpiry).getTime() && (
-                <p className="mt-1.5 text-xs text-amber-600">Choose a date within {MAX_YEARS_AHEAD} years.</p>
-              )}
             </div>
 
             <div>
