@@ -39,6 +39,8 @@ const CryptoNewsFeed: React.FC = () => {
       const currency = selectedCurrency && selectedCurrency !== 'ALL' ? selectedCurrency : undefined;
 
       // Admin news from Firestore, skipped when Firebase isn't configured.
+      // Kept off the critical path: a slow/hanging Firestore connection must not
+      // block the public feed from rendering.
       const adminPromise: Promise<NewsItem[]> = isFirebaseConfigured
         ? (currency ? getNewsByCategory(currency) : getAllNews()).catch(() => [])
         : Promise.resolve([]);
@@ -48,12 +50,16 @@ const CryptoNewsFeed: React.FC = () => {
         ? fetchPublicNews(currency)
         : Promise.all([fetchPublicNews(), fetchStellarNews()]).then(([a, b]) => [...a, ...b]);
 
-      const [adminNews, publicNews] = await Promise.all([adminPromise, publicPromise]);
+      // Render the public feed as soon as it arrives; don't wait on Firestore.
+      const publicNews = await publicPromise;
       if (cancelled) return;
-
-      const merged = mergeNews(adminNews, publicNews);
-      setNews(merged);
+      setNews(publicNews);
       setLoading(false);
+
+      // Merge admin-curated news in the background once (and if) it resolves.
+      const adminNews = await adminPromise;
+      if (cancelled || adminNews.length === 0) return;
+      setNews(mergeNews(adminNews, publicNews));
     };
 
     fetchNews();

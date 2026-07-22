@@ -66,7 +66,14 @@ const MarketTicker: React.FC = () => {
     // Refresh every 30 seconds
     const interval = setInterval(fetchTopMarkets, 30000);
 
-    return () => clearInterval(interval);
+    // Safety net: if the first Firestore read is slow to connect, stop showing
+    // the "Loading..." strip after a few seconds so the ticker collapses cleanly.
+    const loadingTimeout = setTimeout(() => setIsLoading(false), 6000);
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(loadingTimeout);
+    };
   }, []);
 
   // While the first fetch is in flight, show a slim loading strip.
