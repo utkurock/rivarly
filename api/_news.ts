@@ -140,14 +140,20 @@ function domainOf(url: string): string {
   return m ? m[1].replace(/^www\./, '') : '';
 }
 
+const FEED_TIMEOUT_MS = 4000; // one slow feed must not stall the whole request
+
 async function fetchFeed(feed: Feed, forced?: string): Promise<PublicNewsItem[]> {
   let xml = '';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FEED_TIMEOUT_MS);
   try {
-    const res = await fetch(feed.url, { headers: { 'User-Agent': UA } });
+    const res = await fetch(feed.url, { headers: { 'User-Agent': UA }, signal: controller.signal });
     if (!res.ok) return [];
     xml = await res.text();
   } catch {
     return [];
+  } finally {
+    clearTimeout(timer);
   }
 
   const rawItems = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];

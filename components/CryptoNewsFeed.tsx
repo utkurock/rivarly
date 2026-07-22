@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllNews, getNewsByCategory } from '../services/newsService';
-import { fetchPublicNews } from '../services/publicNewsService';
+import { fetchPublicNews, readNewsCache, writeNewsCache } from '../services/publicNewsService';
 import { isFirebaseConfigured } from '../firebase';
 import type { NewsItem } from '../types';
 import { formatTimeAgo } from '../utils/time';
@@ -43,24 +43,32 @@ const CryptoNewsFeed: React.FC = () => {
 
       const currency = selectedCurrency && selectedCurrency !== 'ALL' ? selectedCurrency : undefined;
 
+      // 1) Instant paint from the Firestore cache (a single ~10 KB doc), so
+      //    returning visitors don't wait on the slow RSS aggregation.
+      const cached = await readNewsCache(currency);
+      if (cancelled) return;
+      if (cached.length) {
+        setNews(mergeNews(cached));
+        setLoading(false);
+      }
+
       // Admin news from Firestore, skipped when Firebase isn't configured.
-      // Kept off the critical path: a slow/hanging Firestore connection must not
-      // block the public feed from rendering.
       const adminPromise: Promise<NewsItem[]> = isFirebaseConfigured
         ? (currency ? getNewsByCategory(currency) : getAllNews()).catch(() => [])
         : Promise.resolve([]);
 
-      // Public news. The server already returns a curated Stellar-forward mix
-      // for the default view, and coin-filtered results when a currency is set.
-      const publicPromise: Promise<NewsItem[]> = fetchPublicNews(currency);
-
-      // Render the public feed as soon as it arrives; don't wait on Firestore.
-      const publicNews = await publicPromise;
+      // 2) Refresh from the edge aggregator (curated Stellar-forward mix / coin
+      //    filter). This is the slow path; only it blocks when there is no cache.
+      const publicNews = await fetchPublicNews(currency);
       if (cancelled) return;
-      setNews(publicNews);
+      if (publicNews.length) {
+        setNews(mergeNews(publicNews));
+        // Write-through so the next visitor gets it instantly.
+        writeNewsCache(currency, publicNews);
+      }
       setLoading(false);
 
-      // Merge admin-curated news in the background once (and if) it resolves.
+      // 3) Merge admin-curated news in the background once (and if) it resolves.
       const adminNews = await adminPromise;
       if (cancelled || adminNews.length === 0) return;
       setNews(mergeNews(adminNews, publicNews));
