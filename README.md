@@ -35,12 +35,14 @@ cp .env.example .env
 `VITE_ADMIN_PASSWORD` gates the admin panel. Every `VITE_*` variable is bundled into
 the client build, so treat this as a soft gate rather than a real secret.
 
-The Hot News page pulls live public headlines from **Google News RSS** — no API key —
-including a dedicated Stellar (XLM) feed, merged with any admin-curated items. Google
-News RSS has no CORS headers, so the browser calls our own `/api/news` endpoint, which
-fetches the RSS server-side — no third-party proxy. On Vercel this runs as the Edge
-function in [`api/news.ts`](api/news.ts); under `npm run dev` a Vite middleware serves
-the same route. Nothing to configure.
+The Hot News page pulls live public headlines from several **crypto publisher RSS
+feeds** (Cointelegraph, Decrypt, CryptoSlate, NewsBTC, Bitcoinist) — no API key. Each
+item keeps its article image and gets coin tags (XLM, BTC, …) derived from the
+headline, so filtering by Stellar (XLM) or any coin works, and admin-curated items are
+merged in. Because those feeds have no CORS headers, the browser calls our own
+`/api/news` endpoint, which fetches and aggregates them server-side — no third-party
+proxy. On Vercel this runs as the Edge function in [`api/news.ts`](api/news.ts); under
+`npm run dev` a Vite middleware serves the same route. Nothing to configure.
 
 ### 3. Run
 

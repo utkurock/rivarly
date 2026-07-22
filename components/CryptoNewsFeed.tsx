@@ -165,10 +165,10 @@ const CryptoNewsFeed: React.FC = () => {
                         className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
                         onError={() => handleImageError(newsItem.id)}
                       />
-                      {/* Category Badge */}
+                      {/* Primary Tag Badge */}
                       <div className="absolute top-3 right-3">
                         <div className="px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md bg-blue-500/90 text-white">
-                          📰 {newsItem.category}
+                          📰 {(newsItem.tags && newsItem.tags[0]) || newsItem.category}
                         </div>
                       </div>
                     </div>
@@ -203,11 +203,21 @@ const CryptoNewsFeed: React.FC = () => {
                       </p>
                     )}
 
-                    {/* Category Tag */}
+                    {/* Tags */}
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-700">
-                        {newsItem.category}
-                      </span>
+                      {(newsItem.tags && newsItem.tags.length ? newsItem.tags : [newsItem.category]).map((t) => {
+                        const isCoin = t !== 'Crypto';
+                        return (
+                          <span
+                            key={t}
+                            className={`px-2 py-1 rounded-md text-xs font-semibold ${
+                              isCoin ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {t}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

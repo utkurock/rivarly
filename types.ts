@@ -91,7 +91,8 @@ export interface NewsItem {
   description: string;
   link: string;
   source: string; // News source (e.g., Cointelegraph, CoinDesk, etc.)
-  category: string; // Token: BTC, ETH, SOL, XRP, etc.
+  category: string; // Primary token/topic: BTC, ETH, XLM, Crypto, etc.
+  tags?: string[]; // All detected tags (e.g., ["XLM", "Crypto"]); falls back to [category]
   publishedAt: string; // ISO date
   createdAt: string; // ISO date
   createdBy: string; // Admin user id
