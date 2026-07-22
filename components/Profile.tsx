@@ -13,6 +13,34 @@ import { useCustomModal } from '../hooks/useCustomModal';
 import CustomModal from './CustomModal';
 import InfiniteScrollSentinel from './InfiniteScrollSentinel';
 
+// A single post-shaped loading placeholder.
+const SkeletonCard: React.FC = () => (
+    <div className="bg-white rounded-2xl border border-gray-200 p-5 animate-pulse">
+        <div className="flex items-center gap-3 mb-4">
+            <div className="w-11 h-11 rounded-full bg-gray-200" />
+            <div className="flex-1 space-y-2">
+                <div className="h-3 w-32 bg-gray-200 rounded" />
+                <div className="h-3 w-20 bg-gray-100 rounded" />
+            </div>
+        </div>
+        <div className="space-y-2">
+            <div className="h-3 w-full bg-gray-200 rounded" />
+            <div className="h-3 w-4/5 bg-gray-200 rounded" />
+        </div>
+    </div>
+);
+
+// Empty-state card with an icon, title and hint.
+const EmptyState: React.FC<{ title: string; subtitle: string; children: React.ReactNode }> = ({ title, subtitle, children }) => (
+    <div className="text-center py-14 bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400">
+            {children}
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-1">{title}</h3>
+        <p className="text-sm text-gray-500">{subtitle}</p>
+    </div>
+);
+
 const Profile: React.FC = () => {
     const { userId } = useParams<{ userId?: string }>();
 
@@ -50,6 +78,7 @@ const Profile: React.FC = () => {
     const [displayedPosts, setDisplayedPosts] = useState<FeedPost[]>([]);
     const [isLoadingPosts, setIsLoadingPosts] = useState(false);
     const [hasMorePosts, setHasMorePosts] = useState(false);
+    const [postsCount, setPostsCount] = useState(0);
     const PAGE_SIZE = 20;
 
     // Fetch both user's posts and reposts - Initial load
@@ -90,6 +119,7 @@ const Profile: React.FC = () => {
                 });
 
                 setAllPosts(combinedPosts);
+                setPostsCount(combinedPosts.length);
 
                 // Display first page
                 const initialPosts = combinedPosts.slice(0, PAGE_SIZE);
@@ -456,303 +486,260 @@ const Profile: React.FC = () => {
       }
     }, [viewingUserId, user?.uid]);
 
+    const profile = isViewingOwnProfile ? userProfile : viewingProfile;
+    const handleText = profile?.handle && profile.handle.trim() ? `@${profile.handle}` : '@anonymous';
+    const hasCustomAvatar = !!profile?.avatar && profile.avatar.trim() !== '' && !profile.avatar.startsWith('blob:');
+
     return (
         <div className="min-h-screen bg-[#f8f9fa]">
-            <div className="max-w-[1600px] mx-auto px-4 md:px-0">
-                {/* Profile Header */}
-                <div className="relative bg-white border-b border-gray-200">
-                    {/* Cover Photo - Minimal Black & White */}
-                    <div className="h-32 md:h-52 bg-gradient-to-br from-gray-900 via-gray-800 to-black relative">
-                        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20"></div>
-                        {/* Subtle pattern overlay */}
-                        <div className="absolute inset-0 opacity-5" style={{
+            <div className="max-w-3xl mx-auto px-4 py-4 md:py-8">
+                {/* Profile Card */}
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    {/* Cover */}
+                    <div className="relative h-36 md:h-52 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
+                        <div className="absolute inset-0 opacity-10" style={{
                             backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
-                            backgroundSize: '40px 40px'
-                        }}></div>
+                            backgroundSize: '32px 32px'
+                        }} />
+                        <img
+                            src="/rivarly-logo.png"
+                            alt=""
+                            aria-hidden="true"
+                            className="absolute right-5 bottom-4 h-5 md:h-7 opacity-25 invert pointer-events-none"
+                        />
                     </div>
 
-                    {/* Profile Info */}
-                    <div className="relative px-4 md:px-8 pb-4 md:pb-6">
-                        {/* Avatar */}
-                        <div className="absolute -top-12 md:-top-20 left-4 md:left-8">
-                        {(() => {
-                            const profile = isViewingOwnProfile ? userProfile : viewingProfile;
-                            // Check if user has a custom avatar (base64 or URL, but not blob)
-                            const hasCustomAvatar = profile?.avatar &&
-                                profile.avatar.trim() !== '' &&
-                                !profile.avatar.startsWith('blob:');
-
-                            if (hasCustomAvatar) {
-                                return (
-                                    <img
-                                        src={profile.avatar}
-                                        alt="Profile Avatar"
-                                        className="w-24 h-24 md:w-40 md:h-40 rounded-full border-4 border-white shadow-xl object-cover ring-2 ring-gray-100"
-                                        onError={(e) => {
-                                            e.currentTarget.style.display = 'none';
-                                        }}
-                                    />
-                                );
-                            }
-
-                            // Simple placeholder avatar
-                            return (
-                                <div className="w-24 h-24 md:w-40 md:h-40 bg-gray-100 rounded-full border-4 border-white flex items-center justify-center shadow-xl ring-2 ring-gray-100">
-                                    <svg className="w-12 h-12 md:w-20 md:h-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {/* Body */}
+                    <div className="px-4 md:px-8 pb-6">
+                        {/* Avatar + primary action */}
+                        <div className="flex items-end justify-between -mt-12 md:-mt-16">
+                            {hasCustomAvatar ? (
+                                <img
+                                    src={profile!.avatar}
+                                    alt={profile?.username || 'Profile'}
+                                    className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border-4 border-white shadow-lg object-cover bg-white"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                            ) : (
+                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border-4 border-white shadow-lg bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                    <svg className="w-12 h-12 md:w-16 md:h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                 </div>
-                            );
-                        })()}
-                    </div>
+                            )}
 
-                    {/* Profile Actions */}
-                    <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 mt-16 md:mt-2">
-                        {isViewingOwnProfile ? (
-                            <button
-                                onClick={() => setIsEditModalOpen(true)}
-                                className="px-4 md:px-6 py-2.5 bg-white text-gray-900 text-sm md:text-base font-semibold rounded-lg hover:bg-gray-50 transition-colors border-2 border-gray-900 shadow-sm"
-                            >
-                                Edit Profile
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleFollow}
-                                disabled={isLoadingFollow || !user?.uid}
-                                className={`px-4 md:px-6 py-2.5 font-semibold text-sm md:text-base rounded-lg transition-all flex items-center justify-center gap-2 shadow-sm ${
-                                    isFollowingUser
-                                        ? 'bg-white text-gray-900 border-2 border-gray-900 hover:bg-gray-50'
-                                        : 'bg-black !text-white hover:bg-gray-800'
-                                } disabled:opacity-50 disabled:cursor-not-allowed`}
-                            >
-                                {isLoadingFollow ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-                                ) : isFollowingUser ? (
-                                    'Following'
+                            <div className="mb-1">
+                                {isViewingOwnProfile ? (
+                                    <button
+                                        onClick={() => setIsEditModalOpen(true)}
+                                        className="px-5 py-2 rounded-full text-sm font-semibold border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:!text-white transition-colors"
+                                    >
+                                        Edit Profile
+                                    </button>
                                 ) : (
-                                    'Follow'
+                                    <button
+                                        onClick={handleFollow}
+                                        disabled={isLoadingFollow || !user?.uid}
+                                        className={`px-6 py-2 rounded-full text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
+                                            isFollowingUser
+                                                ? 'border-2 border-gray-900 text-gray-900 hover:bg-gray-50'
+                                                : 'bg-gray-900 !text-white hover:bg-black'
+                                        } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                    >
+                                        {isLoadingFollow ? (
+                                            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+                                        ) : isFollowingUser ? 'Following' : 'Follow'}
+                                    </button>
                                 )}
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Profile Details */}
-                    <div className="mt-16 md:mt-24">
-                        <h1 className="text-xl md:text-2xl font-bold text-gray-900 flex items-center gap-2">
-                            {(isViewingOwnProfile ? userProfile : viewingProfile)?.username || 'Anonymous'}
-                        </h1>
-                        <div className="text-sm md:text-base text-gray-500 mb-3 md:mb-4 font-medium">
-                            {(() => {
-                                const profile = isViewingOwnProfile ? userProfile : viewingProfile;
-                                const handle = profile?.handle;
-                                if (handle && handle.trim()) {
-                                    return `@${handle}`;
-                                }
-                                return '@anonymous';
-                            })()}
+                            </div>
                         </div>
 
-                        {/* Followers/Following Counts */}
-                        <div className="flex gap-4 mb-4 text-sm">
-                            <button
-                                onClick={() => {
-                                    // TODO: Open followers modal/list
-                                }}
-                                className="hover:underline cursor-pointer"
-                            >
-                                <span className="font-bold text-gray-900">{followersCount}</span>
-                                <span className="text-gray-500 ml-1">Followers</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    // TODO: Open following modal/list
-                                }}
-                                className="hover:underline cursor-pointer"
-                            >
-                                <span className="font-bold text-gray-900">{followingCount}</span>
-                                <span className="text-gray-500 ml-1">Following</span>
-                            </button>
+                        {/* Name + handle */}
+                        <div className="mt-4">
+                            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+                                {profile?.username || 'Anonymous'}
+                            </h1>
+                            <p className="text-sm text-gray-500 font-medium">{handleText}</p>
                         </div>
 
                         {/* Bio */}
-                        <div className="text-sm md:text-base text-gray-700 mb-4 leading-relaxed">
-                            {(isViewingOwnProfile ? userProfile : viewingProfile)?.bio || 'No bio yet.'}
-                        </div>
+                        <p className="mt-3 text-sm md:text-[15px] text-gray-700 leading-relaxed whitespace-pre-wrap">
+                            {profile?.bio || 'No bio yet.'}
+                        </p>
 
-                        {/* X Handle */}
-                        {(isViewingOwnProfile ? userProfile : viewingProfile)?.xHandle && (
-                            <div className="flex items-center gap-2 mb-4">
-                                <svg className="w-4 h-4 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+                        {/* X handle */}
+                        {profile?.xHandle && (
+                            <a
+                                href={`https://x.com/${profile.xHandle}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-3 inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                            >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                                 </svg>
-                                <a
-                                    href={`https://x.com/${(isViewingOwnProfile ? userProfile : viewingProfile)?.xHandle}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-gray-900 hover:text-black transition-colors font-medium"
-                                >
-                                    @{(isViewingOwnProfile ? userProfile : viewingProfile)?.xHandle}
-                                </a>
-                            </div>
+                                @{profile.xHandle}
+                            </a>
                         )}
+
+                        {/* Stats */}
+                        <div className="mt-5 grid grid-cols-3 divide-x divide-gray-100 rounded-xl border border-gray-100 bg-gray-50/60 overflow-hidden">
+                            <div className="px-3 py-3 text-center">
+                                <div className="text-lg font-bold text-gray-900">{postsCount}</div>
+                                <div className="text-xs text-gray-500 mt-0.5">Posts</div>
+                            </div>
+                            <button
+                                onClick={() => { /* TODO: open followers list */ }}
+                                className="px-3 py-3 text-center hover:bg-gray-100 transition-colors"
+                            >
+                                <div className="text-lg font-bold text-gray-900">{followersCount}</div>
+                                <div className="text-xs text-gray-500 mt-0.5">Followers</div>
+                            </button>
+                            <button
+                                onClick={() => { /* TODO: open following list */ }}
+                                className="px-3 py-3 text-center hover:bg-gray-100 transition-colors"
+                            >
+                                <div className="text-lg font-bold text-gray-900">{followingCount}</div>
+                                <div className="text-xs text-gray-500 mt-0.5">Following</div>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Navigation Tabs */}
-            <div className="bg-white border-b border-gray-200 sticky top-0 md:top-0 z-10">
-                <nav className="flex max-w-[1600px] mx-auto overflow-x-auto">
-                    <button
-                        onClick={() => setActiveTab('posts')}
-                        className={`flex-1 min-w-[100px] py-3 md:py-4 px-3 md:px-6 text-center text-xs md:text-base font-semibold border-b-2 transition-all whitespace-nowrap ${
-                            activeTab === 'posts'
-                                ? 'text-black border-black'
-                                : 'text-gray-500 border-transparent hover:text-gray-900 hover:bg-gray-50'
-                        }`}
-                    >
-                        Posts
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('activity')}
-                        className={`flex-1 min-w-[100px] py-3 md:py-4 px-3 md:px-6 text-center text-xs md:text-base font-semibold border-b-2 transition-all whitespace-nowrap ${
-                            activeTab === 'activity'
-                                ? 'text-black border-black'
-                                : 'text-gray-500 border-transparent hover:text-gray-900 hover:bg-gray-50'
-                        }`}
-                    >
-                        Activity
-                    </button>
-                </nav>
-            </div>
+                {/* Tabs */}
+                <div className="mt-6 flex justify-center">
+                    <div className="inline-flex p-1 bg-gray-100 rounded-full">
+                        {(['posts', 'activity'] as const).map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`px-8 py-2 rounded-full text-sm font-semibold capitalize transition-all ${
+                                    activeTab === tab
+                                        ? 'bg-white text-gray-900 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-900'
+                                }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
-            {/* Content Area */}
-            <div className="max-w-[1600px] mx-auto px-4 md:px-8 py-4 md:py-8">
-                {/* Posts Tab */}
-                {activeTab === 'posts' && (
-                    <div className="space-y-6">
-
-                        {isLoadingPosts ? (
-                            <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                <p className="text-gray-600">Loading your posts...</p>
-                            </div>
-                        ) : displayedPosts.length > 0 ? (
-                            <div className="bg-white">
-                                {displayedPosts.map((post, index) => (
-                                    <div
-                                        key={post.id}
-                                        className={index > 0 ? "border-t border-gray-200" : ""}
-                                    >
-                                        <FeedCard post={post} />
-                                    </div>
-                                ))}
-                                <InfiniteScrollSentinel
-                                    onIntersect={loadMorePosts}
-                                    isLoading={isLoadingPosts}
-                                    hasMore={hasMorePosts}
-                                />
-                            </div>
-                        ) : (
-                            <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
-                                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* Content */}
+                <div className="mt-6">
+                    {/* Posts Tab */}
+                    {activeTab === 'posts' && (
+                        <div>
+                            {isLoadingPosts ? (
+                                <div className="space-y-4">
+                                    {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
+                                </div>
+                            ) : displayedPosts.length > 0 ? (
+                                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                    {displayedPosts.map((post, index) => (
+                                        <div key={post.id} className={index > 0 ? "border-t border-gray-100" : ""}>
+                                            <FeedCard post={post} />
+                                        </div>
+                                    ))}
+                                    <InfiniteScrollSentinel
+                                        onIntersect={loadMorePosts}
+                                        isLoading={isLoadingPosts}
+                                        hasMore={hasMorePosts}
+                                    />
+                                </div>
+                            ) : (
+                                <EmptyState title="No posts yet" subtitle="Posts you create will show up here.">
+                                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
+                                </EmptyState>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Activity Tab */}
+                    {activeTab === 'activity' && (
+                        <div className="space-y-8">
+                            {isLoadingActivity ? (
+                                <div className="space-y-4">
+                                    {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">No Posts Yet</h3>
-                                <p className="text-gray-600">Your posts will appear here when you create them</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-
-                {/* Activity Tab */}
-                {activeTab === 'activity' && (
-                    <div className="space-y-6">
-                        {isLoadingActivity ? (
-                            <div className="text-center py-12 bg-white rounded-xl border border-gray-200 shadow-sm">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                <p className="text-gray-600">Loading your activity...</p>
-                            </div>
-                        ) : (
-                            <>
-                                {/* Liked Posts Section */}
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                        <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                        </svg>
-                                        Liked Posts ({likedPosts.length})
-                                    </h3>
-                                    <div className="space-y-4">
+                            ) : (
+                                <>
+                                    {/* Liked Posts Section */}
+                                    <div>
+                                        <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                            <svg className="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                            </svg>
+                                            Liked posts
+                                            <span className="text-gray-400 font-normal">({likedPosts.length})</span>
+                                        </h3>
                                         {likedPosts.length > 0 ? (
-                                            likedPosts.map(post => {
-                                                return <FeedCard key={post.id} post={post} />;
-                                            })
+                                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                                {likedPosts.map((post, index) => (
+                                                    <div key={post.id} className={index > 0 ? "border-t border-gray-100" : ""}>
+                                                        <FeedCard post={post} />
+                                                    </div>
+                                                ))}
+                                            </div>
                                         ) : (
-                                            <div className="text-center py-8 bg-white rounded-xl border border-gray-200 shadow-sm">
-                                                <svg className="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <EmptyState title="No liked posts yet" subtitle="Posts you like will appear here.">
+                                                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                                                 </svg>
-                                                <p className="text-gray-600">No liked posts yet</p>
-                                                <p className="text-sm text-gray-500 mt-1">Posts you like will appear here</p>
-                                            </div>
+                                            </EmptyState>
                                         )}
                                     </div>
-                                </div>
 
-                                {/* Comments Section */}
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                        </svg>
-                                        Your Comments ({userComments.length})
-                                    </h3>
-                                    <div className="space-y-4">
+                                    {/* Comments Section */}
+                                    <div>
+                                        <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                            </svg>
+                                            Your comments
+                                            <span className="text-gray-400 font-normal">({userComments.length})</span>
+                                        </h3>
                                         {userComments.length > 0 ? (
-                                            userComments.map(comment => (
-                                                <div key={comment.id} className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                                                    <div className="flex items-start gap-4">
-                                                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center">
-                                                            <span className="text-white font-semibold text-sm">
-                                                                {comment.displayName.charAt(0).toUpperCase()}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <span className="text-gray-900 font-semibold">{comment.displayName}</span>
-                                                                <span className="text-gray-600 text-sm">{comment.handle}</span>
-                                                                <span className="text-gray-400 text-sm">•</span>
-                                                                <span className="text-gray-600 text-sm">{formatTimeAgo(comment.createdAt)}</span>
+                                            <div className="space-y-3">
+                                                {userComments.map(comment => (
+                                                    <div key={comment.id} className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
+                                                        <div className="flex items-start gap-3">
+                                                            <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0">
+                                                                <span className="text-white font-semibold text-sm">
+                                                                    {comment.displayName.charAt(0).toUpperCase()}
+                                                                </span>
                                                             </div>
-                                                            <p className="text-gray-900 mb-3 whitespace-pre-wrap">{comment.text}</p>
-                                                            <div className="text-sm text-gray-600">
-                                                                <span>Replying to Post </span>
-                                                                <a href={`/post/${comment.postId}`} className="text-blue-600 hover:underline">
-                                                                    #{comment.postId.slice(0, 8)}
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 mb-1 text-sm">
+                                                                    <span className="text-gray-900 font-semibold truncate">{comment.displayName}</span>
+                                                                    <span className="text-gray-400 truncate">{comment.handle}</span>
+                                                                    <span className="text-gray-300">•</span>
+                                                                    <span className="text-gray-400">{formatTimeAgo(comment.createdAt)}</span>
+                                                                </div>
+                                                                <p className="text-gray-900 text-sm mb-2 whitespace-pre-wrap break-words">{comment.text}</p>
+                                                                <a href={`/post/${comment.postId}`} className="text-xs text-gray-500 hover:text-gray-900 transition-colors">
+                                                                    Replying to post #{comment.postId.slice(0, 8)}
                                                                 </a>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            ))
+                                                ))}
+                                            </div>
                                         ) : (
-                                            <div className="text-center py-8 bg-white rounded-xl border border-gray-200 shadow-sm">
-                                                <svg className="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <EmptyState title="No comments yet" subtitle="Your comments will appear here.">
+                                                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                                 </svg>
-                                                <p className="text-gray-600">No comments yet</p>
-                                                <p className="text-sm text-gray-500 mt-1">Your comments will appear here</p>
-                                            </div>
+                                            </EmptyState>
                                         )}
                                     </div>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                )}
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Edit Profile Modal */}
@@ -772,23 +759,47 @@ const Profile: React.FC = () => {
                         <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 pr-8">Edit Profile</h3>
 
                         <form onSubmit={handleSave} className="space-y-4 md:space-y-6">
-                            {/* Display Name */}
-                                <div>
-                                <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-3">Display Name</label>
+                            {/* Avatar preview */}
+                            <div className="flex items-center gap-4">
+                                {formData.avatar && !formData.avatar.startsWith('blob:') ? (
+                                    <img src={formData.avatar} alt="Avatar preview" className="w-16 h-16 rounded-2xl object-cover border border-gray-200" />
+                                ) : (
+                                    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                                        <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                )}
+                                <label htmlFor="avatar" className="cursor-pointer px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                                    Change photo
                                     <input
-                                        type="text"
-                                        id="username"
-                                        name="username"
-                                        value={formData.username}
-                                        onChange={handleInputChange}
-                                    className="w-full px-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
+                                        type="file"
+                                        id="avatar"
+                                        name="avatar"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                    />
+                                </label>
+                            </div>
+
+                            {/* Display Name */}
+                            <div>
+                                <label htmlFor="username" className="block text-sm font-semibold text-gray-700 mb-2">Display Name</label>
+                                <input
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    value={formData.username}
+                                    onChange={handleInputChange}
+                                    className="w-full px-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-gray-900 placeholder-gray-400"
                                     placeholder="Enter display name"
                                 />
                             </div>
 
                             {/* Username Handle */}
                             <div>
-                                <label htmlFor="handle" className="block text-sm font-semibold text-gray-700 mb-3">Username</label>
+                                <label htmlFor="handle" className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
                                 <div className="relative">
                                     <span className="absolute left-4 top-3.5 text-gray-500">@</span>
                                     <input
@@ -797,7 +808,7 @@ const Profile: React.FC = () => {
                                         name="handle"
                                         value={formData.handle || ''}
                                         onChange={handleInputChange}
-                                        className="w-full pl-8 pr-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
+                                        className="w-full pl-8 pr-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-gray-900 placeholder-gray-400"
                                         placeholder="johndoe"
                                         pattern="[a-zA-Z0-9_]+"
                                         title="Only letters, numbers, and underscores allowed"
@@ -808,7 +819,7 @@ const Profile: React.FC = () => {
 
                             {/* Bio */}
                             <div>
-                                <label htmlFor="bio" className="block text-sm font-semibold text-gray-700 mb-3">Bio</label>
+                                <label htmlFor="bio" className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
                                 <textarea
                                     id="bio"
                                     name="bio"
@@ -816,47 +827,34 @@ const Profile: React.FC = () => {
                                     onChange={handleInputChange}
                                     rows={4}
                                     maxLength={280}
-                                    className="w-full px-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 resize-none"
+                                    className="w-full px-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-gray-900 placeholder-gray-400 resize-none"
                                     placeholder="Tell us about yourself..."
                                 />
-                                <div className="text-xs text-gray-600 mt-2">
+                                <div className="text-xs text-gray-500 mt-2">
                                     {(formData.bio || '').length}/280 characters
                                 </div>
                             </div>
 
                             {/* X Handle */}
                             <div>
-                                <label htmlFor="xHandle" className="block text-sm font-semibold text-gray-700 mb-3">X Handle</label>
+                                <label htmlFor="xHandle" className="block text-sm font-semibold text-gray-700 mb-2">X Handle</label>
                                 <input
                                     type="text"
                                     id="xHandle"
                                     name="xHandle"
                                     value={formData.xHandle || ''}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
-                                    placeholder="@username"
+                                    className="w-full px-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-gray-900 placeholder-gray-400"
+                                    placeholder="username"
                                     pattern="^@?[A-Za-z0-9_]{1,15}$"
                                 />
-                                <div className="text-xs text-gray-600 mt-2">
+                                <div className="text-xs text-gray-500 mt-2">
                                     Enter without @ symbol
-                        </div>
-                    </div>
-
-                            {/* Avatar Upload */}
-                            <div>
-                                <label htmlFor="avatar" className="block text-sm font-semibold text-gray-700 mb-3">Profile Picture</label>
-                            <input
-                                type="file"
-                                id="avatar"
-                                name="avatar"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                    className="w-full px-4 py-3 border bg-white border-gray-300 rounded-xl shadow-sm focus:ring-blue-500 focus:border-blue-500 text-gray-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-black file:!text-white hover:file:bg-gray-800"
-                            />
-                        </div>
+                                </div>
+                            </div>
 
                             {/* Actions */}
-                            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-4 md:pt-6">
+                            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 pt-2 md:pt-4">
                                 <button
                                     type="button"
                                     onClick={handleCancel}
@@ -870,12 +868,11 @@ const Profile: React.FC = () => {
                                 >
                                     Save Changes
                                 </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
-            </div>
                 </div>
             )}
-            </div>
 
             {/* Custom Modal */}
             <CustomModal
