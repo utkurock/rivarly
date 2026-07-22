@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllNews, getNewsByCategory } from '../services/newsService';
-import { fetchPublicNews, fetchStellarNews } from '../services/publicNewsService';
+import { fetchPublicNews } from '../services/publicNewsService';
 import { isFirebaseConfigured } from '../firebase';
 import type { NewsItem } from '../types';
 import { formatTimeAgo } from '../utils/time';
@@ -45,10 +45,9 @@ const CryptoNewsFeed: React.FC = () => {
         ? (currency ? getNewsByCategory(currency) : getAllNews()).catch(() => [])
         : Promise.resolve([]);
 
-      // Public news: general feed plus a dedicated Stellar pull so XLM always shows.
-      const publicPromise: Promise<NewsItem[]> = currency
-        ? fetchPublicNews(currency)
-        : Promise.all([fetchPublicNews(), fetchStellarNews()]).then(([a, b]) => [...a, ...b]);
+      // Public news. The server already returns a curated Stellar-forward mix
+      // for the default view, and coin-filtered results when a currency is set.
+      const publicPromise: Promise<NewsItem[]> = fetchPublicNews(currency);
 
       // Render the public feed as soon as it arrives; don't wait on Firestore.
       const publicNews = await publicPromise;
@@ -171,12 +170,6 @@ const CryptoNewsFeed: React.FC = () => {
                         className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-500"
                         onError={() => handleImageError(newsItem.id)}
                       />
-                      {/* Primary Tag Badge */}
-                      <div className="absolute top-3 right-3">
-                        <div className="px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md bg-blue-500/90 text-white">
-                          📰 {(newsItem.tags && newsItem.tags[0]) || newsItem.category}
-                        </div>
-                      </div>
                     </div>
                   )}
 

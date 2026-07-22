@@ -25,13 +25,21 @@ interface Feed {
   source: string;
 }
 
-// General feeds for the default "All" view.
+// General feeds. A broad pool of image-rich publishers so that per-coin
+// tagging (especially thinner coins like XLM/ETH) has enough to draw from.
 const GENERAL_FEEDS: Feed[] = [
   { url: 'https://decrypt.co/feed', source: 'Decrypt' },
   { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph' },
   { url: 'https://cryptoslate.com/feed/', source: 'CryptoSlate' },
   { url: 'https://www.newsbtc.com/feed/', source: 'NewsBTC' },
   { url: 'https://bitcoinist.com/feed/', source: 'Bitcoinist' },
+  { url: 'https://news.bitcoin.com/feed/', source: 'Bitcoin.com' },
+  { url: 'https://beincrypto.com/feed/', source: 'BeInCrypto' },
+  { url: 'https://cryptopotato.com/feed/', source: 'CryptoPotato' },
+  { url: 'https://ambcrypto.com/feed/', source: 'AMBCrypto' },
+  { url: 'https://coingape.com/feed/', source: 'CoinGape' },
+  { url: 'https://u.today/rss', source: 'U.Today' },
+  { url: 'https://coinjournal.net/news/feed/', source: 'CoinJournal' },
 ];
 
 // Coin-specific tag feeds used when a currency filter is active. Multiple
@@ -66,8 +74,19 @@ const COINS: { code: string; re: RegExp }[] = [
 ];
 
 const UA = 'Mozilla/5.0 (compatible; Rivarly/1.0; +https://github.com/utkurock/rivarly)';
-const MAX_ITEMS = 24;
+const MAX_ITEMS_COIN = 15; // cap for a single-coin filter view
 const CACHE_TTL_MS = 5 * 60 * 1000;
+
+// Curated mix for the default "All" view: keep it focused instead of flooding
+// with generic crypto. [tag, count] — 'Crypto' means general (no specific coin).
+const ALL_MIX: Array<[string, number]> = [
+  ['Crypto', 3],
+  ['XLM', 2],
+  ['BTC', 2],
+  ['ETH', 2],
+  ['SOL', 1],
+];
+const COIN_CODES = ['XLM', 'BTC', 'ETH', 'SOL'];
 
 const cache = new Map<string, { t: number; data: PublicNewsItem[] }>();
 
@@ -170,14 +189,19 @@ export async function getNews(currency?: string): Promise<PublicNewsItem[]> {
   const cached = cache.get(key);
   if (cached && Date.now() - cached.t < CACHE_TTL_MS) return cached.data;
 
-  // For a coin filter, pull its dedicated tag feed (whose items are about that
-  // coin even if the headline omits the name, so force the tag there) AND scan
-  // general feeds for items that genuinely mention the coin (no forced tag).
-  const coinFeeds = code ? COIN_FEEDS[code] || [] : [];
-  const results = await Promise.all([
-    ...coinFeeds.map((f) => fetchFeed(f, code)),
-    ...GENERAL_FEEDS.map((f) => fetchFeed(f, undefined)),
-  ]);
+  // Build the fetch set:
+  // - Coin filter: its dedicated tag feeds (force the tag) + general feeds.
+  // - All view: general feeds + every coin's tag feeds, so each coin has
+  //   candidates for the curated mix (Stellar news is otherwise sparse).
+  const jobs: Array<Promise<PublicNewsItem[]>> = [];
+  if (code) {
+    for (const f of COIN_FEEDS[code] || []) jobs.push(fetchFeed(f, code));
+    for (const f of GENERAL_FEEDS) jobs.push(fetchFeed(f, undefined));
+  } else {
+    for (const f of GENERAL_FEEDS) jobs.push(fetchFeed(f, undefined));
+    for (const c of COIN_CODES) for (const f of COIN_FEEDS[c] || []) jobs.push(fetchFeed(f, c));
+  }
+  const results = await Promise.all(jobs);
   let items = results.flat();
 
   // When filtering by coin, keep only items actually tagged with that coin.
@@ -194,7 +218,46 @@ export async function getNews(currency?: string): Promise<PublicNewsItem[]> {
   }
   deduped.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
 
-  const out = deduped.slice(0, MAX_ITEMS);
+  const out = code ? deduped.slice(0, MAX_ITEMS_COIN) : buildAllMix(deduped);
   if (out.length) cache.set(key, { t: Date.now(), data: out });
   return out.length ? out : cached?.data || [];
+}
+
+// Compose the "All" feed from a curated per-tag ratio (ALL_MIX). 'Crypto' pulls
+// from general items not about a specific coin. Falls back to freshest remaining
+// items only to avoid an empty page when a bucket runs short.
+function buildAllMix(deduped: PublicNewsItem[]): PublicNewsItem[] {
+  const keyOf = (it: PublicNewsItem) => it.link || it.id;
+  const isSpecific = (it: PublicNewsItem) => COIN_CODES.some((c) => it.tags.includes(c));
+
+  const poolFor = (tag: string): PublicNewsItem[] =>
+    tag === 'Crypto' ? deduped.filter((it) => !isSpecific(it)) : deduped.filter((it) => it.tags.includes(tag));
+
+  const used = new Set<string>();
+  const out: PublicNewsItem[] = [];
+  const target = ALL_MIX.reduce((s, [, n]) => s + n, 0);
+
+  for (const [tag, n] of ALL_MIX) {
+    let taken = 0;
+    for (const it of poolFor(tag)) {
+      if (taken >= n) break;
+      const k = keyOf(it);
+      if (used.has(k)) continue;
+      used.add(k);
+      out.push(it);
+      taken++;
+    }
+  }
+
+  // Backfill up to the target count with the freshest remaining items.
+  for (const it of deduped) {
+    if (out.length >= target) break;
+    const k = keyOf(it);
+    if (used.has(k)) continue;
+    used.add(k);
+    out.push(it);
+  }
+
+  out.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  return out;
 }
