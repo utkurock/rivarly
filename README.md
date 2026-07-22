@@ -35,10 +35,11 @@ cp .env.example .env
 `VITE_ADMIN_PASSWORD` gates the admin panel. Every `VITE_*` variable is bundled into
 the client build, so treat this as a soft gate rather than a real secret.
 
-`VITE_CRYPTOPANIC_TOKEN` is optional. With a free token from
-[cryptopanic.com](https://cryptopanic.com/developers/api/), the Hot News page pulls
-live public headlines — including a dedicated Stellar (XLM) feed — and merges them with
-admin-curated items. Without it, only admin-curated news shows.
+The Hot News page pulls live public headlines from **Google News RSS** — no API key —
+including a dedicated Stellar (XLM) feed, merged with any admin-curated items. Because
+Google News RSS has no CORS headers, requests go through a CORS proxy; a public one is
+used by default. `VITE_NEWS_CORS_PROXY` optionally points this at your own proxy for
+production reliability (it must take a URL-encoded target and return the raw body).
 
 ### 3. Run
 

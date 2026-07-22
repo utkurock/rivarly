@@ -1,60 +1,84 @@
 import type { NewsItem } from '../types';
 
-// Public crypto news via CryptoPanic (https://cryptopanic.com/developers/api/).
-// The free "Developer" tier needs a token; grab one at cryptopanic.com and set
-// VITE_CRYPTOPANIC_TOKEN. Without it we simply return no public news and the
-// Hot News page falls back to admin-curated items.
+// Public crypto news from Google News RSS — free and keyless.
+//
+// Google News RSS doesn't send CORS headers, so the browser can't fetch it
+// directly. We route requests through a CORS proxy. The default is a public
+// one; for production reliability set VITE_NEWS_CORS_PROXY to your own proxy
+// (any endpoint that takes a URL-encoded target and returns the raw body).
 
-const CRYPTOPANIC_TOKEN = import.meta.env.VITE_CRYPTOPANIC_TOKEN as string | undefined;
+const CORS_PROXY =
+  (import.meta.env.VITE_NEWS_CORS_PROXY as string | undefined) ||
+  'https://api.allorigins.win/raw?url=';
 
-export const hasPublicNews = Boolean(CRYPTOPANIC_TOKEN);
+// Public news is always available (no key required).
+export const hasPublicNews = true;
 
-interface CryptoPanicResult {
-  id: number;
-  title: string;
-  url: string;
-  published_at: string;
-  domain?: string;
-  source?: { title?: string; domain?: string };
-  currencies?: { code: string; title: string }[];
-}
+// Search term used for each currency filter code.
+const QUERY_FOR: Record<string, string> = {
+  XLM: 'Stellar Lumens XLM crypto',
+  BTC: 'Bitcoin crypto',
+  ETH: 'Ethereum crypto',
+  SOL: 'Solana crypto',
+  XRP: 'XRP Ripple crypto',
+};
 
-const mapResult = (r: CryptoPanicResult, fallbackCategory?: string): NewsItem => {
-  const category = r.currencies?.[0]?.code || fallbackCategory || 'Crypto';
-  return {
-    id: `cp-${r.id}`,
-    title: r.title,
-    image: '', // free tier has no images; the card hides the image block
-    description: '',
-    link: r.url,
-    source: r.source?.title || r.source?.domain || r.domain || 'CryptoPanic',
-    category,
-    publishedAt: r.published_at,
-    createdAt: r.published_at,
-    createdBy: 'cryptopanic',
-  };
+const googleNewsUrl = (query: string): string =>
+  `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
+
+const proxied = (url: string): string => `${CORS_PROXY}${encodeURIComponent(url)}`;
+
+const toIso = (pubDate: string): string => {
+  const t = Date.parse(pubDate);
+  return Number.isNaN(t) ? new Date().toISOString() : new Date(t).toISOString();
+};
+
+const parseRss = (xml: string, category: string): NewsItem[] => {
+  const doc = new DOMParser().parseFromString(xml, 'text/xml');
+  if (doc.querySelector('parsererror')) return [];
+
+  return Array.from(doc.querySelectorAll('item')).map((item, i) => {
+    const rawTitle = item.querySelector('title')?.textContent?.trim() || '';
+    const link = item.querySelector('link')?.textContent?.trim() || '';
+    const guid = item.querySelector('guid')?.textContent?.trim();
+    const pubDate = item.querySelector('pubDate')?.textContent?.trim() || '';
+    const source = item.querySelector('source')?.textContent?.trim() || 'Google News';
+
+    // Google News formats titles as "Headline - Source"; drop the source suffix.
+    const title =
+      source && rawTitle.endsWith(` - ${source}`)
+        ? rawTitle.slice(0, -(source.length + 3))
+        : rawTitle;
+
+    return {
+      id: `gn-${guid || link || `${category}-${i}`}`,
+      title,
+      image: '', // Google News RSS carries no images; the card hides the image block
+      description: '',
+      link,
+      source,
+      category,
+      publishedAt: toIso(pubDate),
+      createdAt: toIso(pubDate),
+      createdBy: 'google-news',
+    };
+  });
 };
 
 /**
  * Fetch public crypto news. Pass a currency code (e.g. "XLM", "BTC") to narrow
- * results to that asset. Returns [] when no token is configured or on error.
+ * results to that asset. Returns [] on any network/parse error.
  */
 export const fetchPublicNews = async (currency?: string): Promise<NewsItem[]> => {
-  if (!CRYPTOPANIC_TOKEN) return [];
-
-  const params = new URLSearchParams({
-    auth_token: CRYPTOPANIC_TOKEN,
-    public: 'true',
-    kind: 'news',
-  });
-  if (currency && currency !== 'ALL') params.set('currencies', currency);
+  const code = currency && currency !== 'ALL' ? currency : undefined;
+  const query = code ? QUERY_FOR[code] || `${code} crypto` : 'cryptocurrency';
+  const category = code || 'Crypto';
 
   try {
-    const res = await fetch(`https://cryptopanic.com/api/v1/posts/?${params.toString()}`);
+    const res = await fetch(proxied(googleNewsUrl(query)));
     if (!res.ok) return [];
-    const data = await res.json();
-    const results: CryptoPanicResult[] = Array.isArray(data?.results) ? data.results : [];
-    return results.map((r) => mapResult(r, currency));
+    const xml = await res.text();
+    return parseRss(xml, category);
   } catch {
     return [];
   }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAllNews, getNewsByCategory } from '../services/newsService';
-import { fetchPublicNews, fetchStellarNews, hasPublicNews } from '../services/publicNewsService';
+import { fetchPublicNews, fetchStellarNews } from '../services/publicNewsService';
 import { isFirebaseConfigured } from '../firebase';
 import type { NewsItem } from '../types';
 import { formatTimeAgo } from '../utils/time';
@@ -52,9 +52,6 @@ const CryptoNewsFeed: React.FC = () => {
 
       const merged = mergeNews(adminNews, publicNews);
       setNews(merged);
-      if (merged.length === 0 && !isFirebaseConfigured && !hasPublicNews) {
-        setError('No news source is configured. Add a Firebase project or a CryptoPanic token.');
-      }
       setLoading(false);
     };
 
