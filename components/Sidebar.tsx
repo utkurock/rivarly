@@ -107,7 +107,21 @@ const Sidebar: React.FC<SidebarProps> = ({ onCreateMarket, isMobileMenuOpen, set
                     Hot News
                 </NavLink>
 
-                {/* 4. Profile */}
+                {/* 4. Ecosystem */}
+                <NavLink
+                    to="/ecosystem"
+                    icon={
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 2a10 10 0 0 0 0 20"/>
+                            <path d="M12 2a10 10 0 0 1 0 20"/>
+                            <path d="M2 12h20"/>
+                        </svg>
+                    }>
+                    Ecosystem
+                </NavLink>
+
+                {/* 5. Profile */}
                 <NavLink
                     to="/profile"
                     icon={

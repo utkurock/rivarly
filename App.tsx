@@ -20,6 +20,7 @@ import Profile from './components/Profile';
 import PostDetail from './components/PostDetail';
 import CreateMarketModal from './components/CreateMarketModal';
 import CryptoNewsFeed from './components/CryptoNewsFeed';
+import Ecosystem from './components/Ecosystem';
 import MarketTicker from './components/MarketTicker';
 import AdminDashboard from './components/AdminDashboard';
 
@@ -189,6 +190,9 @@ const AppContent: React.FC = () => {
 
               {/* News - Third */}
               <Route path="/news" element={<CryptoNewsFeed />} />
+
+              {/* Ecosystem - Stellar project directory */}
+              <Route path="/ecosystem" element={<Ecosystem />} />
 
               {/* Profile - Fourth */}
               <Route path="/profile/:userId?" element={<Profile />} />
