@@ -4,6 +4,7 @@ import { fetchPublicNews, fetchStellarNews } from '../services/publicNewsService
 import { isFirebaseConfigured } from '../firebase';
 import type { NewsItem } from '../types';
 import { formatTimeAgo } from '../utils/time';
+import CoinIcon from './CoinIcon';
 
 // Merge admin-curated and public news, drop duplicate links, newest first.
 const mergeNews = (...lists: NewsItem[][]): NewsItem[] => {
@@ -62,11 +63,11 @@ const CryptoNewsFeed: React.FC = () => {
   }, [selectedCurrency]);
 
   const currencies = [
-    { code: 'XLM', name: 'Stellar', icon: '✦' },
-    { code: 'BTC', name: 'Bitcoin', icon: '₿' },
-    { code: 'ETH', name: 'Ethereum', icon: 'Ξ' },
-    { code: 'SOL', name: 'Solana', icon: '◎' },
-    { code: 'XRP', name: 'XRP', icon: 'X' },
+    { code: 'XLM', name: 'Stellar' },
+    { code: 'BTC', name: 'Bitcoin' },
+    { code: 'ETH', name: 'Ethereum' },
+    { code: 'SOL', name: 'Solana' },
+    { code: 'XRP', name: 'XRP' },
   ];
 
   const handleImageError = (id: string) => {
@@ -111,7 +112,7 @@ const CryptoNewsFeed: React.FC = () => {
                     : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm'
                 }`}
               >
-                <span className="text-base">{currency.icon}</span>
+                <CoinIcon code={currency.code} className="w-4 h-4" mono={selectedCurrency === currency.code} />
                 <span>{currency.name}</span>
               </button>
             ))}
