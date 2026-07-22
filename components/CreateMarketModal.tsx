@@ -69,6 +69,19 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
     return true;
   }, [question, expiryDate, maxExpiry]);
 
+  // Native datetime-local lets you TYPE any year (min/max only flag validity,
+  // they don't stop keystrokes). Snap the value back into range when the field
+  // loses focus, so an out-of-range year like 1121 auto-corrects to the min.
+  const clampExpiryToRange = () => {
+    if (!expiryDate) return;
+    const t = new Date(expiryDate).getTime();
+    if (Number.isNaN(t)) { setExpiryDate(''); return; }
+    const minT = new Date(minExpiry).getTime();
+    const maxT = new Date(maxExpiry).getTime();
+    if (t < minT) setExpiryDate(minExpiry);
+    else if (t > maxT) setExpiryDate(maxExpiry);
+  };
+
   const handleCreate = async () => {
     if (!basicsValid || isSubmitting) return;
     setIsSubmitting(true);
@@ -168,6 +181,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
                 type="datetime-local"
                 value={expiryDate}
                 onChange={(e) => setExpiryDate(e.target.value)}
+                onBlur={clampExpiryToRange}
                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:border-black transition-colors"
                 min={minExpiry}
                 max={maxExpiry}
