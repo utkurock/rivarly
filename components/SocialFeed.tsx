@@ -411,9 +411,16 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
         </div>
 
         {/* Post Composer - Twitter style */}
-        {user && (
+        {user ? (
           <div className="border-b border-gray-200 px-6 py-3">
             <FeedComposer onPostCreated={() => {}} />
+          </div>
+        ) : (
+          <div className="border-b border-gray-200 px-6 py-4 text-center">
+            <p className="text-sm text-gray-500">Connecting your session…</p>
+            <p className="text-xs text-gray-400 mt-1">
+              If posting stays unavailable, enable Anonymous sign-in in your Firebase project.
+            </p>
           </div>
         )}
 
