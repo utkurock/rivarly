@@ -1,6 +1,6 @@
 # Mainnet & Production Readiness
 
-Rivarly runs on Stellar **testnet by default**. This is the checklist to switch
+Starcast runs on Stellar **testnet by default**. This is the checklist to switch
 to mainnet and to ship safely.
 
 ## Switching network

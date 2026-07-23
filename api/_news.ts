@@ -73,7 +73,7 @@ const COINS: { code: string; re: RegExp }[] = [
   { code: 'SOL', re: /\b(sol|solana)\b/i },
 ];
 
-const UA = 'Mozilla/5.0 (compatible; Rivarly/1.0; +https://github.com/utkurock/rivarly)';
+const UA = 'Mozilla/5.0 (compatible; Starcast/1.0; +https://github.com/utkurock/rivarly)';
 const MAX_ITEMS = 20; // hard cap for every view; newest kept, older dropped
 const CACHE_TTL_MS = 5 * 60 * 1000;
 

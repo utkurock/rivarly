@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'rivarly:onboarded:v1';
+const STORAGE_KEY = 'starcast:onboarded:v1';
 
 interface Step {
   title: string;
@@ -10,7 +10,7 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    title: 'Welcome to Rivarly',
+    title: 'Welcome to Starcast',
     body: 'Predict real-world markets, follow the social feed, and stay on top of crypto news — all on Stellar. Connect a wallet whenever you are ready.',
     icon: (
       <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">

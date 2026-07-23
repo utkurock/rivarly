@@ -15,7 +15,7 @@ export const HORIZON_URL = IS_MAINNET
 
 // Theme the kit's wallet-selection modal to match the app: black primary,
 // white surface, the site's gray scale, Poppins, and matching rounded corners.
-const RIVARLY_SWK_THEME = {
+const STARCAST_SWK_THEME = {
   background: '#ffffff',
   'background-secondary': '#f8f9fa',
   'foreground-strong': '#111111',
@@ -39,7 +39,7 @@ const RIVARLY_SWK_THEME = {
 let initialized = false;
 function ensureInit() {
   if (initialized) return;
-  StellarWalletsKit.init({ modules: defaultModules(), network: STELLAR_NETWORK, theme: RIVARLY_SWK_THEME });
+  StellarWalletsKit.init({ modules: defaultModules(), network: STELLAR_NETWORK, theme: STARCAST_SWK_THEME });
   initialized = true;
 }
 

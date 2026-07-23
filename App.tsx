@@ -136,7 +136,7 @@ const AppContent: React.FC = () => {
         <div className="md:hidden sticky top-0 z-50 bg-[#0b0c0e] border-b border-[#262830] px-4 py-3 flex items-center justify-between">
           {/* Logo - Clickable */}
           <Link to="/social" className="flex items-center">
-            <img src="/rivarly-logo.png" alt="Rivarly" className="h-7 w-auto object-contain logo-invert" />
+            <img src="/starcast-logo.png" alt="Starcast" className="h-7 w-auto object-contain logo-invert" />
           </Link>
 
           {/* Hamburger Menu Button */}

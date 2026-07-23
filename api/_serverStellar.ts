@@ -54,7 +54,7 @@ export async function verifyAppTx(opts: {
   if (!tx.successful) return { ok: false, reason: 'The transaction did not succeed.' };
   if (tx.source_account !== expectedSource) return { ok: false, reason: 'Transaction is not from your linked wallet.' };
   if (tx.memo_type !== 'hash' || tx.memo !== expectedMemoHash) {
-    return { ok: false, reason: 'Transaction is not a valid Rivarly reward action.' };
+    return { ok: false, reason: 'Transaction is not a valid Starcast reward action.' };
   }
 
   const created = Date.parse(tx.created_at);

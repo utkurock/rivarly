@@ -1,18 +1,21 @@
-# Rivarly
+# Starcast
 
-A social prediction market app built with React + Vite and Firebase: a social feed,
-browsable prediction markets, a curated crypto news section, and user profiles.
-
-> This codebase is chain-agnostic. Wallet, trading and AI integrations were removed;
-> markets are browse-and-create only until a blockchain layer is added back.
+A social prediction market app on **Stellar**, built with React + Vite and Firebase:
+a social feed, prediction markets, a curated crypto news section, an ecosystem
+directory, and a gamified points + tasks + leaderboard layer.
 
 ## Features
 
+- **Markets**: browse, filter and create prediction markets; back YES/NO with a Stellar tx
 - **Social feed**: posts with images, likes, reposts, replies
-- **Markets**: browse, filter and create prediction markets (no on-chain trading yet)
 - **News**: live public crypto headlines (Stellar/XLM featured) merged with admin-curated items
+- **Ecosystem**: directory of projects building on Stellar
+- **Points & tasks**: daily claim (streaks), on-chain and action tasks, `/leaderboard`
 - **Profiles**: Firebase anonymous auth, follow/unfollow
 - **Admin panel**: password-gated market and news management
+
+Points are awarded **server-side only** (trusted endpoints in `api/`, verified on
+Horizon), so the client can never grant itself points.
 
 ## Setup
 

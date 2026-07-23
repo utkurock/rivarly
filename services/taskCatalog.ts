@@ -58,11 +58,11 @@ export const TASKS: TaskDef[] = [
   },
   {
     id: 'follow-x',
-    title: 'Follow Rivarly on X',
+    title: 'Follow Starcast on X',
     description: 'Stay in the loop with announcements and market drops.',
     points: 50,
     type: 'link',
-    href: 'https://x.com/rivarly',
+    href: 'https://x.com/starcast',
     cta: 'Follow on X',
   },
 ];

@@ -549,7 +549,7 @@ const Profile: React.FC = () => {
                             backgroundSize: '32px 32px'
                         }} />
                         <img
-                            src="/rivarly-logo.png"
+                            src="/starcast-logo.png"
                             alt=""
                             aria-hidden="true"
                             className="absolute right-5 bottom-4 h-5 md:h-7 opacity-25 invert pointer-events-none"

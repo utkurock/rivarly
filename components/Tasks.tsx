@@ -157,7 +157,7 @@ const Tasks: React.FC = () => {
 
   // "Started" (visit/link) state persists across navigation so a returning user
   // sees the Claim button instead of the initial CTA. Keyed per user.
-  const startedKey = user?.uid ? `rivarly:tasksStarted:${user.uid}` : null;
+  const startedKey = user?.uid ? `starcast:tasksStarted:${user.uid}` : null;
   useEffect(() => {
     if (!startedKey) { setStarted(new Set()); return; }
     try {

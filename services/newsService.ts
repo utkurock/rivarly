@@ -4,7 +4,7 @@ import type { NewsItem } from '../types';
 
 // News mutations go through the trusted admin endpoint (server-only password +
 // Admin SDK), since the `news` collection is not client-writable.
-const ADMIN_PW_KEY = 'rivarly_admin_pw';
+const ADMIN_PW_KEY = 'starcast_admin_pw';
 export const getStoredAdminPassword = () => sessionStorage.getItem(ADMIN_PW_KEY) || '';
 export const setStoredAdminPassword = (pw: string) => sessionStorage.setItem(ADMIN_PW_KEY, pw);
 export const clearStoredAdminPassword = () => sessionStorage.removeItem(ADMIN_PW_KEY);

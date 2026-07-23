@@ -62,7 +62,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onCreateMarket, isMobileMenuOpen, set
         `}>
             <Link to="/" className="px-4 pt-4 pb-5 flex-shrink-0 border-b border-[#20222a] hover:bg-[#141519] transition-colors cursor-pointer">
                 <div className="w-full flex items-center justify-center">
-                    <img src="/rivarly-logo.png" alt="Rivarly" className="h-8 w-auto object-contain logo-invert" style={{ maxWidth: '80%' }} />
+                    <img src="/starcast-logo.png" alt="Starcast" className="h-8 w-auto object-contain logo-invert" style={{ maxWidth: '80%' }} />
                 </div>
             </Link>
 
