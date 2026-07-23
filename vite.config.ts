@@ -124,6 +124,23 @@ function devRewardApi(): Plugin {
             res.end(JSON.stringify({ error: 'Server error' }));
           }
         };
+      // Perp: one route, two actions (open / settle).
+      server.middlewares.use('/api/perp', async (req: IncomingMessage, res: any) => {
+        res.setHeader('content-type', 'application/json; charset=utf-8');
+        if (req.method !== 'POST') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Method not allowed' })); return; }
+        try {
+          const body = await readJsonBody(req);
+          const mod = await import('./api/_perp');
+          const { status, body: out } = body.action === 'settle'
+            ? await mod.handlePerpSettle(body)
+            : await mod.handlePerpOpen(body);
+          res.statusCode = status;
+          res.end(JSON.stringify(out));
+        } catch {
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: 'Server error' }));
+        }
+      });
       server.middlewares.use('/api/admin-news', post('admin-news', async () => (await import('./api/_adminNews')).handleAdminNews));
       server.middlewares.use('/api/news-cache', post('news-cache', async () => (await import('./api/_newsCache')).refreshNewsCache));
     },

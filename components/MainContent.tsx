@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import MarketCard from './MarketCard';
 import InfiniteScrollSentinel from './InfiniteScrollSentinel';
 import FilterTabs from './FilterTabs';
+import PerpMarkets from './PerpMarkets';
 import { useInfiniteMarkets } from '../hooks/useInfiniteMarkets';
 
 interface MainContentProps {
@@ -44,7 +45,10 @@ const MainContent: React.FC<MainContentProps> = ({ activeCategory, setActiveCate
         setActiveStatus={setActiveStatus}
         onCreateMarket={onCreateMarket}
       />
-      
+
+      {activeCategory === 'Perp' ? (
+        <PerpMarkets />
+      ) : (
       <div className="max-w-[1600px] mx-auto px-3 md:px-6 py-4 md:py-8 pb-24 md:pb-6 min-h-full bg-background-body">
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-3 md:gap-6">
@@ -99,6 +103,7 @@ const MainContent: React.FC<MainContentProps> = ({ activeCategory, setActiveCate
           </>
         )}
       </div>
+      )}
     </div>
   );
 };

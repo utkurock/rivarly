@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import type { NewMarket } from '../types';
-import { CATEGORIES } from '../constants';
+import { CREATABLE_CATEGORIES } from '../constants';
 import DateTimePicker from './DateTimePicker';
 
 interface CreateMarketModalProps {
@@ -16,7 +16,7 @@ const MAX_YEARS_AHEAD = 5;
 const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, onCreateMarket }) => {
   // Form state
   const [question, setQuestion] = useState('');
-  const [category, setCategory] = useState(CATEGORIES[1]);
+  const [category, setCategory] = useState(CREATABLE_CATEGORIES[0]);
   const [expiryDate, setExpiryDate] = useState('');
   const [sources, setSources] = useState<string[]>([]);
   const [newSource, setNewSource] = useState('');
@@ -29,7 +29,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
   useEffect(() => {
     if (!isOpen) {
       setQuestion('');
-      setCategory(CATEGORIES[1]);
+      setCategory(CREATABLE_CATEGORIES[0]);
       setExpiryDate('');
       setSources([]);
       setNewSource('');
@@ -146,7 +146,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full px-4 py-2.5 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-border-strong transition-colors"
               >
-                {CATEGORIES.filter(c => c !== 'All').map(cat => (<option key={cat} value={cat}>{cat}</option>))}
+                {CREATABLE_CATEGORIES.map(cat => (<option key={cat} value={cat}>{cat}</option>))}
               </select>
             </div>
 

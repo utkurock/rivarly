@@ -14,7 +14,8 @@ service cloud.firestore {
                          ['points', 'streak', 'lastClaimAt', 'claimCount', 'lastClaimTxHash', 'completedTasks', 'taskTxHashes']);
       allow update: if request.auth != null && request.auth.uid == userId
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(
-                         ['points', 'streak', 'lastClaimAt', 'claimCount', 'lastClaimTxHash', 'completedTasks', 'taskTxHashes']);
+                         ['points', 'streak', 'lastClaimAt', 'claimCount', 'lastClaimTxHash', 'completedTasks', 'taskTxHashes',
+                          'openPerpCount', 'perpWins', 'perpCount']);
     }
 
     // Prediction markets: public read. A signed-in user may create a market they
@@ -100,6 +101,14 @@ service cloud.firestore {
     // Daily leaderboard tallies: public read; server-written only.
     match /dailyPoints/{docId} {
       allow read: if true;
+      allow write: if false;
+    }
+
+    // Perp positions: readable only by their owner; only the trusted server
+    // (Admin SDK) may write, since it escrows/pays points and fetches the
+    // entry/exit prices itself.
+    match /perpPositions/{positionId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.uid;
       allow write: if false;
     }
   }

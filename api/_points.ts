@@ -21,7 +21,7 @@ const rewardForStreak = (streak: number): number =>
 
 // Maintain a per-day, per-user points tally for the daily leaderboard. Display
 // fields are denormalized from the user doc so the board is a single query.
-async function bumpDailyLeaderboard(db: any, uid: string, userData: any, amount: number): Promise<void> {
+export async function bumpDailyLeaderboard(db: any, uid: string, userData: any, amount: number): Promise<void> {
   if (amount <= 0) return;
   const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
   await db
