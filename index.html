@@ -14,7 +14,7 @@
         try {
           var saved = localStorage.getItem('theme');
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var theme = saved || 'dark'; // default dark (brand)
+          var theme = saved || 'dark';
           var root = document.documentElement;
           root.classList.remove('light', 'dark');
           root.classList.add(theme);

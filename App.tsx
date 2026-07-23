@@ -28,6 +28,7 @@ import MarketTicker from './components/MarketTicker';
 import AdminDashboard from './components/AdminDashboard';
 import Onboarding from './components/Onboarding';
 import ThemeToggle from './components/ThemeToggle';
+import Logo from './components/Logo';
 
 // Query client configuration. Without Firebase credentials every request is going
 // to fail, so skip the retries and let the empty states show straight away.
@@ -136,11 +137,8 @@ const AppContent: React.FC = () => {
         {/* Mobile Header - Only visible on mobile */}
         <div className="md:hidden sticky top-0 z-50 bg-background-body border-b border-border-default px-4 py-3 flex items-center justify-between">
           {/* Logo - Clickable */}
-          <Link to="/social" className="flex items-center gap-1.5">
-            <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.9 5.7 21.4 8 14 2 9.4h7.6z" />
-            </svg>
-            <span className="text-lg font-extrabold tracking-tight text-text-primary">Starcast</span>
+          <Link to="/social" className="flex items-center">
+            <Logo className="h-6" />
           </Link>
 
           <div className="flex items-center gap-1">
