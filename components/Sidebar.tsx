@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useFirebase } from '../contexts/FirebaseContext';
+import WalletButton from './WalletButton';
 
 // Get user profile from Firebase context
 export const useUserProfile = () => {
@@ -136,6 +137,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onCreateMarket, isMobileMenuOpen, set
             </nav>
 
             <div className="flex-shrink-0 p-4 border-t border-gray-100 space-y-3">
+                 {/* Stellar wallet */}
+                 <WalletButton />
+
                  {/* Profile + Avatar */}
                  {userProfile && (
                      <Link

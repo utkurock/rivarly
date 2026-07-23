@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { UserProvider } from './contexts/UserContext';
 import { FirebaseProvider, useFirebase } from './contexts/FirebaseContext';
+import { StellarWalletProvider } from './contexts/StellarWalletContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { useCustomModal } from './hooks/useCustomModal';
 import CustomModal from './components/CustomModal';
@@ -242,7 +243,9 @@ const App: React.FC = () => {
         <QueryClientProvider client={queryClient}>
           <FirebaseProvider>
             <UserProvider>
-              <AppContent />
+              <StellarWalletProvider>
+                <AppContent />
+              </StellarWalletProvider>
             </UserProvider>
           </FirebaseProvider>
         </QueryClientProvider>
