@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { doc, setDoc } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../firebase';
 import { useFirebase } from '../contexts/FirebaseContext';
@@ -44,7 +45,9 @@ const WalletPicker: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     }
   };
 
-  return (
+  // Portal to body: the sidebar ancestor uses a CSS transform, which would
+  // otherwise trap this fixed overlay inside the sidebar instead of the viewport.
+  return createPortal(
     <div
       className="fixed inset-0 z-[9998] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
       onClick={onClose}
@@ -127,7 +130,8 @@ const WalletPicker: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         @keyframes wallet-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
         .animate-wallet-in { animation: wallet-in 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
       `}</style>
-    </div>
+    </div>,
+    document.body
   );
 };
 
