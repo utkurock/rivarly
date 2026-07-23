@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../firebase';
 import { useFirebase } from '../contexts/FirebaseContext';
@@ -139,22 +140,12 @@ const WalletButton: React.FC = () => {
   const { address, connecting, disconnect, networkLabel, isMainnet } = useStellarWallet();
   const { user } = useFirebase();
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   // Link the connected wallet to the signed-in Firebase profile.
   useEffect(() => {
     if (!isFirebaseConfigured || !user?.uid || !address) return;
     setDoc(doc(db, 'users', user.uid), { walletAddress: address }, { merge: true }).catch(() => {});
   }, [user?.uid, address]);
-
-  const copyAddress = async () => {
-    if (!address) return;
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch { /* clipboard blocked */ }
-  };
 
   if (!address) {
     return (
@@ -177,34 +168,28 @@ const WalletButton: React.FC = () => {
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-          <button
-            onClick={copyAddress}
-            title="Copy address"
-            className="text-sm font-semibold text-gray-900 font-mono truncate hover:text-gray-600 transition-colors"
-          >
-            {copied ? 'Copied!' : shortenAddress(address)}
-          </button>
+    <div className="flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 p-1.5 pl-2.5">
+      {/* Click the chip to open your profile */}
+      <Link to="/profile" className="flex-1 min-w-0 group" title="Open profile">
+        <div className="text-sm font-semibold text-gray-900 font-mono truncate group-hover:text-gray-600 transition-colors">
+          {shortenAddress(address)}
         </div>
-        <button
-          onClick={disconnect}
-          title="Disconnect"
-          className="text-gray-400 hover:text-rose-500 transition-colors flex-shrink-0"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-        </button>
-      </div>
-      <div className="mt-1.5 flex items-center gap-1.5 pl-4">
-        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isMainnet ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-          {networkLabel}
-        </span>
-        <span className="text-[10px] text-gray-400">Stellar</span>
-      </div>
+        <div className="mt-0.5 flex items-center gap-1.5">
+          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isMainnet ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+            {networkLabel}
+          </span>
+          <span className="text-[10px] text-gray-400">Stellar</span>
+        </div>
+      </Link>
+      <button
+        onClick={disconnect}
+        title="Disconnect"
+        className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-rose-500 hover:bg-white transition-colors flex-shrink-0"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      </button>
     </div>
   );
 };
