@@ -17,10 +17,19 @@ service cloud.firestore {
                          ['points', 'streak', 'lastClaimAt', 'claimCount', 'lastClaimTxHash']);
     }
 
-    // Prediction markets: public read, any signed-in user can create
+    // Prediction markets: public read. A signed-in user may create a market they
+    // own and edit only its descriptive fields — the YES/NO tallies, status,
+    // volume and creator are server/creation-owned (the bet endpoint updates
+    // tallies via Admin), so clients can't inflate or self-resolve a market.
     match /markets/{marketId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.creator == request.auth.uid;
+      allow update: if request.auth != null
+                    && resource.data.creator == request.auth.uid
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(
+                         ['yesBets', 'noBets', 'creator', 'creatorProfile', 'status', 'volumeUSD', 'metrics']);
+      allow delete: if request.auth != null && resource.data.creator == request.auth.uid;
     }
 
     // Social feed posts
