@@ -23,10 +23,37 @@ export interface EcosystemProject {
 
 const CHAIN = 'Stellar';
 const SOURCE = 'https://api.llama.fi/protocols';
+const FETCH_TIMEOUT_MS = 9000;
 
 // Categories that are not Stellar-native ecosystem projects — centralized
 // exchanges merely list XLM and would otherwise dominate the TVL ranking.
 const EXCLUDED_CATEGORIES = new Set(['CEX']);
+
+// Fetch with a timeout, a real User-Agent (some CDNs reject the default fetch
+// UA), and one retry. DefiLlama's /protocols payload is large and occasionally
+// slow, and a bare fetch would hang or fail intermittently — which is what made
+// the Ecosystem page flip to "Directory unavailable" at random.
+async function fetchProtocols(attempt = 0): Promise<any[] | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(SOURCE, {
+      headers: {
+        accept: 'application/json',
+        'user-agent': 'Starcast/1.0 (+https://starcast.app)',
+      },
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return Array.isArray(data) ? data : null;
+  } catch (err) {
+    if (attempt < 1) return fetchProtocols(attempt + 1);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
@@ -39,13 +66,8 @@ const clean = (s: unknown): string => (typeof s === 'string' ? s.trim() : '');
  */
 export async function getEcosystemProjects(): Promise<EcosystemProject[]> {
   try {
-    const res = await fetch(SOURCE, {
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) return [];
-
-    const all = await res.json();
-    if (!Array.isArray(all)) return [];
+    const all = await fetchProtocols();
+    if (!all) return [];
 
     const projects: EcosystemProject[] = all
       .filter((p: any) => Array.isArray(p?.chains) && p.chains.includes(CHAIN))

@@ -25,12 +25,16 @@ export interface EcosystemProject {
  * the page can render an empty/unavailable state rather than crash.
  */
 export const fetchEcosystemProjects = async (): Promise<EcosystemProject[]> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
   try {
-    const res = await fetch('/api/ecosystem');
+    const res = await fetch('/api/ecosystem', { signal: controller.signal });
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? (data as EcosystemProject[]) : [];
   } catch {
     return [];
+  } finally {
+    clearTimeout(timer);
   }
 };
