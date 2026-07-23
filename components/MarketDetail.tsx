@@ -219,9 +219,9 @@ const MarketDetail: React.FC = () => {
   const creatorName = creatorProfile?.username || 'Anonymous';
 
   return (
-    <div className="min-h-screen bg-[#0b0c0e] text-[#ececee]">
+    <div className="min-h-screen bg-background-body text-text-primary">
       <div className="max-w-[1600px] mx-auto px-4 py-4 md:py-6">
-        <Link to="/" className="inline-flex items-center gap-2 text-[#9b9ca4] hover:text-white mb-4 md:mb-6 transition-colors">
+        <Link to="/" className="inline-flex items-center gap-2 text-text-secondary hover:text-white mb-4 md:mb-6 transition-colors">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
           Back to Markets
         </Link>
@@ -231,11 +231,11 @@ const MarketDetail: React.FC = () => {
           {/* Left side content wrapper - Desktop only */}
           <div className="contents lg:block lg:space-y-4 lg:space-y-6 lg:min-w-0 lg:order-1">
             <div className="space-y-3 md:space-y-4">
-              <div className="inline-flex items-center px-2 py-1 rounded-md bg-[#1c1d22] text-[#9b9ca4] text-xs md:text-sm font-medium">
+              <div className="inline-flex items-center px-2 py-1 rounded-md bg-background-hover text-text-secondary text-xs md:text-sm font-medium">
                 {market.category}
               </div>
-              <h1 className="text-xl md:text-3xl font-semibold tracking-tight text-[#ececee]">{market.title || (market as any).question || 'Untitled Market'}</h1>
-              <div className="flex items-center gap-4 text-sm text-[#9b9ca4]">
+              <h1 className="text-xl md:text-3xl font-semibold tracking-tight text-text-primary">{market.title || (market as any).question || 'Untitled Market'}</h1>
+              <div className="flex items-center gap-4 text-sm text-text-secondary">
                 <div className="flex items-center gap-2">
                   {/* Creator Avatar */}
                   {creatorProfile?.avatar && creatorProfile.avatar.trim() !== '' ? (
@@ -254,18 +254,18 @@ const MarketDetail: React.FC = () => {
                       </span>
                     </div>
                   )}
-                  <span>Created by <span className="font-medium text-[#ececee]">{creatorName}</span></span>
+                  <span>Created by <span className="font-medium text-text-primary">{creatorName}</span></span>
                 </div>
-                <span className="w-1 h-1 bg-[#262830] rounded-full"></span>
-                <div className={`px-2 py-1 rounded-md text-xs font-mono font-medium ${countdown.isExpired ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 'bg-[#1c1d22] text-[#9b9ca4] border border-[#262830]'}`}>
+                <span className="w-1 h-1 bg-background-active rounded-full"></span>
+                <div className={`px-2 py-1 rounded-md text-xs font-mono font-medium ${countdown.isExpired ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 'bg-background-hover text-text-secondary border border-border-default'}`}>
                   {countdown.isExpired ? '00:00:00:00' : `${String(countdown.days).padStart(2,'0')}:${String(countdown.hours).padStart(2,'0')}:${String(countdown.minutes).padStart(2,'0')}:${String(countdown.seconds).padStart(2,'0')}`}
                 </div>
               </div>
             </div>
 
             {/* Price History Chart - Mobile order-1 */}
-            <div className="rounded-xl bg-[#141519] border border-[#262830] p-5 shadow-sm order-1 lg:order-none">
-              <h3 className="text-lg font-semibold mb-4 text-[#ececee]">Price History</h3>
+            <div className="rounded-xl bg-background-card border border-border-default p-5 shadow-sm order-1 lg:order-none">
+              <h3 className="text-lg font-semibold mb-4 text-text-primary">Price History</h3>
               <div className="h-64 min-h-[256px] w-full">
                 <ResponsiveContainer width="100%" height="100%" minHeight={256}>
                   <LineChart data={chartData}>
@@ -279,37 +279,37 @@ const MarketDetail: React.FC = () => {
             </div>
 
             {/* Details card split into Sources and Info - Mobile order-4 */}
-            <div className="rounded-xl bg-[#141519] border border-[#262830] p-5 shadow-sm order-4 lg:order-none">
-              <h3 className="text-lg font-semibold mb-4 text-[#ececee]">Details</h3>
+            <div className="rounded-xl bg-background-card border border-border-default p-5 shadow-sm order-4 lg:order-none">
+              <h3 className="text-lg font-semibold mb-4 text-text-primary">Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <div className="text-[#9b9ca4] text-sm mb-2 font-medium">Sources</div>
+                  <div className="text-text-secondary text-sm mb-2 font-medium">Sources</div>
                   {Array.isArray((market as any).sources) && (market as any).sources.length > 0 ? (
                     <div className="space-y-2">
                       {(market as any).sources.map((source: string, i: number) => (
-                        <div key={i} className="p-2 bg-[#1c1d22] rounded-md break-all border border-[#262830]">
+                        <div key={i} className="p-2 bg-background-hover rounded-md break-all border border-border-default">
                           <a href={source} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">{source}</a>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-[#9b9ca4] text-sm">No sources provided.</div>
+                    <div className="text-text-secondary text-sm">No sources provided.</div>
                   )}
                 </div>
                 <div>
-                  <div className="text-[#9b9ca4] text-sm mb-2 font-medium">Info</div>
+                  <div className="text-text-secondary text-sm mb-2 font-medium">Info</div>
                   {(market as any).info ? (
-                    <p className="text-[#9b9ca4] whitespace-pre-wrap leading-relaxed">{(market as any).info}</p>
+                    <p className="text-text-secondary whitespace-pre-wrap leading-relaxed">{(market as any).info}</p>
                   ) : (
-                    <div className="text-[#9b9ca4] text-sm">No description provided.</div>
+                    <div className="text-text-secondary text-sm">No description provided.</div>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Comments - Mobile order-6 */}
-            <div className="rounded-xl bg-[#141519] border border-[#262830] p-5 shadow-sm order-6 lg:order-none">
-              <h3 className="text-lg font-semibold mb-4 text-[#ececee]">Comments</h3>
+            <div className="rounded-xl bg-background-card border border-border-default p-5 shadow-sm order-6 lg:order-none">
+              <h3 className="text-lg font-semibold mb-4 text-text-primary">Comments</h3>
               {/* Input */}
               <div className="flex gap-3 mb-6">
                 {/* User Avatar */}
@@ -335,7 +335,7 @@ const MarketDetail: React.FC = () => {
                     placeholder="Add a comment..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    className="flex-1 px-3 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] placeholder-[#6d6e77] focus:outline-none focus:border-[#33353d] focus:bg-[#141519]"
+                    className="flex-1 px-3 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary placeholder-text-tertiary focus:outline-none focus:border-border-strong focus:bg-background-card"
                   />
                   <button
                     onClick={async () => {
@@ -359,7 +359,7 @@ const MarketDetail: React.FC = () => {
                       }
                     }}
                     disabled={!userKey || !newComment.trim()}
-                    className="px-4 py-2 bg-white hover:bg-gray-200 disabled:bg-[#262830] disabled:text-[#6d6e77] !text-[#0b0c0e] rounded-lg font-medium transition-colors disabled:opacity-50"
+                    className="px-4 py-2 bg-inverse hover:bg-inverse-hover disabled:bg-background-active disabled:text-text-tertiary !text-inverse-ink rounded-lg font-medium transition-colors disabled:opacity-50"
                   >
                     Post
                   </button>
@@ -368,9 +368,9 @@ const MarketDetail: React.FC = () => {
               {/* List */}
               <div className="space-y-4">
                 {commentsQ.isLoading && !liveComments ? (
-                  <p className="text-[#9b9ca4] text-center py-8">Loading comments...</p>
+                  <p className="text-text-secondary text-center py-8">Loading comments...</p>
                 ) : !(liveComments?.length ?? commentsQ.data?.length) ? (
-                  <p className="text-[#9b9ca4] text-center py-8">No comments yet. Be the first to comment!</p>
+                  <p className="text-text-secondary text-center py-8">No comments yet. Be the first to comment!</p>
                 ) : (
                   (liveComments ?? commentsQ.data)?.map((comment: any) => {
                     const commentUserProfile = comment.userProfile;
@@ -389,20 +389,20 @@ const MarketDetail: React.FC = () => {
                           }}
                         />
                       ) : (
-                        <div className="w-8 h-8 bg-[#262830] rounded-full flex-shrink-0 flex items-center justify-center">
-                          <svg className="w-4 h-4 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-8 h-8 bg-background-active rounded-full flex-shrink-0 flex items-center justify-center">
+                          <svg className="w-4 h-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                         </div>
                       )}
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-medium text-[#ececee]">
+                          <span className="text-sm font-medium text-text-primary">
                             {commentUserProfile?.username || 'Anonymous'}
                           </span>
-                          <span className="text-xs text-[#9b9ca4]">{(toJsDate(comment.createdAt) || toJsDate(comment.timestamp) || new Date()).toLocaleTimeString()}</span>
+                          <span className="text-xs text-text-secondary">{(toJsDate(comment.createdAt) || toJsDate(comment.timestamp) || new Date()).toLocaleTimeString()}</span>
                         </div>
-                        <p className="text-[#9b9ca4]">{comment.content || comment.text || ''}</p>
+                        <p className="text-text-secondary">{comment.content || comment.text || ''}</p>
                       </div>
                     </div>
                     );
@@ -415,13 +415,13 @@ const MarketDetail: React.FC = () => {
           {/* Right Sidebar wrapper - Desktop only */}
           <div className="contents lg:block lg:order-2 lg:space-y-4 lg:sticky lg:top-4 lg:self-start">
             {/* Probability Card - Mobile order-2 */}
-            <div className="rounded-xl bg-[#141519] border border-[#262830] overflow-hidden shadow-sm order-2 lg:order-none">
+            <div className="rounded-xl bg-background-card border border-border-default overflow-hidden shadow-sm order-2 lg:order-none">
               <div className="text-center py-8">
-                <div className="text-6xl font-bold text-[#ececee] mb-2">{Math.round(safeProbability * 100)}%</div>
-                <div className="text-sm text-[#9b9ca4]">Current Probability</div>
-                <div className="w-full bg-[#1c1d22] rounded-full h-1.5 mt-4 max-w-xs mx-auto">
+                <div className="text-6xl font-bold text-text-primary mb-2">{Math.round(safeProbability * 100)}%</div>
+                <div className="text-sm text-text-secondary">Current Probability</div>
+                <div className="w-full bg-background-hover rounded-full h-1.5 mt-4 max-w-xs mx-auto">
                   <div
-                    className={`h-1.5 rounded-full transition-all duration-500 ${market.status === 'resolved_yes' ? 'bg-white' : market.status === 'resolved_no' ? 'bg-[#6d6e77]' : 'bg-white'}`}
+                    className={`h-1.5 rounded-full transition-all duration-500 ${market.status === 'resolved_yes' ? 'bg-inverse' : market.status === 'resolved_no' ? 'bg-text-tertiary' : 'bg-inverse'}`}
                     style={{ width: `${Math.round(safeProbability * 100)}%` }}
                   />
                 </div>
@@ -437,22 +437,22 @@ const MarketDetail: React.FC = () => {
             </div>
 
             {/* Overview - Mobile order-5 */}
-            <div className="rounded-xl bg-[#141519] border border-[#262830] p-5 space-y-4 shadow-sm order-5 lg:order-none">
-              <h3 className="text-lg font-semibold text-[#ececee]">Overview</h3>
+            <div className="rounded-xl bg-background-card border border-border-default p-5 space-y-4 shadow-sm order-5 lg:order-none">
+              <h3 className="text-lg font-semibold text-text-primary">Overview</h3>
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-lg bg-[#1c1d22] border border-[#262830] p-3">
-                  <div className="text-[#9b9ca4] text-xs">24h Volume</div>
-                  <div className="text-[#ececee] text-lg font-semibold">${volume24h.toFixed(2)}</div>
+                <div className="rounded-lg bg-background-hover border border-border-default p-3">
+                  <div className="text-text-secondary text-xs">24h Volume</div>
+                  <div className="text-text-primary text-lg font-semibold">${volume24h.toFixed(2)}</div>
                 </div>
-                <div className="rounded-lg bg-[#1c1d22] border border-[#262830] p-3">
-                  <div className="text-[#9b9ca4] text-xs">Total Volume</div>
-                  <div className="text-[#ececee] text-lg font-semibold">${totalVolume.toFixed(2)}</div>
+                <div className="rounded-lg bg-background-hover border border-border-default p-3">
+                  <div className="text-text-secondary text-xs">Total Volume</div>
+                  <div className="text-text-primary text-lg font-semibold">${totalVolume.toFixed(2)}</div>
                 </div>
               </div>
-              <div className="pt-2 border-t border-[#262830] space-y-2">
-                <div className="flex justify-between"><span className="text-[#9b9ca4]">Creator</span><span className="text-[#ececee]">{creatorName}</span></div>
-                <div className="flex justify-between"><span className="text-[#9b9ca4]">Expires</span><span className="text-[#ececee]">{new Date(market.resolvesAt || '').toLocaleDateString()}</span></div>
-                <div className="flex justify-between items-center"><span className="text-[#9b9ca4]">Status</span><span className={`px-2 py-1 rounded-md text-xs font-medium border ${countdown.isExpired ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' : 'bg-blue-500/10 text-blue-400 border-blue-500/30'}`}>{countdown.isExpired ? 'Pending Resolution' : 'Open'}</span></div>
+              <div className="pt-2 border-t border-border-default space-y-2">
+                <div className="flex justify-between"><span className="text-text-secondary">Creator</span><span className="text-text-primary">{creatorName}</span></div>
+                <div className="flex justify-between"><span className="text-text-secondary">Expires</span><span className="text-text-primary">{new Date(market.resolvesAt || '').toLocaleDateString()}</span></div>
+                <div className="flex justify-between items-center"><span className="text-text-secondary">Status</span><span className={`px-2 py-1 rounded-md text-xs font-medium border ${countdown.isExpired ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30' : 'bg-blue-500/10 text-blue-400 border-blue-500/30'}`}>{countdown.isExpired ? 'Pending Resolution' : 'Open'}</span></div>
               </div>
             </div>
           </div>

@@ -79,9 +79,9 @@ const MarketTicker: React.FC = () => {
   // While the first fetch is in flight, show a slim loading strip.
   if (isLoading) {
     return (
-      <div className="bg-[#141519] border-b border-[#262830] overflow-hidden h-10 md:h-12 z-10">
+      <div className="bg-background-card border-b border-border-default overflow-hidden h-10 md:h-12 z-10">
         <div className="flex items-center justify-center h-full">
-          <div className="animate-pulse text-[#9b9ca4] text-xs md:text-sm">Loading top markets...</div>
+          <div className="animate-pulse text-text-secondary text-xs md:text-sm">Loading top markets...</div>
         </div>
       </div>
     );
@@ -96,7 +96,7 @@ const MarketTicker: React.FC = () => {
   const displayMarkets = Array(duplicateCount).fill(markets).flat();
 
   return (
-    <div className="bg-[#141519] border-b border-[#262830] overflow-hidden h-10 md:h-12 relative z-10">
+    <div className="bg-background-card border-b border-border-default overflow-hidden h-10 md:h-12 relative z-10">
       <div className="flex items-center gap-4 md:gap-8 animate-infinite-scroll h-full">
         {displayMarkets.map((market, index) => (
           <Link
@@ -105,27 +105,27 @@ const MarketTicker: React.FC = () => {
             className="flex items-center gap-2 md:gap-3 whitespace-nowrap flex-shrink-0 hover:opacity-70 transition-opacity px-2 md:px-4"
           >
             {/* Category Badge */}
-            <span className="px-1.5 md:px-2 py-0.5 bg-[#1c1d22] text-[#9b9ca4] text-[10px] md:text-xs font-medium rounded">
+            <span className="px-1.5 md:px-2 py-0.5 bg-background-hover text-text-secondary text-[10px] md:text-xs font-medium rounded">
               {market.category}
             </span>
             
             {/* Market Title (truncated) */}
-            <span className="text-[#ececee] text-xs md:text-sm font-medium max-w-[150px] md:max-w-[300px] truncate">
+            <span className="text-text-primary text-xs md:text-sm font-medium max-w-[150px] md:max-w-[300px] truncate">
               {market.title.length > 50 ? `${market.title.slice(0, 50)}...` : market.title}
             </span>
             
             {/* Probability */}
-            <span className="text-[#9b9ca4] text-xs md:text-sm font-semibold">
+            <span className="text-text-secondary text-xs md:text-sm font-semibold">
               {Math.round(market.probability * 100)}%
             </span>
             
             {/* Volume - hide on very small screens */}
-            <span className="hidden sm:inline text-[#9b9ca4] text-[10px] md:text-xs">
+            <span className="hidden sm:inline text-text-secondary text-[10px] md:text-xs">
               ${market.volumeUSD.toFixed(0)} vol
             </span>
 
             {/* Separator */}
-            <span className="text-[#6d6e77] hidden sm:inline">•</span>
+            <span className="text-text-tertiary hidden sm:inline">•</span>
           </Link>
         ))}
       </div>

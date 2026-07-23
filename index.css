@@ -8,8 +8,8 @@
 
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: #0b0c0e;
-  color: #ececee;
+  background-color: var(--color-background-body);
+  color: var(--color-text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
@@ -28,16 +28,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #141519;
+  background: var(--color-scroll-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2c2e37;
+  background: var(--color-scroll-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3d47;
+  background: var(--color-scroll-thumb-hover);
 }
 
 /* Smooth scrolling for all scrollable elements */

@@ -132,12 +132,12 @@ const NewsManagement: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-[#ececee]">News Management</h2>
-          <p className="text-[#9b9ca4] mt-1">Create and manage news items for the platform</p>
+          <h2 className="text-2xl font-bold text-text-primary">News Management</h2>
+          <p className="text-text-secondary mt-1">Create and manage news items for the platform</p>
         </div>
         <button
           onClick={() => handleOpenModal()}
-          className="px-4 py-2 bg-white hover:bg-gray-200 !text-[#0b0c0e] font-semibold rounded-lg transition-colors flex items-center gap-2"
+          className="px-4 py-2 bg-inverse hover:bg-inverse-hover !text-inverse-ink font-semibold rounded-lg transition-colors flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -147,35 +147,35 @@ const NewsManagement: React.FC = () => {
       </div>
 
       {/* News List */}
-      <div className="bg-[#141519] rounded-xl border border-[#262830] shadow-sm overflow-hidden">
+      <div className="bg-background-card rounded-xl border border-border-default shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-[#1c1d22]">
+            <thead className="bg-background-hover">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#9b9ca4] uppercase tracking-wider">Image</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#9b9ca4] uppercase tracking-wider">Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#9b9ca4] uppercase tracking-wider">Source</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#9b9ca4] uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#9b9ca4] uppercase tracking-wider">Published Date & Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#9b9ca4] uppercase tracking-wider">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Image</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Title</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Source</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Published Date & Time</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-text-secondary uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#262830]">
+            <tbody className="divide-y divide-border-default">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-[#9b9ca4]">
+                  <td colSpan={6} className="px-6 py-8 text-center text-text-secondary">
                     Loading news...
                   </td>
                 </tr>
               ) : news.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-[#9b9ca4]">
+                  <td colSpan={6} className="px-6 py-8 text-center text-text-secondary">
                     No news items yet. Create your first one!
                   </td>
                 </tr>
               ) : (
                 news.map((item) => (
-                  <tr key={item.id} className="hover:bg-[#1c1d22] transition-colors">
+                  <tr key={item.id} className="hover:bg-background-hover transition-colors">
                     <td className="px-6 py-4">
                       <img
                         src={item.image}
@@ -188,27 +188,27 @@ const NewsManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="max-w-xs">
-                        <div className="text-sm font-medium text-[#ececee] truncate">{item.title}</div>
-                        <div className="text-xs text-[#9b9ca4] mt-1 truncate">{item.description}</div>
+                        <div className="text-sm font-medium text-text-primary truncate">{item.title}</div>
+                        <div className="text-xs text-text-secondary mt-1 truncate">{item.description}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-[#ececee] font-medium">{item.source}</div>
+                      <div className="text-sm text-text-primary font-medium">{item.source}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-2 py-1 text-xs font-semibold bg-[#1c1d22] text-[#9b9ca4] rounded">
+                      <span className="px-2 py-1 text-xs font-semibold bg-background-hover text-text-secondary rounded">
                         {item.category}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-[#ececee]">
+                      <div className="text-sm text-text-primary">
                         {new Date(item.publishedAt).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'short',
                           day: 'numeric',
                         })}
                       </div>
-                      <div className="text-xs text-[#9b9ca4]">
+                      <div className="text-xs text-text-secondary">
                         {new Date(item.publishedAt).toLocaleTimeString('en-US', {
                           hour: '2-digit',
                           minute: '2-digit',
@@ -242,14 +242,14 @@ const NewsManagement: React.FC = () => {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[9998] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-[#141519] rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-[#141519] border-b border-[#262830] px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-[#ececee]">
+          <div className="bg-background-card rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-background-card border-b border-border-default px-6 py-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-text-primary">
                 {editingNews ? 'Edit News' : 'Create News'}
               </h3>
               <button
                 onClick={handleCloseModal}
-                className="text-[#6d6e77] hover:text-[#ececee] transition-colors"
+                className="text-text-tertiary hover:text-text-primary transition-colors"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -259,28 +259,28 @@ const NewsManagement: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Title <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-white transition-colors"
+                  className="w-full px-4 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-white transition-colors"
                   placeholder="Enter news title"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Image URL <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="url"
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-white transition-colors"
+                  className="w-full px-4 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-white transition-colors"
                   placeholder="https://example.com/image.jpg"
                   required
                 />
@@ -297,13 +297,13 @@ const NewsManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Description <span className="text-red-400">*</span>
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-white transition-colors resize-none"
+                  className="w-full px-4 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-white transition-colors resize-none"
                   placeholder="Enter news description"
                   rows={4}
                   required
@@ -311,28 +311,28 @@ const NewsManagement: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Link <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="url"
                   value={formData.link}
                   onChange={(e) => setFormData({ ...formData, link: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-white transition-colors"
+                  className="w-full px-4 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-white transition-colors"
                   placeholder="https://example.com/news-article"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+                <label className="block text-sm font-medium text-text-secondary mb-2">
                   Source <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.source}
                   onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-                  className="w-full px-4 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-white transition-colors"
+                  className="w-full px-4 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-white transition-colors"
                   placeholder="e.g., Cointelegraph, CoinDesk, Bloomberg"
                   required
                 />
@@ -340,13 +340,13 @@ const NewsManagement: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
                     Category (Token) <span className="text-red-400">*</span>
                   </label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full px-4 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-white transition-colors"
+                    className="w-full px-4 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-white transition-colors"
                     required
                   >
                     {categories.map((cat) => (
@@ -358,30 +358,30 @@ const NewsManagement: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
                     Published Date & Time <span className="text-red-400">*</span>
                   </label>
                   <input
                     type="datetime-local"
                     value={formData.publishedAt}
                     onChange={(e) => setFormData({ ...formData, publishedAt: e.target.value })}
-                    className="w-full px-4 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-white transition-colors"
+                    className="w-full px-4 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-white transition-colors"
                     required
                   />
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 pt-4 border-t border-[#262830]">
+              <div className="flex items-center gap-3 pt-4 border-t border-border-default">
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-white hover:bg-gray-200 !text-[#0b0c0e] font-semibold rounded-lg transition-colors"
+                  className="flex-1 px-4 py-2 bg-inverse hover:bg-inverse-hover !text-inverse-ink font-semibold rounded-lg transition-colors"
                 >
                   {editingNews ? 'Update News' : 'Create News'}
                 </button>
                 <button
                   type="button"
                   onClick={handleCloseModal}
-                  className="px-4 py-2 bg-[#1c1d22] hover:bg-[#262830] text-[#9b9ca4] font-semibold rounded-lg transition-colors"
+                  className="px-4 py-2 bg-background-hover hover:bg-background-active text-text-secondary font-semibold rounded-lg transition-colors"
                 >
                   Cancel
                 </button>

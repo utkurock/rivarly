@@ -23,7 +23,7 @@ const ChangeBadge: React.FC<{ value?: number }> = ({ value }) => {
 
 // Letter-tile fallback when a logo is missing or fails to load.
 const LogoFallback: React.FC<{ name: string }> = ({ name }) => (
-  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#1c1d22] to-[#262830] text-[#9b9ca4] font-bold">
+  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-background-hover to-border-default text-text-secondary font-bold">
     {name.charAt(0).toUpperCase()}
   </div>
 );
@@ -31,7 +31,7 @@ const LogoFallback: React.FC<{ name: string }> = ({ name }) => (
 const ProjectLogo: React.FC<{ project: EcosystemProject }> = ({ project }) => {
   const [failed, setFailed] = useState(false);
   return (
-    <div className="w-12 h-12 rounded-xl overflow-hidden border border-[#262830] bg-[#141519] flex-shrink-0">
+    <div className="w-12 h-12 rounded-xl overflow-hidden border border-border-default bg-background-card flex-shrink-0">
       {project.logo && !failed ? (
         <img
           src={project.logo}
@@ -50,28 +50,28 @@ const ProjectLogo: React.FC<{ project: EcosystemProject }> = ({ project }) => {
 const ProjectCard: React.FC<{ project: EcosystemProject; rank: number }> = ({ project, rank }) => {
   const otherChains = project.chains.filter(c => c !== 'Stellar');
   return (
-    <div className="group bg-[#141519] rounded-2xl border border-[#262830] shadow-sm hover:border-[#33353d] hover:shadow-md transition-all p-5">
+    <div className="group bg-background-card rounded-2xl border border-border-default shadow-sm hover:border-border-strong hover:shadow-md transition-all p-5">
       <div className="flex items-start gap-4">
         {/* Rank */}
         <div className="flex flex-col items-center pt-1 w-6 flex-shrink-0">
-          <span className="text-sm font-bold text-[#6d6e77]">{rank}</span>
+          <span className="text-sm font-bold text-text-tertiary">{rank}</span>
         </div>
 
         <ProjectLogo project={project} />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-base font-bold text-[#ececee] truncate">{project.name}</h3>
+            <h3 className="text-base font-bold text-text-primary truncate">{project.name}</h3>
             {project.symbol && (
-              <span className="text-xs font-medium text-[#6d6e77]">{project.symbol}</span>
+              <span className="text-xs font-medium text-text-tertiary">{project.symbol}</span>
             )}
-            <span className="px-2 py-0.5 bg-[#1c1d22] text-[#9b9ca4] rounded-md text-xs font-medium">
+            <span className="px-2 py-0.5 bg-background-hover text-text-secondary rounded-md text-xs font-medium">
               {project.category}
             </span>
           </div>
 
           {project.description && (
-            <p className="mt-1.5 text-sm text-[#9b9ca4] leading-relaxed line-clamp-2">
+            <p className="mt-1.5 text-sm text-text-secondary leading-relaxed line-clamp-2">
               {project.description}
             </p>
           )}
@@ -79,15 +79,15 @@ const ProjectCard: React.FC<{ project: EcosystemProject; rank: number }> = ({ pr
           {/* Meta row */}
           <div className="mt-3 flex items-center gap-4 flex-wrap text-sm">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[#6d6e77] text-xs">TVL</span>
-              <span className="font-semibold text-[#ececee]">{formatUSD(project.tvl)}</span>
+              <span className="text-text-tertiary text-xs">TVL</span>
+              <span className="font-semibold text-text-primary">{formatUSD(project.tvl)}</span>
               <ChangeBadge value={project.change1d} />
             </div>
 
             {otherChains.length > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-[#6d6e77]">
+              <div className="flex items-center gap-1.5 text-xs text-text-tertiary">
                 <span>Also on</span>
-                <span className="text-[#9b9ca4] font-medium">
+                <span className="text-text-secondary font-medium">
                   {otherChains.slice(0, 3).join(', ')}{otherChains.length > 3 ? ` +${otherChains.length - 3}` : ''}
                 </span>
               </div>
@@ -102,7 +102,7 @@ const ProjectCard: React.FC<{ project: EcosystemProject; rank: number }> = ({ pr
               href={`https://x.com/${project.twitter}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-9 h-9 flex items-center justify-center rounded-lg text-[#6d6e77] hover:text-white hover:bg-[#1c1d22] transition-colors"
+              className="w-9 h-9 flex items-center justify-center rounded-lg text-text-tertiary hover:text-white hover:bg-background-hover transition-colors"
               aria-label={`${project.name} on X`}
             >
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ const ProjectCard: React.FC<{ project: EcosystemProject; rank: number }> = ({ pr
               href={project.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3.5 h-9 flex items-center rounded-lg bg-white hover:bg-gray-200 text-[#0b0c0e] text-sm font-semibold transition-colors"
+              className="px-3.5 h-9 flex items-center rounded-lg bg-inverse hover:bg-inverse-hover text-inverse-ink text-sm font-semibold transition-colors"
             >
               Visit
             </a>
@@ -127,14 +127,14 @@ const ProjectCard: React.FC<{ project: EcosystemProject; rank: number }> = ({ pr
 };
 
 const SkeletonCard: React.FC = () => (
-  <div className="bg-[#141519] rounded-2xl border border-[#262830] p-5 animate-pulse">
+  <div className="bg-background-card rounded-2xl border border-border-default p-5 animate-pulse">
     <div className="flex items-start gap-4">
       <div className="w-6" />
-      <div className="w-12 h-12 rounded-xl bg-[#1c1d22] flex-shrink-0" />
+      <div className="w-12 h-12 rounded-xl bg-background-hover flex-shrink-0" />
       <div className="flex-1 space-y-2">
-        <div className="h-4 w-40 bg-[#1c1d22] rounded" />
-        <div className="h-3 w-full bg-[#141519] rounded" />
-        <div className="h-3 w-24 bg-[#141519] rounded" />
+        <div className="h-4 w-40 bg-background-hover rounded" />
+        <div className="h-3 w-full bg-background-card rounded" />
+        <div className="h-3 w-24 bg-background-card rounded" />
       </div>
     </div>
   </div>
@@ -176,20 +176,20 @@ const Ecosystem: React.FC = () => {
   const totalTvl = useMemo(() => projects.reduce((sum, p) => sum + (p.tvl || 0), 0), [projects]);
 
   return (
-    <div className="min-h-screen bg-[#0b0c0e]">
+    <div className="min-h-screen bg-background-body">
       {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-[#0b0c0e]/80 backdrop-blur border-b border-[#262830]">
+      <div className="sticky top-0 z-20 bg-background-body/80 backdrop-blur border-b border-border-default">
         <div className="max-w-6xl mx-auto px-4 lg:px-6 py-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <h1 className="text-xl font-bold text-[#ececee]">Stellar Ecosystem</h1>
-              <p className="text-sm text-[#9b9ca4] mt-0.5">
+              <h1 className="text-xl font-bold text-text-primary">Stellar Ecosystem</h1>
+              <p className="text-sm text-text-secondary mt-0.5">
                 {loading ? 'Loading projects…'
                   : failed ? 'Directory unavailable'
                   : `${projects.length} projects · ${formatUSD(totalTvl)} total TVL`}
               </p>
             </div>
-            <span className="text-xs text-[#6d6e77]">Data from DefiLlama</span>
+            <span className="text-xs text-text-tertiary">Data from DefiLlama</span>
           </div>
 
           {/* Category filter */}
@@ -201,8 +201,8 @@ const Ecosystem: React.FC = () => {
                   onClick={() => setActiveCategory(cat)}
                   className={`px-3.5 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                     activeCategory === cat
-                      ? 'bg-white text-[#0b0c0e]'
-                      : 'bg-[#1c1d22] text-[#9b9ca4] hover:bg-[#262830]'
+                      ? 'bg-inverse text-inverse-ink'
+                      : 'bg-background-hover text-text-secondary hover:bg-background-active'
                   }`}
                 >
                   {cat}
@@ -227,13 +227,13 @@ const Ecosystem: React.FC = () => {
           </div>
         ) : failed ? (
           <div className="text-center py-20">
-            <div className="mx-auto w-16 h-16 bg-[#1c1d22] rounded-2xl flex items-center justify-center mb-4 text-[#6d6e77]">
+            <div className="mx-auto w-16 h-16 bg-background-hover rounded-2xl flex items-center justify-center mb-4 text-text-tertiary">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-[#ececee] mb-1">Directory unavailable</h3>
-            <p className="text-sm text-[#9b9ca4]">We couldn't reach the ecosystem data source right now. Please try again later.</p>
+            <h3 className="text-lg font-semibold text-text-primary mb-1">Directory unavailable</h3>
+            <p className="text-sm text-text-secondary">We couldn't reach the ecosystem data source right now. Please try again later.</p>
           </div>
         ) : (
           <div className="space-y-3">

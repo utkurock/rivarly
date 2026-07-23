@@ -85,7 +85,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
   
   return (
     <div 
-      className={`group block p-3 md:p-5 bg-[#141519] transition-all duration-200 rounded-xl h-full border border-[#262830] hover:border-[#33353d] ${
+      className={`group block p-3 md:p-5 bg-background-card transition-all duration-200 rounded-xl h-full border border-border-default hover:border-border-strong ${
         !isTradeable ? 'opacity-60' : ''
       } ${isResolved ? 'cursor-default' : 'hover:shadow-md'}`}
     >
@@ -187,7 +187,7 @@ const MarketContent: React.FC<{ market: Market }> = ({ market }) => {
   return (
     <div className="flex flex-col h-full relative">
       {/* Market Question */}
-      <h3 className="text-base md:text-lg font-semibold text-[#ececee] leading-snug mb-3 md:mb-4 flex-grow line-clamp-3">
+      <h3 className="text-base md:text-lg font-semibold text-text-primary leading-snug mb-3 md:mb-4 flex-grow line-clamp-3">
         {displayTitle}
       </h3>
       
@@ -196,10 +196,10 @@ const MarketContent: React.FC<{ market: Market }> = ({ market }) => {
         {/* Hide percentage for resolved markets */}
         {!isResolved && (
           <>
-            <div className="text-4xl md:text-5xl font-bold text-[#ececee] mb-1">
+            <div className="text-4xl md:text-5xl font-bold text-text-primary mb-1">
               {Math.round(probability * 100)}%
             </div>
-            <div className="text-xs md:text-sm text-[#9b9ca4]">Chance of YES</div>
+            <div className="text-xs md:text-sm text-text-secondary">Chance of YES</div>
           </>
         )}
         
@@ -212,7 +212,7 @@ const MarketContent: React.FC<{ market: Market }> = ({ market }) => {
           </div>
         )}
         {status === 'resolved_no' && (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#1c1d22]/90 backdrop-blur-sm rounded-lg">
+          <div className="absolute inset-0 flex items-center justify-center bg-background-hover/90 backdrop-blur-sm rounded-lg">
             <div className="text-4xl font-black" style={{ color: '#FF1010' }}>
               NO
             </div>
@@ -224,15 +224,15 @@ const MarketContent: React.FC<{ market: Market }> = ({ market }) => {
       <BetButtons market={market} probability={probability} disabled={status !== 'open'} />
       
       {/* Footer with Volume, Category and Timer */}
-      <div className="pt-3 border-t border-[#262830]">
+      <div className="pt-3 border-t border-border-default">
         <div className="flex items-center justify-between text-xs mb-2">
-          <span className="text-[#9b9ca4]">${totalVolume.toFixed(0)} volume</span>
-          <span className="px-2 py-0.5 bg-[#1c1d22] text-[#9b9ca4] rounded font-medium">
+          <span className="text-text-secondary">${totalVolume.toFixed(0)} volume</span>
+          <span className="px-2 py-0.5 bg-background-hover text-text-secondary rounded font-medium">
             {category}
           </span>
         </div>
         <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5 text-[#9b9ca4]">
+          <div className="flex items-center gap-1.5 text-text-secondary">
             {(() => {
               const creatorProfile = (market as any).creatorProfile;
               const hasAvatar = creatorProfile?.avatar && creatorProfile.avatar.trim() !== '';
@@ -251,15 +251,15 @@ const MarketContent: React.FC<{ market: Market }> = ({ market }) => {
               }
               
               return (
-                <div className="w-4 h-4 bg-[#262830] rounded-full"></div>
+                <div className="w-4 h-4 bg-background-active rounded-full"></div>
               );
             })()}
-            <span className="text-[#9b9ca4] font-medium">
+            <span className="text-text-secondary font-medium">
               {(market as any).creatorProfile?.username?.slice(0, 12) || 'Anonymous'}
             </span>
           </div>
           
-          <div className="text-[#9b9ca4] font-medium">
+          <div className="text-text-secondary font-medium">
             {countdown.isExpired ? (
               <span>Ended</span>
             ) : countdown.days > 0 ? (

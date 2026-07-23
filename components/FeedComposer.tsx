@@ -271,8 +271,8 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
             }}
           />
         ) : (
-          <div className="h-12 w-12 bg-[#262830] rounded-full flex items-center justify-center flex-shrink-0">
-            <svg className="w-6 h-6 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="h-12 w-12 bg-background-active rounded-full flex items-center justify-center flex-shrink-0">
+            <svg className="w-6 h-6 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
@@ -289,7 +289,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
               onPaste={handlePaste}
-              className="w-full px-0 py-2 bg-transparent text-[#ececee] placeholder-[#6d6e77] text-xl resize-none focus:outline-none border-none"
+              className="w-full px-0 py-2 bg-transparent text-text-primary placeholder-text-tertiary text-xl resize-none focus:outline-none border-none"
               placeholder="What's happening?"
               rows={4}
               maxLength={maxChars}
@@ -319,13 +319,13 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
 
             {/* Attached market preview */}
             {selectedMarketId && (
-              <div className="mt-3 flex items-center justify-between border border-[#262830] rounded-xl bg-[#141519] px-4 py-3">
+              <div className="mt-3 flex items-center justify-between border border-border-default rounded-xl bg-background-card px-4 py-3">
                 <div className="flex items-center gap-2 min-w-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#9b9ca4] flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-secondary flex-shrink-0">
                     <path d="m21 3-9 9-4-4-6 6"/>
                     <path d="M21 8V3h-5"/>
                   </svg>
-                  <span className="text-sm font-medium text-[#ececee] truncate">
+                  <span className="text-sm font-medium text-text-primary truncate">
                     {userMarkets.find(m => m.id === selectedMarketId)?.title
                       || userMarkets.find(m => m.id === selectedMarketId)?.question
                       || `Market #${selectedMarketId.slice(0, 8)}`}
@@ -337,7 +337,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
                     setSelectedMarketId(null);
                     setPreviewMarketId(null);
                   }}
-                  className="ml-3 text-[#6d6e77] hover:text-white text-lg flex-shrink-0"
+                  className="ml-3 text-text-tertiary hover:text-white text-lg flex-shrink-0"
                 >
                   ×
                 </button>
@@ -345,13 +345,13 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
             )}
             
             {/* Bottom bar */}
-            <div className="flex items-center justify-between pt-3 border-t border-[#262830]">
+            <div className="flex items-center justify-between pt-3 border-t border-border-default">
               <div className="flex items-center gap-4">
                 {/* Media upload button */}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-10 h-10 flex items-center justify-center text-[#ececee] hover:bg-[#1c1d22] rounded-full transition-colors"
+                  className="w-10 h-10 flex items-center justify-center text-text-primary hover:bg-background-hover rounded-full transition-colors"
                   title="Upload photo or video"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
@@ -376,8 +376,8 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
                 <button
                   type="button"
                   onClick={() => setIsMarketModalOpen(true)}
-                  className={`w-10 h-10 flex items-center justify-center hover:bg-[#1c1d22] rounded-full transition-colors ${
-                    selectedMarketId ? 'text-[#ececee]' : 'text-[#ececee]'
+                  className={`w-10 h-10 flex items-center justify-center hover:bg-background-hover rounded-full transition-colors ${
+                    selectedMarketId ? 'text-text-primary' : 'text-text-primary'
                   }`}
                   title="Attach your market"
                 >
@@ -393,14 +393,14 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
               {/* Post button */}
               <div className="flex items-center gap-3">
                 {remainingChars < 20 && (
-                  <span className={`text-sm ${remainingChars < 0 ? 'text-red-500' : 'text-[#9b9ca4]'}`}>
+                  <span className={`text-sm ${remainingChars < 0 ? 'text-red-500' : 'text-text-secondary'}`}>
                     {remainingChars}
                   </span>
                 )}
                 <button
                   type="submit"
                   disabled={!canPost}
-                  className="px-6 py-2 bg-white text-[#0b0c0e] text-sm font-semibold rounded-full hover:bg-gray-200 disabled:bg-[#262830] disabled:text-[#6d6e77] disabled:cursor-not-allowed transition-all"
+                  className="px-6 py-2 bg-inverse text-inverse-ink text-sm font-semibold rounded-full hover:bg-inverse-hover disabled:bg-background-active disabled:text-text-tertiary disabled:cursor-not-allowed transition-all"
                 >
                   {isSubmitting ? 'Posting...' : 'Post'}
                 </button>
@@ -425,13 +425,13 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
       {/* Market Selection Modal */}
       {isMarketModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={() => setIsMarketModalOpen(false)}>
-          <div className="bg-[#141519] rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-background-card rounded-2xl shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
-            <div className="px-6 py-4 border-b border-[#262830] flex items-center justify-between">
-              <h2 className="text-xl font-bold text-[#ececee]">Select a Market</h2>
+            <div className="px-6 py-4 border-b border-border-default flex items-center justify-between">
+              <h2 className="text-xl font-bold text-text-primary">Select a Market</h2>
               <button
                 onClick={() => setIsMarketModalOpen(false)}
-                className="w-8 h-8 flex items-center justify-center hover:bg-[#1c1d22] rounded-full transition-colors"
+                className="w-8 h-8 flex items-center justify-center hover:bg-background-hover rounded-full transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M18 6L6 18"/>
@@ -444,18 +444,18 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
             <div className="flex-1 overflow-y-auto p-6">
               {isLoadingMarkets ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="text-[#9b9ca4]">Loading your markets...</div>
+                  <div className="text-text-secondary">Loading your markets...</div>
                 </div>
               ) : userMarkets.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#6d6e77] mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary mb-4">
                     <path d="M14.828 14.828 21 21"/>
                     <path d="M21 16v5h-5"/>
                     <path d="m21 3-9 9-4-4-6 6"/>
                     <path d="M21 8V3h-5"/>
                   </svg>
-                  <p className="text-[#9b9ca4] text-lg mb-2">No markets found</p>
-                  <p className="text-[#6d6e77] text-sm">Create a market first to share it in your posts</p>
+                  <p className="text-text-secondary text-lg mb-2">No markets found</p>
+                  <p className="text-text-tertiary text-sm">Create a market first to share it in your posts</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -467,21 +467,21 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
                         setIsMarketModalOpen(false);
                       }}
                       className={`w-full text-left p-4 border-2 rounded-xl transition-all hover:border-white ${
-                        selectedMarketId === market.id ? 'border-white bg-[#1c1d22]' : 'border-[#262830]'
+                        selectedMarketId === market.id ? 'border-white bg-background-hover' : 'border-border-default'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-[#ececee] mb-1 truncate">
+                          <h3 className="font-semibold text-text-primary mb-1 truncate">
                             {market.title || market.question || 'Untitled Market'}
                           </h3>
-                          <div className="flex items-center gap-3 text-sm text-[#9b9ca4]">
-                            <span className="px-2 py-0.5 bg-[#1c1d22] rounded text-xs font-medium">
+                          <div className="flex items-center gap-3 text-sm text-text-secondary">
+                            <span className="px-2 py-0.5 bg-background-hover rounded text-xs font-medium">
                               {market.category || 'Other'}
                             </span>
                             {market.status && (
                               <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                                market.status === 'open' ? 'bg-green-500/10 text-green-400' : 'bg-[#1c1d22] text-[#9b9ca4]'
+                                market.status === 'open' ? 'bg-green-500/10 text-green-400' : 'bg-background-hover text-text-secondary'
                               }`}>
                                 {market.status}
                               </span>
@@ -489,7 +489,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
                           </div>
                         </div>
                         {selectedMarketId === market.id && (
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#ececee] flex-shrink-0">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-primary flex-shrink-0">
                             <path d="M20 6L9 17l-5-5"/>
                           </svg>
                         )}

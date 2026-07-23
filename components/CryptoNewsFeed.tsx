@@ -100,12 +100,12 @@ const CryptoNewsFeed: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-[#0b0c0e] min-h-screen">
+    <div className="flex-1 bg-background-body min-h-screen">
       <div className="max-w-7xl mx-auto px-4 lg:px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[#ececee] mb-4">Crypto News</h1>
-          <p className="text-[#9b9ca4] mb-6">Live crypto headlines from public sources. Click a project to see its own news.</p>
+          <h1 className="text-3xl font-bold text-text-primary mb-4">Crypto News</h1>
+          <p className="text-text-secondary mb-6">Live crypto headlines from public sources. Click a project to see its own news.</p>
           
           {/* Filter Buttons */}
           <div className="flex flex-wrap gap-3">
@@ -113,8 +113,8 @@ const CryptoNewsFeed: React.FC = () => {
               onClick={() => setSelectedCurrency(null)}
               className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all ${
                 selectedCurrency === null
-                  ? 'bg-white !text-[#0b0c0e] shadow-md'
-                  : 'bg-[#141519] text-[#9b9ca4] border border-[#262830] hover:border-[#33353d] hover:shadow-sm'
+                  ? 'bg-inverse !text-inverse-ink shadow-md'
+                  : 'bg-background-card text-text-secondary border border-border-default hover:border-border-strong hover:shadow-sm'
               }`}
             >
               All News
@@ -125,8 +125,8 @@ const CryptoNewsFeed: React.FC = () => {
                 onClick={() => handleCurrencyFilter(currency.code)}
                 className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all flex items-center gap-2 ${
                   selectedCurrency === currency.code
-                    ? 'bg-white !text-[#0b0c0e] shadow-md'
-                    : 'bg-[#141519] text-[#9b9ca4] border border-[#262830] hover:border-[#33353d] hover:shadow-sm'
+                    ? 'bg-inverse !text-inverse-ink shadow-md'
+                    : 'bg-background-card text-text-secondary border border-border-default hover:border-border-strong hover:shadow-sm'
                 }`}
               >
                 <CoinIcon code={currency.code} className="w-4 h-4" mono={selectedCurrency === currency.code} />
@@ -153,10 +153,10 @@ const CryptoNewsFeed: React.FC = () => {
         {loading && news.length === 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
             {[...Array(8)].map((_, index) => (
-              <div key={index} className="bg-[#141519] rounded-xl border border-[#262830] p-4 animate-pulse shadow-sm">
-                <div className="h-48 bg-[#1c1d22] rounded-lg mb-4"></div>
-                <div className="h-4 bg-[#1c1d22] rounded w-3/4 mb-2"></div>
-                <div className="h-4 bg-[#1c1d22] rounded w-1/2"></div>
+              <div key={index} className="bg-background-card rounded-xl border border-border-default p-4 animate-pulse shadow-sm">
+                <div className="h-48 bg-background-hover rounded-lg mb-4"></div>
+                <div className="h-4 bg-background-hover rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-background-hover rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -174,10 +174,10 @@ const CryptoNewsFeed: React.FC = () => {
                 <div
                   key={newsItem.id}
                   onClick={() => handleNewsClick(newsItem)}
-                  className="bg-[#141519] rounded-xl border border-[#262830] overflow-hidden cursor-pointer hover:shadow-xl hover:border-[#33353d] transition-all group/card"
+                  className="bg-background-card rounded-xl border border-border-default overflow-hidden cursor-pointer hover:shadow-xl hover:border-border-strong transition-all group/card"
                 >
                   {/* Image */}
-                  <div className="relative h-48 overflow-hidden bg-[#1c1d22]">
+                  <div className="relative h-48 overflow-hidden bg-background-hover">
                     <img
                       src={newsItem.image}
                       alt={newsItem.title}
@@ -194,23 +194,23 @@ const CryptoNewsFeed: React.FC = () => {
                         {(newsItem.source || 'N').charAt(0).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-semibold text-[#ececee] truncate">
+                        <div className="text-xs font-semibold text-text-primary truncate">
                           {newsItem.source || 'Unknown Source'}
                         </div>
-                        <div className="text-xs text-[#9b9ca4]">
+                        <div className="text-xs text-text-secondary">
                           {formatTimeAgo(new Date(newsItem.publishedAt))}
                         </div>
                       </div>
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-base font-bold text-[#ececee] mb-2 line-clamp-3 leading-snug group-hover/card:text-blue-400 transition-colors">
+                    <h3 className="text-base font-bold text-text-primary mb-2 line-clamp-3 leading-snug group-hover/card:text-blue-400 transition-colors">
                       {newsItem.title}
                     </h3>
 
                     {/* Description */}
                     {newsItem.description && (
-                      <p className="text-sm text-[#9b9ca4] line-clamp-2 mb-3 leading-relaxed">
+                      <p className="text-sm text-text-secondary line-clamp-2 mb-3 leading-relaxed">
                         {newsItem.description}
                       </p>
                     )}
@@ -223,7 +223,7 @@ const CryptoNewsFeed: React.FC = () => {
                           <span
                             key={t}
                             className={`px-2 py-1 rounded-md text-xs font-semibold ${
-                              isCoin ? 'bg-blue-500/10 text-blue-400' : 'bg-[#1c1d22] text-[#9b9ca4]'
+                              isCoin ? 'bg-blue-500/10 text-blue-400' : 'bg-background-hover text-text-secondary'
                             }`}
                           >
                             {t}
@@ -240,14 +240,14 @@ const CryptoNewsFeed: React.FC = () => {
 
         {/* Empty State */}
         {!loading && news.length === 0 && !error && (
-          <div className="text-center py-20 bg-[#141519] rounded-xl border border-[#262830] shadow-sm">
-            <div className="w-20 h-20 mx-auto mb-6 bg-[#1c1d22] rounded-full flex items-center justify-center">
-              <svg className="w-10 h-10 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-center py-20 bg-background-card rounded-xl border border-border-default shadow-sm">
+            <div className="w-20 h-20 mx-auto mb-6 bg-background-hover rounded-full flex items-center justify-center">
+              <svg className="w-10 h-10 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
               </svg>
             </div>
-            <h3 className="text-xl font-bold text-[#ececee] mb-2">No News Found</h3>
-            <p className="text-[#9b9ca4]">Check back later for new crypto updates.</p>
+            <h3 className="text-xl font-bold text-text-primary mb-2">No News Found</h3>
+            <p className="text-text-secondary">Check back later for new crypto updates.</p>
           </div>
         )}
       </div>

@@ -242,7 +242,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
   return (
     <>
       <div 
-        className={`bg-[#141519] p-6 hover:bg-[#1c1d22] transition-all ${!disableNavigation ? 'cursor-pointer' : ''}`}
+        className={`bg-background-card p-6 hover:bg-background-hover transition-all ${!disableNavigation ? 'cursor-pointer' : ''}`}
         onClick={handleCardClick}
       >
       {/* RT Header - Show if current user has reposted this */}
@@ -267,14 +267,14 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
             <img 
               src={post.avatarUrl} 
               alt={`${post.displayName}'s Avatar`} 
-              className="h-12 w-12 rounded-full object-cover ring-2 ring-[#262830]" 
+              className="h-12 w-12 rounded-full object-cover ring-2 ring-border-default" 
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
             />
           ) : (
-            <div className="h-12 w-12 bg-[#262830] rounded-full flex items-center justify-center ring-2 ring-[#262830]">
-              <svg className="w-6 h-6 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="h-12 w-12 bg-background-active rounded-full flex items-center justify-center ring-2 ring-border-default">
+              <svg className="w-6 h-6 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
@@ -286,24 +286,24 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
           {/* Header */}
           <div className="flex items-center gap-2 mb-2">
             <span 
-              className="text-[#ececee] font-bold text-sm cursor-pointer hover:underline"
+              className="text-text-primary font-bold text-sm cursor-pointer hover:underline"
               onClick={handleProfileClick}
             >
               {post.displayName}
             </span>
-            <span className="text-[#9b9ca4] text-sm">
+            <span className="text-text-secondary text-sm">
               {(post.handle && post.handle.trim())
                 ? `@${post.handle}`
                 : (post.uid ? `@${post.uid.slice(0, 6)}` : '@anonymous')}
             </span>
-            <span className="text-[#6d6e77] text-sm">·</span>
-            <span className="text-[#9b9ca4] text-sm">{formatTimeAgo(post.createdAt)}</span>
+            <span className="text-text-tertiary text-sm">·</span>
+            <span className="text-text-secondary text-sm">{formatTimeAgo(post.createdAt)}</span>
             
             {/* Delete button for own posts */}
             {isOwnPost && (
               <button
                 onClick={handleDeletePost}
-                className="ml-auto text-[#6d6e77] hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-500/10"
+                className="ml-auto text-text-tertiary hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-500/10"
                 title="Delete post"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,7 +314,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
           </div>
           
           {/* Text content with market links */}
-          <div className="text-[#ececee] text-base mb-3 whitespace-pre-wrap leading-relaxed">
+          <div className="text-text-primary text-base mb-3 whitespace-pre-wrap leading-relaxed">
             {(() => {
               const parts = parseTextWithMarketLinks(post.text);
               return parts.map((part, index) => {
@@ -341,19 +341,19 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
           {post.media && post.media.length > 0 && (
             <div className="mb-4">
               {post.media.length === 1 ? (
-                <div className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity border border-[#262830]">
+                <div className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity border border-border-default">
                   {post.media[0].type === 'video' ? (
                     <video 
                       src={post.media[0].url} 
                       controls 
-                      className="w-full max-h-[600px] object-contain bg-[#1c1d22]"
+                      className="w-full max-h-[600px] object-contain bg-background-hover"
                       onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
                     <img 
                       src={post.media[0].url} 
                       alt="Post media" 
-                      className="w-full max-h-[600px] object-contain bg-[#1c1d22]"
+                      className="w-full max-h-[600px] object-contain bg-background-hover"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleImageClick(0);
@@ -364,12 +364,12 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
               ) : (
                 <div className="grid grid-cols-2 gap-2">
                   {post.media.map((media, index) => (
-                    <div key={index} className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity border border-[#262830]">
+                    <div key={index} className="rounded-xl overflow-hidden cursor-pointer hover:opacity-95 transition-opacity border border-border-default">
                       {media.type === 'video' ? (
                         <video 
                           src={media.url} 
                           controls 
-                          className="w-full h-64 object-contain bg-[#1c1d22]"
+                          className="w-full h-64 object-contain bg-background-hover"
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
@@ -397,16 +397,16 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                 <span className="text-blue-400 text-sm font-semibold">Market</span>
               </div>
-              <div className="text-[#ececee] text-sm font-medium">Market #{post.marketId.slice(0, 8)}...</div>
+              <div className="text-text-primary text-sm font-medium">Market #{post.marketId.slice(0, 8)}...</div>
             </div>
           )}
           
           {/* Action bar */}
-          <div className="flex items-center gap-6 pt-3 border-t border-[#262830]">
+          <div className="flex items-center gap-6 pt-3 border-t border-border-default">
             {/* Reply */}
             <button 
               onClick={handleReply}
-              className="flex items-center gap-2 text-[#9b9ca4] hover:text-blue-400 hover:bg-blue-500/10 transition-colors p-2 rounded-lg group"
+              className="flex items-center gap-2 text-text-secondary hover:text-blue-400 hover:bg-blue-500/10 transition-colors p-2 rounded-lg group"
             >
               <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -419,7 +419,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
               onClick={handleLike}
               disabled={isActionLoading}
               className={`flex items-center gap-2 transition-colors p-2 rounded-lg group ${
-                isLiked ? 'text-red-500 hover:bg-red-500/10' : 'text-[#9b9ca4] hover:text-red-500 hover:bg-red-500/10'
+                isLiked ? 'text-red-500 hover:bg-red-500/10' : 'text-text-secondary hover:text-red-500 hover:bg-red-500/10'
               } ${isActionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <svg 
@@ -443,7 +443,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
               onClick={handleRepost}
               disabled={isActionLoading}
               className={`flex items-center gap-2 transition-colors p-2 rounded-lg group ${
-                isReposted ? 'text-green-400 hover:bg-green-500/10' : 'text-[#9b9ca4] hover:text-green-400 hover:bg-green-500/10'
+                isReposted ? 'text-green-400 hover:bg-green-500/10' : 'text-text-secondary hover:text-green-400 hover:bg-green-500/10'
               } ${isActionLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <svg 
@@ -465,7 +465,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
             {/* Share */}
             <button 
               onClick={handleShare}
-              className="flex items-center gap-2 text-[#9b9ca4] hover:text-green-400 hover:bg-green-500/10 transition-colors p-2 rounded-lg group"
+              className="flex items-center gap-2 text-text-secondary hover:text-green-400 hover:bg-green-500/10 transition-colors p-2 rounded-lg group"
             >
               <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
@@ -475,7 +475,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
           
           {/* Comment Section */}
           {showReplies && (
-            <div className="mt-4 pt-4 border-t border-[#262830]">
+            <div className="mt-4 pt-4 border-t border-border-default">
               {/* Comment Input */}
               <div className="flex gap-3 mb-4">
                 {/* User's Own Avatar in Reply Input */}
@@ -483,14 +483,14 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
                   <img 
                     src={userProfile.avatar} 
                     alt="Your Avatar" 
-                    className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-2 ring-[#262830]" 
+                    className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-2 ring-border-default" 
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                     }}
                   />
                 ) : (
-                  <div className="w-8 h-8 bg-[#262830] rounded-full flex items-center justify-center flex-shrink-0">
-                    <svg className="w-4 h-4 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="w-8 h-8 bg-background-active rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg className="w-4 h-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
@@ -500,20 +500,20 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     placeholder="Write your reply..."
-                    className="w-full px-3 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] placeholder-gray-500 text-sm focus:outline-none focus:border-blue-400 focus:bg-[#141519] resize-none transition-colors"
+                    className="w-full px-3 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary placeholder-gray-500 text-sm focus:outline-none focus:border-blue-400 focus:bg-background-card resize-none transition-colors"
                     rows={2}
                   />
                   <div className="flex justify-end mt-2 gap-2">
                     <button
                       onClick={() => setShowReplies(false)}
-                      className="px-4 py-2 text-sm text-[#9b9ca4] hover:text-white hover:bg-[#1c1d22] rounded-lg transition-colors font-medium"
+                      className="px-4 py-2 text-sm text-text-secondary hover:text-white hover:bg-background-hover rounded-lg transition-colors font-medium"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleReplySubmit}
                       disabled={!replyText.trim() || isActionLoading}
-                      className="px-4 py-2 bg-white !text-[#0b0c0e] text-sm font-semibold rounded-lg hover:bg-gray-200 disabled:bg-[#262830] disabled:text-[#6d6e77] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                      className="px-4 py-2 bg-inverse !text-inverse-ink text-sm font-semibold rounded-lg hover:bg-inverse-hover disabled:bg-background-active disabled:text-text-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
                     >
                       {isActionLoading ? 'Posting...' : 'Reply'}
                     </button>
@@ -527,7 +527,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
                   {replies.map((reply) => {
                     const isOwnReply = user?.uid === reply.uid;
                     return (
-                      <div key={reply.id} className="flex gap-3 p-3 rounded-lg hover:bg-[#1c1d22] transition-colors">
+                      <div key={reply.id} className="flex gap-3 p-3 rounded-lg hover:bg-background-hover transition-colors">
                         {/* Reply Avatar - Clickable */}
                         <div
                           className="flex-shrink-0 cursor-pointer hover:scale-105 transition-transform"
@@ -543,14 +543,14 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
                             <img 
                               src={reply.avatarUrl} 
                               alt={`${reply.displayName}'s Avatar`} 
-                              className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-2 ring-[#262830]" 
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-2 ring-border-default" 
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none';
                               }}
                             />
                           ) : (
-                            <div className="w-8 h-8 bg-[#262830] rounded-full flex items-center justify-center flex-shrink-0">
-                              <svg className="w-4 h-4 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="w-8 h-8 bg-background-active rounded-full flex items-center justify-center flex-shrink-0">
+                              <svg className="w-4 h-4 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                               </svg>
                             </div>
@@ -560,7 +560,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <span 
-                              className="text-sm font-bold text-[#ececee] cursor-pointer hover:underline"
+                              className="text-sm font-bold text-text-primary cursor-pointer hover:underline"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 const replyUid = reply.uid;
@@ -571,15 +571,15 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
                             >
                               {reply.displayName}
                             </span>
-                            <span className="text-xs text-[#9b9ca4]">{reply.handle}</span>
-                            <span className="text-xs text-[#6d6e77]">·</span>
-                            <span className="text-xs text-[#9b9ca4]">{formatTimeAgo(reply.createdAt)}</span>
+                            <span className="text-xs text-text-secondary">{reply.handle}</span>
+                            <span className="text-xs text-text-tertiary">·</span>
+                            <span className="text-xs text-text-secondary">{formatTimeAgo(reply.createdAt)}</span>
                             
                             {/* Delete button for own comments */}
                             {isOwnReply && (
                               <button
                                 onClick={() => handleDeleteReply(reply.id)}
-                                className="ml-auto text-[#6d6e77] hover:text-red-500 transition-colors p-1 rounded hover:bg-red-500/10"
+                                className="ml-auto text-text-tertiary hover:text-red-500 transition-colors p-1 rounded hover:bg-red-500/10"
                                 title="Delete comment"
                               >
                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -588,7 +588,7 @@ const FeedCard: React.FC<FeedCardProps> = ({ post, onReply, autoExpandReplies = 
                               </button>
                             )}
                           </div>
-                          <p className="text-sm text-[#ececee] whitespace-pre-wrap leading-relaxed">{reply.text}</p>
+                          <p className="text-sm text-text-primary whitespace-pre-wrap leading-relaxed">{reply.text}</p>
                         </div>
                       </div>
                     );

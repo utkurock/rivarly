@@ -378,11 +378,11 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0c0e] flex">
+    <div className="min-h-screen bg-background-body flex">
       {/* Main Content - White Theme - Wider - No left spacer */}
-      <div className="flex-1 bg-[#141519] border-r border-[#262830]">
+      <div className="flex-1 bg-background-card border-r border-border-default">
         {/* Header */}
-        <div className="sticky top-0 bg-[#0b0c0e]/80 backdrop-blur-sm border-b border-[#262830] z-40">
+        <div className="sticky top-0 bg-background-body/80 backdrop-blur-sm border-b border-border-default z-40">
           <div className="px-6 py-3">
             {/* Tabs */}
             <div className="flex gap-1">
@@ -390,8 +390,8 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                 onClick={() => setActiveTab('foryou')}
                 className={`flex-1 py-3 px-4 text-center font-semibold text-sm transition-all ${
                   activeTab === 'foryou'
-                    ? 'bg-[#1c1d22] text-[#ececee]'
-                    : 'text-[#9b9ca4] hover:text-[#ececee] hover:bg-[#141519]'
+                    ? 'bg-background-hover text-text-primary'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-background-card'
                 } rounded-lg`}
               >
                 For you
@@ -400,8 +400,8 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                 onClick={() => setActiveTab('following')}
                 className={`flex-1 py-3 px-4 text-center font-semibold text-sm transition-all ${
                   activeTab === 'following'
-                    ? 'bg-[#1c1d22] text-[#ececee]'
-                    : 'text-[#9b9ca4] hover:text-[#ececee] hover:bg-[#141519]'
+                    ? 'bg-background-hover text-text-primary'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-background-card'
                 } rounded-lg`}
               >
                 Following
@@ -412,13 +412,13 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
 
         {/* Post Composer - Twitter style */}
         {user ? (
-          <div className="border-b border-[#262830] px-6 py-3">
+          <div className="border-b border-border-default px-6 py-3">
             <FeedComposer onPostCreated={() => {}} />
           </div>
         ) : (
-          <div className="border-b border-[#262830] px-6 py-4 text-center">
-            <p className="text-sm text-[#9b9ca4]">Connecting your session…</p>
-            <p className="text-xs text-[#6d6e77] mt-1">
+          <div className="border-b border-border-default px-6 py-4 text-center">
+            <p className="text-sm text-text-secondary">Connecting your session…</p>
+            <p className="text-xs text-text-tertiary mt-1">
               If posting stays unavailable, enable Anonymous sign-in in your Firebase project.
             </p>
           </div>
@@ -433,7 +433,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
               if (followingIds.size === 0) {
                 return (
                   <div className="px-6 py-12 text-center">
-                    <p className="text-[#9b9ca4] text-sm">You're not following anyone yet. Follow users to see their posts here.</p>
+                    <p className="text-text-secondary text-sm">You're not following anyone yet. Follow users to see their posts here.</p>
                   </div>
                 );
               }
@@ -443,7 +443,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
               if (filteredPosts.length === 0) {
                 return (
                   <div className="px-6 py-12 text-center">
-                    <p className="text-[#9b9ca4] text-sm">No posts from people you follow yet.</p>
+                    <p className="text-text-secondary text-sm">No posts from people you follow yet.</p>
                   </div>
                 );
               }
@@ -451,18 +451,18 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
             return filteredPosts.map((post) => (
             <div
               key={post.id}
-              className="border-b border-[#262830] hover:bg-[#1c1d22] transition-colors cursor-pointer"
+              className="border-b border-border-default hover:bg-background-hover transition-colors cursor-pointer"
               onClick={() => handlePostClick(post.id)}
             >
               <div className="px-6 py-6">
                 {/* Post Content */}
                 <div className="flex items-start gap-3">
                   {/* Avatar - Clickable */}
-                  <Link to={`/profile/${post.uid || post.userId || post.id}`} className="w-10 h-10 bg-[#262830] rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden hover:opacity-80 transition-opacity">
+                  <Link to={`/profile/${post.uid || post.userId || post.id}`} className="w-10 h-10 bg-background-active rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden hover:opacity-80 transition-opacity">
                     {post.avatarUrl ? (
                       <img src={post.avatarUrl} alt={post.displayName || 'User'} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-sm font-bold text-[#9b9ca4]">
+                      <span className="text-sm font-bold text-text-secondary">
                         {(post.displayName || post.authorName)?.[0]?.toUpperCase() || 'U'}
                       </span>
                     )}
@@ -481,21 +481,21 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                           openProfile(post.uid || post.userId || post.id);
                         }}
                       >
-                        <span className="font-semibold text-[#ececee]">{post.displayName || post.authorName || 'Anonymous'}</span>
+                        <span className="font-semibold text-text-primary">{post.displayName || post.authorName || 'Anonymous'}</span>
                       </Link>
-                      <span className="text-[#9b9ca4] text-sm">
+                      <span className="text-text-secondary text-sm">
                         {(post.handle && post.handle.trim())
                           ? `@${post.handle}`
                           : `@${post.uid?.slice(0, 6) || 'user'}`}
                       </span>
-                      <span className="text-[#9b9ca4] text-sm">·</span>
-                      <span className="text-[#9b9ca4] text-sm">{formatTimeAgo(post.createdAt)}</span>
+                      <span className="text-text-secondary text-sm">·</span>
+                      <span className="text-text-secondary text-sm">{formatTimeAgo(post.createdAt)}</span>
                       
                       {/* Delete button - only if user is owner */}
                       {user?.uid === post.uid && (
                         <button
                           onClick={(e) => handleDeletePost(post.id, e)}
-                          className="ml-auto text-[#6d6e77] hover:text-red-500 transition-colors p-1"
+                          className="ml-auto text-text-tertiary hover:text-red-500 transition-colors p-1"
                           title="Delete post"
                         >
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -510,7 +510,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                       const links = detectMarketLinks(post.text);
                       
                       if (links.length === 0) {
-                        return <p className="text-[#ececee] text-sm mb-3 leading-relaxed">{post.text}</p>;
+                        return <p className="text-text-primary text-sm mb-3 leading-relaxed">{post.text}</p>;
                       }
 
                       const parts = parseTextWithMarketLinks(post.text);
@@ -525,21 +525,21 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                       return (
                         <>
                           {textWithoutLinks.trim() && (
-                            <p className="text-[#ececee] text-sm mb-3 leading-relaxed">{textWithoutLinks}</p>
+                            <p className="text-text-primary text-sm mb-3 leading-relaxed">{textWithoutLinks}</p>
                           )}
 
                           {market && (
                             <div
-                              className="mb-3 border border-[#262830] rounded-xl bg-[#141519] p-4 hover:bg-[#1c1d22] transition-colors cursor-pointer"
+                              className="mb-3 border border-border-default rounded-xl bg-background-card p-4 hover:bg-background-hover transition-colors cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 navigate(`/market/${market.id}`);
                               }}
                             >
-                              <p className="text-sm font-semibold text-[#ececee] leading-snug">
+                              <p className="text-sm font-semibold text-text-primary leading-snug">
                                 {market.title || market.question || 'Market'}
                               </p>
-                              <p className="text-xs text-[#9b9ca4] mt-1">{market.category || 'Market'}</p>
+                              <p className="text-xs text-text-secondary mt-1">{market.category || 'Market'}</p>
                             </div>
                           )}
                         </>
@@ -548,11 +548,11 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
 
                     {/* Post Image - Twitter Style */}
                     {(post.media && post.media.length > 0) && (
-                      <div className="rounded-xl overflow-hidden mb-3 border border-[#262830] cursor-pointer hover:opacity-90 transition-opacity">
+                      <div className="rounded-xl overflow-hidden mb-3 border border-border-default cursor-pointer hover:opacity-90 transition-opacity">
                         <img
                           src={post.media[0].url}
                           alt="Post"
-                          className="w-full max-h-[500px] object-contain bg-[#1c1d22]"
+                          className="w-full max-h-[500px] object-contain bg-background-hover"
                           onClick={(e) => {
                             e.stopPropagation();
                             // Open in modal or full screen
@@ -568,7 +568,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                 <div className="flex items-center gap-6 mt-2 ml-[52px]">
                   <button 
                     onClick={(e) => handleComment(post.id, e)}
-                    className="flex items-center gap-1 text-[#9b9ca4] hover:text-blue-500 transition-colors"
+                    className="flex items-center gap-1 text-text-secondary hover:text-blue-500 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -579,7 +579,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                     onClick={(e) => {
                       handleRepost(post.id, e);
                     }}
-                    className={`flex items-center gap-1 transition-colors ${repostedPosts.has(post.id) ? 'text-green-500' : 'text-[#9b9ca4] hover:text-green-500'}`}
+                    className={`flex items-center gap-1 transition-colors ${repostedPosts.has(post.id) ? 'text-green-500' : 'text-text-secondary hover:text-green-500'}`}
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
@@ -590,7 +590,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                     onClick={(e) => {
                       handleLike(post.id, e);
                     }}
-                    className={`flex items-center gap-1 transition-colors ${likedPosts.has(post.id) ? 'text-red-500' : 'text-[#9b9ca4] hover:text-red-500'}`}
+                    className={`flex items-center gap-1 transition-colors ${likedPosts.has(post.id) ? 'text-red-500' : 'text-text-secondary hover:text-red-500'}`}
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
@@ -601,7 +601,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
 
                 {/* Replies List - Show if enabled and there are replies */}
                 {showReplies[post.id] && (
-                  <div className="mt-4 ml-[52px] pt-4 border-t border-[#262830]" onClick={(e) => e.stopPropagation()}>
+                  <div className="mt-4 ml-[52px] pt-4 border-t border-border-default" onClick={(e) => e.stopPropagation()}>
                     {replies[post.id] && replies[post.id].length > 0 ? (
                       <div className="space-y-4">
                         {replies[post.id].map((reply) => (
@@ -617,8 +617,8 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                               }}
                             />
                           ) : (
-                            <div className="w-8 h-8 bg-[#262830] rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-xs font-bold text-[#9b9ca4]">
+                            <div className="w-8 h-8 bg-background-active rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-xs font-bold text-text-secondary">
                                 {reply.displayName?.[0]?.toUpperCase() || 'U'}
                               </span>
                             </div>
@@ -629,37 +629,37 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                             <div className="flex items-center gap-2 mb-1">
                               <Link 
                                 to={`/profile/${reply.uid}`} 
-                                className="font-semibold text-sm text-[#ececee] hover:underline"
+                                className="font-semibold text-sm text-text-primary hover:underline"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {reply.displayName || 'Anonymous'}
                               </Link>
-                              <span className="text-xs text-[#9b9ca4]">
+                              <span className="text-xs text-text-secondary">
                                 {reply.handle && reply.handle.trim() ? `@${reply.handle}` : `@${reply.uid?.slice(0, 6) || 'user'}`}
                               </span>
                               {reply.createdAt && (
                                 <>
-                                  <span className="text-xs text-[#9b9ca4]">·</span>
-                                  <span className="text-xs text-[#9b9ca4]">
+                                  <span className="text-xs text-text-secondary">·</span>
+                                  <span className="text-xs text-text-secondary">
                                     {formatTimeAgo(reply.createdAt.toDate ? reply.createdAt.toDate() : new Date(reply.createdAt))}
                                   </span>
                                 </>
                               )}
                             </div>
-                            <p className="text-sm text-[#ececee] whitespace-pre-wrap break-words">{reply.text}</p>
+                            <p className="text-sm text-text-primary whitespace-pre-wrap break-words">{reply.text}</p>
                           </div>
                         </div>
                       ))}
                       </div>
                     ) : (
-                      <div className="text-sm text-[#9b9ca4] py-2">No comments yet</div>
+                      <div className="text-sm text-text-secondary py-2">No comments yet</div>
                     )}
                   </div>
                 )}
 
                 {/* Inline Reply Box */}
                 {openReplyId === post.id && (
-                  <div className="mt-4 ml-[52px] pt-4 border-t border-[#262830]" onClick={(e) => e.stopPropagation()}>
+                  <div className="mt-4 ml-[52px] pt-4 border-t border-border-default" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-3">
                       {/* Avatar */}
                       {userProfile?.avatar ? (
@@ -678,8 +678,8 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                           className="w-10 h-10 rounded-full flex-shrink-0 object-cover"
                         />
                       ) : (
-                        <div className="w-10 h-10 bg-[#262830] rounded-full flex items-center justify-center flex-shrink-0">
-                          <svg className="w-6 h-6 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className="w-10 h-10 bg-background-active rounded-full flex items-center justify-center flex-shrink-0">
+                          <svg className="w-6 h-6 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                         </div>
@@ -691,7 +691,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                           value={replyTexts[post.id] || ''}
                           onChange={(e) => setReplyTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
                           placeholder="Write your reply..."
-                          className="w-full px-4 py-2 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] placeholder-gray-400 text-sm resize-none focus:outline-none focus:border-[#33353d] focus:bg-[#141519]"
+                          className="w-full px-4 py-2 bg-background-hover border border-border-default rounded-lg text-text-primary placeholder-gray-400 text-sm resize-none focus:outline-none focus:border-border-strong focus:bg-background-card"
                           rows={2}
                           autoFocus
                         />
@@ -701,14 +701,14 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                               setOpenReplyId(null);
                               setReplyTexts(prev => ({ ...prev, [post.id]: '' }));
                             }}
-                            className="px-4 py-1.5 text-[#9b9ca4] hover:bg-[#1c1d22] rounded-lg transition-colors"
+                            className="px-4 py-1.5 text-text-secondary hover:bg-background-hover rounded-lg transition-colors"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={() => handleReplySubmit(post.id)}
                             disabled={!replyTexts[post.id]?.trim()}
-                            className="px-4 py-1.5 bg-white text-[#0b0c0e] rounded-lg hover:bg-gray-200 disabled:bg-[#262830] disabled:text-[#6d6e77] disabled:cursor-not-allowed transition-colors"
+                            className="px-4 py-1.5 bg-inverse text-inverse-ink rounded-lg hover:bg-inverse-hover disabled:bg-background-active disabled:text-text-tertiary disabled:cursor-not-allowed transition-colors"
                           >
                             Reply
                           </button>
@@ -724,24 +724,24 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
 
           {socialPosts.length === 0 && activeTab === 'foryou' && (
             <div className="px-6 py-12 text-center">
-              <svg className="w-16 h-16 text-[#6d6e77] mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-16 h-16 text-text-tertiary mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              <p className="text-[#9b9ca4] text-lg font-medium">No posts yet</p>
-              <p className="text-[#6d6e77] text-sm mt-2">Be the first to share something!</p>
+              <p className="text-text-secondary text-lg font-medium">No posts yet</p>
+              <p className="text-text-tertiary text-sm mt-2">Be the first to share something!</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Right Sidebar - Clean */}
-      <div className="hidden lg:block w-[350px] bg-[#141519] border-l border-[#262830]">
+      <div className="hidden lg:block w-[350px] bg-background-card border-l border-border-default">
         <div className="sticky top-0 max-h-screen overflow-y-auto overscroll-contain">
           {/* Search Bar */}
           <div className="p-4 border-b border-transparent">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-5 w-5 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
@@ -750,28 +750,28 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search Portal"
-                className="w-full pl-10 pr-4 py-2.5 bg-[#1c1d22] border-0 rounded-full text-[#ececee] placeholder-gray-500 text-sm focus:outline-none focus:bg-[#141519] focus:ring-2 focus:ring-[#23DD9A] focus:ring-opacity-20 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-background-hover border-0 rounded-full text-text-primary placeholder-gray-500 text-sm focus:outline-none focus:bg-background-card focus:ring-2 focus:ring-[#23DD9A] focus:ring-opacity-20 transition-all"
               />
             </div>
             {/* Search Results */}
             {searchResults.length > 0 && (
-              <div className="mt-3 bg-[#141519] border border-[#262830] rounded-xl overflow-hidden shadow-sm">
+              <div className="mt-3 bg-background-card border border-border-default rounded-xl overflow-hidden shadow-sm">
                 {searchResults.map(u => (
                   <button
                     key={u.uid}
                     onClick={() => navigate(`/profile/${u.uid}`)}
-                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[#1c1d22] text-left"
+                    className="w-full flex items-center gap-3 px-3 py-2 hover:bg-background-hover text-left"
                   >
-                    <div className="w-8 h-8 rounded-full bg-[#262830] overflow-hidden flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-background-active overflow-hidden flex items-center justify-center">
                       {u.avatar ? (
                         <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xs font-bold text-[#9b9ca4]">{u.username?.[0]?.toUpperCase() || 'U'}</span>
+                        <span className="text-xs font-bold text-text-secondary">{u.username?.[0]?.toUpperCase() || 'U'}</span>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-[#ececee] truncate">{u.username}</div>
-                      <div className="text-xs text-[#9b9ca4] truncate">
+                      <div className="text-sm font-semibold text-text-primary truncate">{u.username}</div>
+                      <div className="text-xs text-text-secondary truncate">
                         {u.handle && u.handle.trim() ? `@${u.handle}` : `@${u.uid.slice(0,6)}...${u.uid.slice(-4)}`}
                       </div>
                     </div>
@@ -782,11 +782,11 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
           </div>
 
           {/* Trading Activity */}
-          <div className="p-4 pb-6 border-b border-[#262830]">
-            <h3 className="font-bold text-[#ececee] mb-4">Trading Activity</h3>
+          <div className="p-4 pb-6 border-b border-border-default">
+            <h3 className="font-bold text-text-primary mb-4">Trading Activity</h3>
             <div className="space-y-3 max-h-[640px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
               {recentTrades.length === 0 ? (
-                <div className="text-sm text-[#9b9ca4] py-4 text-center">No recent trades</div>
+                <div className="text-sm text-text-secondary py-4 text-center">No recent trades</div>
               ) : (
                 recentTrades.map(trade => {
                   const m = marketCache[trade.marketId];
@@ -814,21 +814,21 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                   return (
                     <div 
                       key={trade.id} 
-                      className="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-[#1c1d22] cursor-pointer transition-colors" 
+                      className="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-background-hover cursor-pointer transition-colors" 
                       onClick={() => navigate(`/market/${trade.marketId}`)}
                     >
                       <div className={`mt-1 flex-shrink-0 w-2 h-2 rounded-full ${trade.side === 'YES' ? 'bg-[#23DD9A]' : 'bg-[#FF1010]'}`}></div>
                       <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-[#ececee] leading-snug">
+                        <div className="text-sm font-semibold text-text-primary leading-snug">
                           <span className={trade.side === 'YES' ? 'text-[#23DD9A]' : 'text-[#FF1010]'}>
                             {trade.side}
                           </span>
                           {' '}${trade.amount.toFixed(2)}
                         </div>
-                        <div className="text-xs text-[#9b9ca4] mt-0.5 truncate">
+                        <div className="text-xs text-text-secondary mt-0.5 truncate">
                           {marketTitle}
                         </div>
-                        <div className="text-xs text-[#9b9ca4] mt-1">
+                        <div className="text-xs text-text-secondary mt-1">
                           @{userAddressShort} • {(m as any)?.category || 'Market'} • {formatTimeAgo(tradeDate)}
                         </div>
                       </div>

@@ -16,36 +16,36 @@ import InfiniteScrollSentinel from './InfiniteScrollSentinel';
 
 // A single post-shaped loading placeholder.
 const SkeletonCard: React.FC = () => (
-    <div className="bg-[#141519] rounded-2xl border border-[#262830] p-5 animate-pulse">
+    <div className="bg-background-card rounded-2xl border border-border-default p-5 animate-pulse">
         <div className="flex items-center gap-3 mb-4">
-            <div className="w-11 h-11 rounded-full bg-[#1c1d22]" />
+            <div className="w-11 h-11 rounded-full bg-background-hover" />
             <div className="flex-1 space-y-2">
-                <div className="h-3 w-32 bg-[#1c1d22] rounded" />
-                <div className="h-3 w-20 bg-[#141519] rounded" />
+                <div className="h-3 w-32 bg-background-hover rounded" />
+                <div className="h-3 w-20 bg-background-card rounded" />
             </div>
         </div>
         <div className="space-y-2">
-            <div className="h-3 w-full bg-[#1c1d22] rounded" />
-            <div className="h-3 w-4/5 bg-[#1c1d22] rounded" />
+            <div className="h-3 w-full bg-background-hover rounded" />
+            <div className="h-3 w-4/5 bg-background-hover rounded" />
         </div>
     </div>
 );
 
 // Empty-state card with an icon, title and hint.
 const EmptyState: React.FC<{ title: string; subtitle: string; children: React.ReactNode }> = ({ title, subtitle, children }) => (
-    <div className="text-center py-14 bg-[#141519] rounded-2xl border border-[#262830] shadow-sm">
-        <div className="w-16 h-16 mx-auto mb-4 bg-[#1c1d22] rounded-2xl flex items-center justify-center text-[#6d6e77]">
+    <div className="text-center py-14 bg-background-card rounded-2xl border border-border-default shadow-sm">
+        <div className="w-16 h-16 mx-auto mb-4 bg-background-hover rounded-2xl flex items-center justify-center text-text-tertiary">
             {children}
         </div>
-        <h3 className="text-lg font-semibold text-[#ececee] mb-1">{title}</h3>
-        <p className="text-sm text-[#9b9ca4]">{subtitle}</p>
+        <h3 className="text-lg font-semibold text-text-primary mb-1">{title}</h3>
+        <p className="text-sm text-text-secondary">{subtitle}</p>
     </div>
 );
 
 // Human-readable label + colour for a market status.
 const MARKET_STATUS_STYLES: Record<string, { label: string; className: string }> = {
     open: { label: 'Open', className: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
-    expired: { label: 'Ended', className: 'bg-[#1c1d22] text-[#9b9ca4] border-[#262830]' },
+    expired: { label: 'Ended', className: 'bg-background-hover text-text-secondary border-border-default' },
     pending_resolution: { label: 'Pending', className: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' },
     resolved_yes: { label: 'Resolved YES', className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
     resolved_no: { label: 'Resolved NO', className: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
@@ -59,10 +59,10 @@ const MarketActivityCard: React.FC<{ market: UserMarket }> = ({ market }) => {
     return (
         <Link
             to={`/market/${market.id}`}
-            className="block bg-[#141519] rounded-2xl p-5 border border-[#262830] shadow-sm hover:border-[#33353d] hover:shadow-md transition-all"
+            className="block bg-background-card rounded-2xl p-5 border border-border-default shadow-sm hover:border-border-strong hover:shadow-md transition-all"
         >
             <div className="flex items-start justify-between gap-3 mb-3">
-                <p className="text-sm md:text-[15px] font-semibold text-[#ececee] leading-snug line-clamp-2">
+                <p className="text-sm md:text-[15px] font-semibold text-text-primary leading-snug line-clamp-2">
                     {market.title}
                 </p>
                 <span className={`shrink-0 px-2 py-0.5 rounded-md text-xs font-medium border ${status.className}`}>
@@ -70,7 +70,7 @@ const MarketActivityCard: React.FC<{ market: UserMarket }> = ({ market }) => {
                 </span>
             </div>
             <div className="flex items-center gap-3 text-xs">
-                <span className="px-2 py-0.5 bg-[#1c1d22] text-[#9b9ca4] rounded font-medium">{market.category}</span>
+                <span className="px-2 py-0.5 bg-background-hover text-text-secondary rounded font-medium">{market.category}</span>
                 <span className="text-emerald-400 font-semibold">YES {yesPct}%</span>
                 <span className="text-rose-400 font-semibold">NO {100 - yesPct}%</span>
             </div>
@@ -538,10 +538,10 @@ const Profile: React.FC = () => {
     const hasCustomAvatar = !!profile?.avatar && profile.avatar.trim() !== '' && !profile.avatar.startsWith('blob:');
 
     return (
-        <div className="min-h-screen bg-[#0b0c0e]">
+        <div className="min-h-screen bg-background-body">
             <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 md:py-8">
                 {/* Profile Card */}
-                <div className="bg-[#141519] rounded-2xl border border-[#262830] shadow-sm overflow-hidden">
+                <div className="bg-background-card rounded-2xl border border-border-default shadow-sm overflow-hidden">
                     {/* Cover */}
                     <div className="relative h-36 md:h-52 bg-gradient-to-br from-gray-900 via-gray-800 to-black">
                         <div className="absolute inset-0 opacity-10" style={{
@@ -565,12 +565,12 @@ const Profile: React.FC = () => {
                                 <img
                                     src={profile!.avatar}
                                     alt={profile?.username || 'Profile'}
-                                    className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border-4 border-white shadow-lg object-cover bg-white"
+                                    className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border-4 border-white shadow-lg object-cover bg-inverse"
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                 />
                             ) : (
-                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border-4 border-white shadow-lg bg-gradient-to-br from-[#1c1d22] to-[#262830] flex items-center justify-center">
-                                    <svg className="w-12 h-12 md:w-16 md:h-16 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl border-4 border-white shadow-lg bg-gradient-to-br from-background-hover to-border-default flex items-center justify-center">
+                                    <svg className="w-12 h-12 md:w-16 md:h-16 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                     </svg>
                                 </div>
@@ -580,7 +580,7 @@ const Profile: React.FC = () => {
                                 {isViewingOwnProfile ? (
                                     <button
                                         onClick={() => setIsEditModalOpen(true)}
-                                        className="px-5 py-2 rounded-full text-sm font-semibold border-2 border-[#ececee] text-[#ececee] hover:bg-white hover:!text-[#0b0c0e] transition-colors"
+                                        className="px-5 py-2 rounded-full text-sm font-semibold border-2 border-text-primary text-text-primary hover:bg-inverse hover:!text-inverse-ink transition-colors"
                                     >
                                         Edit Profile
                                     </button>
@@ -590,8 +590,8 @@ const Profile: React.FC = () => {
                                         disabled={isLoadingFollow || !user?.uid}
                                         className={`px-6 py-2 rounded-full text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${
                                             isFollowingUser
-                                                ? 'border-2 border-[#ececee] text-[#ececee] hover:bg-[#1c1d22]'
-                                                : 'bg-white !text-[#0b0c0e] hover:bg-gray-200'
+                                                ? 'border-2 border-text-primary text-text-primary hover:bg-background-hover'
+                                                : 'bg-inverse !text-inverse-ink hover:bg-inverse-hover'
                                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                                     >
                                         {isLoadingFollow ? (
@@ -604,14 +604,14 @@ const Profile: React.FC = () => {
 
                         {/* Name + handle */}
                         <div className="mt-4">
-                            <h1 className="text-xl md:text-2xl font-bold text-[#ececee]">
+                            <h1 className="text-xl md:text-2xl font-bold text-text-primary">
                                 {profile?.username || 'Anonymous'}
                             </h1>
-                            <p className="text-sm text-[#9b9ca4] font-medium">{handleText}</p>
+                            <p className="text-sm text-text-secondary font-medium">{handleText}</p>
                         </div>
 
                         {/* Bio */}
-                        <p className="mt-3 text-sm md:text-[15px] text-[#9b9ca4] leading-relaxed whitespace-pre-wrap">
+                        <p className="mt-3 text-sm md:text-[15px] text-text-secondary leading-relaxed whitespace-pre-wrap">
                             {profile?.bio || 'No bio yet.'}
                         </p>
 
@@ -621,7 +621,7 @@ const Profile: React.FC = () => {
                                 href={`https://x.com/${profile.xHandle}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mt-3 inline-flex items-center gap-1.5 text-sm text-[#9b9ca4] hover:text-white transition-colors"
+                                className="mt-3 inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-white transition-colors"
                             >
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
@@ -631,24 +631,24 @@ const Profile: React.FC = () => {
                         )}
 
                         {/* Stats */}
-                        <div className="mt-5 grid grid-cols-3 divide-x divide-[#262830] rounded-xl border border-[#262830] bg-[#1c1d22] overflow-hidden">
+                        <div className="mt-5 grid grid-cols-3 divide-x divide-border-default rounded-xl border border-border-default bg-background-hover overflow-hidden">
                             <div className="px-3 py-3 text-center">
-                                <div className="text-lg font-bold text-[#ececee]">{postsCount}</div>
-                                <div className="text-xs text-[#9b9ca4] mt-0.5">Posts</div>
+                                <div className="text-lg font-bold text-text-primary">{postsCount}</div>
+                                <div className="text-xs text-text-secondary mt-0.5">Posts</div>
                             </div>
                             <button
                                 onClick={() => { /* TODO: open followers list */ }}
-                                className="px-3 py-3 text-center hover:bg-[#262830] transition-colors"
+                                className="px-3 py-3 text-center hover:bg-background-active transition-colors"
                             >
-                                <div className="text-lg font-bold text-[#ececee]">{followersCount}</div>
-                                <div className="text-xs text-[#9b9ca4] mt-0.5">Followers</div>
+                                <div className="text-lg font-bold text-text-primary">{followersCount}</div>
+                                <div className="text-xs text-text-secondary mt-0.5">Followers</div>
                             </button>
                             <button
                                 onClick={() => { /* TODO: open following list */ }}
-                                className="px-3 py-3 text-center hover:bg-[#262830] transition-colors"
+                                className="px-3 py-3 text-center hover:bg-background-active transition-colors"
                             >
-                                <div className="text-lg font-bold text-[#ececee]">{followingCount}</div>
-                                <div className="text-xs text-[#9b9ca4] mt-0.5">Following</div>
+                                <div className="text-lg font-bold text-text-primary">{followingCount}</div>
+                                <div className="text-xs text-text-secondary mt-0.5">Following</div>
                             </button>
                         </div>
                     </div>
@@ -656,15 +656,15 @@ const Profile: React.FC = () => {
 
                 {/* Tabs */}
                 <div className="mt-6 flex justify-center">
-                    <div className="inline-flex p-1 bg-[#1c1d22] rounded-full">
+                    <div className="inline-flex p-1 bg-background-hover rounded-full">
                         {(['posts', 'activity'] as const).map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
                                 className={`px-8 py-2 rounded-full text-sm font-semibold capitalize transition-all ${
                                     activeTab === tab
-                                        ? 'bg-white text-[#0b0c0e] shadow-sm'
-                                        : 'text-[#9b9ca4] hover:text-white'
+                                        ? 'bg-inverse text-inverse-ink shadow-sm'
+                                        : 'text-text-secondary hover:text-white'
                                 }`}
                             >
                                 {tab}
@@ -683,9 +683,9 @@ const Profile: React.FC = () => {
                                     {[...Array(3)].map((_, i) => <SkeletonCard key={i} />)}
                                 </div>
                             ) : displayedPosts.length > 0 ? (
-                                <div className="bg-[#141519] rounded-2xl border border-[#262830] shadow-sm overflow-hidden">
+                                <div className="bg-background-card rounded-2xl border border-border-default shadow-sm overflow-hidden">
                                     {displayedPosts.map((post, index) => (
-                                        <div key={post.id} className={index > 0 ? "border-t border-[#262830]" : ""}>
+                                        <div key={post.id} className={index > 0 ? "border-t border-border-default" : ""}>
                                             <FeedCard post={post} />
                                         </div>
                                     ))}
@@ -716,12 +716,12 @@ const Profile: React.FC = () => {
                                 <>
                                     {/* Markets Section — the user's market/bet activity */}
                                     <div>
-                                        <h3 className="text-base font-semibold text-[#ececee] mb-4 flex items-center gap-2">
+                                        <h3 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
                                             <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3v18h18M7 15l3-3 3 3 5-6" />
                                             </svg>
                                             {possessive} markets
-                                            <span className="text-[#6d6e77] font-normal">({createdMarkets.length})</span>
+                                            <span className="text-text-tertiary font-normal">({createdMarkets.length})</span>
                                         </h3>
                                         {createdMarkets.length > 0 ? (
                                             <div className="space-y-3">
@@ -743,17 +743,17 @@ const Profile: React.FC = () => {
 
                                     {/* Liked Posts Section */}
                                     <div>
-                                        <h3 className="text-base font-semibold text-[#ececee] mb-4 flex items-center gap-2">
+                                        <h3 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
                                             <svg className="w-5 h-5 text-rose-400" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                                             </svg>
                                             Liked posts
-                                            <span className="text-[#6d6e77] font-normal">({likedPosts.length})</span>
+                                            <span className="text-text-tertiary font-normal">({likedPosts.length})</span>
                                         </h3>
                                         {likedPosts.length > 0 ? (
-                                            <div className="bg-[#141519] rounded-2xl border border-[#262830] shadow-sm overflow-hidden">
+                                            <div className="bg-background-card rounded-2xl border border-border-default shadow-sm overflow-hidden">
                                                 {likedPosts.map((post, index) => (
-                                                    <div key={post.id} className={index > 0 ? "border-t border-[#262830]" : ""}>
+                                                    <div key={post.id} className={index > 0 ? "border-t border-border-default" : ""}>
                                                         <FeedCard post={post} />
                                                     </div>
                                                 ))}
@@ -769,32 +769,32 @@ const Profile: React.FC = () => {
 
                                     {/* Comments Section */}
                                     <div>
-                                        <h3 className="text-base font-semibold text-[#ececee] mb-4 flex items-center gap-2">
-                                            <svg className="w-5 h-5 text-[#9b9ca4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <h3 className="text-base font-semibold text-text-primary mb-4 flex items-center gap-2">
+                                            <svg className="w-5 h-5 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                             </svg>
                                             {possessive} comments
-                                            <span className="text-[#6d6e77] font-normal">({userComments.length})</span>
+                                            <span className="text-text-tertiary font-normal">({userComments.length})</span>
                                         </h3>
                                         {userComments.length > 0 ? (
                                             <div className="space-y-3">
                                                 {userComments.map(comment => (
-                                                    <div key={comment.id} className="bg-[#141519] rounded-2xl p-5 border border-[#262830] shadow-sm">
+                                                    <div key={comment.id} className="bg-background-card rounded-2xl p-5 border border-border-default shadow-sm">
                                                         <div className="flex items-start gap-3">
-                                                            <div className="w-10 h-10 rounded-full bg-[#262830] flex items-center justify-center flex-shrink-0">
+                                                            <div className="w-10 h-10 rounded-full bg-background-active flex items-center justify-center flex-shrink-0">
                                                                 <span className="text-white font-semibold text-sm">
                                                                     {comment.displayName.charAt(0).toUpperCase()}
                                                                 </span>
                                                             </div>
                                                             <div className="flex-1 min-w-0">
                                                                 <div className="flex items-center gap-2 mb-1 text-sm">
-                                                                    <span className="text-[#ececee] font-semibold truncate">{comment.displayName}</span>
-                                                                    <span className="text-[#6d6e77] truncate">{comment.handle}</span>
-                                                                    <span className="text-[#6d6e77]">•</span>
-                                                                    <span className="text-[#6d6e77]">{formatTimeAgo(comment.createdAt)}</span>
+                                                                    <span className="text-text-primary font-semibold truncate">{comment.displayName}</span>
+                                                                    <span className="text-text-tertiary truncate">{comment.handle}</span>
+                                                                    <span className="text-text-tertiary">•</span>
+                                                                    <span className="text-text-tertiary">{formatTimeAgo(comment.createdAt)}</span>
                                                                 </div>
-                                                                <p className="text-[#ececee] text-sm mb-2 whitespace-pre-wrap break-words">{comment.text}</p>
-                                                                <a href={`/post/${comment.postId}`} className="text-xs text-[#9b9ca4] hover:text-white transition-colors">
+                                                                <p className="text-text-primary text-sm mb-2 whitespace-pre-wrap break-words">{comment.text}</p>
+                                                                <a href={`/post/${comment.postId}`} className="text-xs text-text-secondary hover:text-white transition-colors">
                                                                     Replying to post #{comment.postId.slice(0, 8)}
                                                                 </a>
                                                             </div>
@@ -820,32 +820,32 @@ const Profile: React.FC = () => {
             {/* Edit Profile Modal */}
             {isEditModalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9998] p-4">
-                    <div className="bg-[#141519] rounded-3xl border border-[#262830] p-4 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl relative">
+                    <div className="bg-background-card rounded-3xl border border-border-default p-4 md:p-8 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl relative">
                         {/* Close Button */}
                         <button
                             onClick={() => setIsEditModalOpen(false)}
-                            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-[#1c1d22] hover:bg-[#262830] transition-colors"
+                            className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-background-hover hover:bg-background-active transition-colors"
                         >
-                            <svg className="w-5 h-5 text-[#9b9ca4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 text-text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
 
-                        <h3 className="text-xl md:text-2xl font-bold text-[#ececee] mb-6 md:mb-8 pr-8">Edit Profile</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-text-primary mb-6 md:mb-8 pr-8">Edit Profile</h3>
 
                         <form onSubmit={handleSave} className="space-y-4 md:space-y-6">
                             {/* Avatar preview */}
                             <div className="flex items-center gap-4">
                                 {formData.avatar && !formData.avatar.startsWith('blob:') ? (
-                                    <img src={formData.avatar} alt="Avatar preview" className="w-16 h-16 rounded-2xl object-cover border border-[#262830]" />
+                                    <img src={formData.avatar} alt="Avatar preview" className="w-16 h-16 rounded-2xl object-cover border border-border-default" />
                                 ) : (
-                                    <div className="w-16 h-16 rounded-2xl bg-[#1c1d22] flex items-center justify-center">
-                                        <svg className="w-8 h-8 text-[#6d6e77]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div className="w-16 h-16 rounded-2xl bg-background-hover flex items-center justify-center">
+                                        <svg className="w-8 h-8 text-text-tertiary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                         </svg>
                                     </div>
                                 )}
-                                <label htmlFor="avatar" className="cursor-pointer px-4 py-2 rounded-lg border border-[#262830] text-sm font-semibold text-[#9b9ca4] hover:bg-[#1c1d22] transition-colors">
+                                <label htmlFor="avatar" className="cursor-pointer px-4 py-2 rounded-lg border border-border-default text-sm font-semibold text-text-secondary hover:bg-background-hover transition-colors">
                                     Change photo
                                     <input
                                         type="file"
@@ -860,41 +860,41 @@ const Profile: React.FC = () => {
 
                             {/* Display Name */}
                             <div>
-                                <label htmlFor="username" className="block text-sm font-semibold text-[#9b9ca4] mb-2">Display Name</label>
+                                <label htmlFor="username" className="block text-sm font-semibold text-text-secondary mb-2">Display Name</label>
                                 <input
                                     type="text"
                                     id="username"
                                     name="username"
                                     value={formData.username}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-3 border bg-[#1c1d22] border-[#262830] rounded-xl shadow-sm focus:ring-2 focus:ring-[#ececee] focus:border-[#ececee] text-[#ececee] placeholder-[#6d6e77]"
+                                    className="w-full px-4 py-3 border bg-background-hover border-border-default rounded-xl shadow-sm focus:ring-2 focus:ring-text-primary focus:border-text-primary text-text-primary placeholder-text-tertiary"
                                     placeholder="Enter display name"
                                 />
                             </div>
 
                             {/* Username Handle */}
                             <div>
-                                <label htmlFor="handle" className="block text-sm font-semibold text-[#9b9ca4] mb-2">Username</label>
+                                <label htmlFor="handle" className="block text-sm font-semibold text-text-secondary mb-2">Username</label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-3.5 text-[#9b9ca4]">@</span>
+                                    <span className="absolute left-4 top-3.5 text-text-secondary">@</span>
                                     <input
                                         type="text"
                                         id="handle"
                                         name="handle"
                                         value={formData.handle || ''}
                                         onChange={handleInputChange}
-                                        className="w-full pl-8 pr-4 py-3 border bg-[#1c1d22] border-[#262830] rounded-xl shadow-sm focus:ring-2 focus:ring-[#ececee] focus:border-[#ececee] text-[#ececee] placeholder-[#6d6e77]"
+                                        className="w-full pl-8 pr-4 py-3 border bg-background-hover border-border-default rounded-xl shadow-sm focus:ring-2 focus:ring-text-primary focus:border-text-primary text-text-primary placeholder-text-tertiary"
                                         placeholder="johndoe"
                                         pattern="[a-zA-Z0-9_]+"
                                         title="Only letters, numbers, and underscores allowed"
                                     />
                                 </div>
-                                <p className="text-xs text-[#9b9ca4] mt-2">This will be your unique @username. Letters, numbers, and underscores only.</p>
+                                <p className="text-xs text-text-secondary mt-2">This will be your unique @username. Letters, numbers, and underscores only.</p>
                             </div>
 
                             {/* Bio */}
                             <div>
-                                <label htmlFor="bio" className="block text-sm font-semibold text-[#9b9ca4] mb-2">Bio</label>
+                                <label htmlFor="bio" className="block text-sm font-semibold text-text-secondary mb-2">Bio</label>
                                 <textarea
                                     id="bio"
                                     name="bio"
@@ -902,28 +902,28 @@ const Profile: React.FC = () => {
                                     onChange={handleInputChange}
                                     rows={4}
                                     maxLength={280}
-                                    className="w-full px-4 py-3 border bg-[#1c1d22] border-[#262830] rounded-xl shadow-sm focus:ring-2 focus:ring-[#ececee] focus:border-[#ececee] text-[#ececee] placeholder-[#6d6e77] resize-none"
+                                    className="w-full px-4 py-3 border bg-background-hover border-border-default rounded-xl shadow-sm focus:ring-2 focus:ring-text-primary focus:border-text-primary text-text-primary placeholder-text-tertiary resize-none"
                                     placeholder="Tell us about yourself..."
                                 />
-                                <div className="text-xs text-[#9b9ca4] mt-2">
+                                <div className="text-xs text-text-secondary mt-2">
                                     {(formData.bio || '').length}/280 characters
                                 </div>
                             </div>
 
                             {/* X Handle */}
                             <div>
-                                <label htmlFor="xHandle" className="block text-sm font-semibold text-[#9b9ca4] mb-2">X Handle</label>
+                                <label htmlFor="xHandle" className="block text-sm font-semibold text-text-secondary mb-2">X Handle</label>
                                 <input
                                     type="text"
                                     id="xHandle"
                                     name="xHandle"
                                     value={formData.xHandle || ''}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-3 border bg-[#1c1d22] border-[#262830] rounded-xl shadow-sm focus:ring-2 focus:ring-[#ececee] focus:border-[#ececee] text-[#ececee] placeholder-[#6d6e77]"
+                                    className="w-full px-4 py-3 border bg-background-hover border-border-default rounded-xl shadow-sm focus:ring-2 focus:ring-text-primary focus:border-text-primary text-text-primary placeholder-text-tertiary"
                                     placeholder="username"
                                     pattern="^@?[A-Za-z0-9_]{1,15}$"
                                 />
-                                <div className="text-xs text-[#9b9ca4] mt-2">
+                                <div className="text-xs text-text-secondary mt-2">
                                     Enter without @ symbol
                                 </div>
                             </div>
@@ -933,13 +933,13 @@ const Profile: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={handleCancel}
-                                    className="w-full sm:w-auto px-6 py-3 border border-[#262830] rounded-xl text-sm font-semibold text-[#9b9ca4] hover:bg-[#1c1d22] transition-all duration-200"
+                                    className="w-full sm:w-auto px-6 py-3 border border-border-default rounded-xl text-sm font-semibold text-text-secondary hover:bg-background-hover transition-all duration-200"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="w-full sm:w-auto px-6 py-3 bg-white hover:bg-gray-200 !text-[#0b0c0e] text-sm font-semibold rounded-xl transition-all duration-200"
+                                    className="w-full sm:w-auto px-6 py-3 bg-inverse hover:bg-inverse-hover !text-inverse-ink text-sm font-semibold rounded-xl transition-all duration-200"
                                 >
                                     Save Changes
                                 </button>

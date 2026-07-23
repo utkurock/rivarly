@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useFirebase } from '../contexts/FirebaseContext';
 import AccountMenu from './AccountMenu';
+import ThemeToggle from './ThemeToggle';
 
 // Get user profile from Firebase context
 export const useUserProfile = () => {
@@ -19,8 +20,8 @@ const NavLink: React.FC<{ to: string; icon: React.ReactNode; children: React.Rea
             onClick={onClick}
             className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg transition-all duration-200 ${
                 isActive
-                    ? 'bg-[#1c1d22] font-medium text-[#ececee]'
-                    : 'text-[#8b8d98] hover:bg-[#141519] hover:text-[#ececee]'
+                    ? 'bg-background-hover font-medium text-text-primary'
+                    : 'text-text-secondary hover:bg-background-card hover:text-text-primary'
             }`}
         >
             <span className="flex-shrink-0">
@@ -56,16 +57,16 @@ const Sidebar: React.FC<SidebarProps> = ({ onCreateMarket, isMobileMenuOpen, set
 
         {/* Sidebar */}
         <aside className={`
-            fixed md:sticky top-0 h-full md:h-full w-64 bg-[#0b0c0e] border-r border-[#20222a] flex-shrink-0 flex flex-col z-50
+            fixed md:sticky top-0 h-full md:h-full w-64 bg-background-body border-r border-border-default flex-shrink-0 flex flex-col z-50
             md:translate-x-0 transition-transform duration-300 ease-in-out
             ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
-            <Link to="/" className="px-4 pt-4 pb-5 flex-shrink-0 border-b border-[#20222a] hover:bg-[#141519] transition-colors cursor-pointer">
+            <Link to="/" className="px-4 pt-4 pb-5 flex-shrink-0 border-b border-border-default hover:bg-background-card transition-colors cursor-pointer">
                 <div className="w-full flex items-center justify-center gap-2">
                     <svg className="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.9 5.7 21.4 8 14 2 9.4h7.6z" />
                     </svg>
-                    <span className="text-2xl font-extrabold tracking-tight text-[#ececee]">Starcast</span>
+                    <span className="text-2xl font-extrabold tracking-tight text-text-primary">Starcast</span>
                 </div>
             </Link>
 
@@ -165,7 +166,12 @@ const Sidebar: React.FC<SidebarProps> = ({ onCreateMarket, isMobileMenuOpen, set
                 </NavLink>
             </nav>
 
-            <div className="flex-shrink-0 p-4 border-t border-[#20222a]">
+            <div className="flex-shrink-0 px-3 pb-2 pt-3">
+                 {/* Light / dark theme switch */}
+                 <ThemeToggle variant="full" />
+            </div>
+
+            <div className="flex-shrink-0 p-4 border-t border-border-default">
                  {/* Combined wallet + profile account menu */}
                  <AccountMenu onNavigate={() => setIsMobileMenuOpen(false)} />
             </div>

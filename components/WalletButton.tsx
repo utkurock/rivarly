@@ -54,20 +54,20 @@ export const WalletPicker: React.FC<{ onClose: () => void }> = ({ onClose }) => 
       onClick={onClose}
     >
       <div
-        className="w-full max-w-sm bg-[#141519] rounded-2xl border border-[#262830] shadow-2xl overflow-hidden animate-wallet-in"
+        className="w-full max-w-sm bg-background-card rounded-2xl border border-border-default shadow-2xl overflow-hidden animate-wallet-in"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#262830]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border-default">
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-lg bg-white text-[#0b0c0e] flex items-center justify-center">
+            <span className="w-8 h-8 rounded-lg bg-inverse text-inverse-ink flex items-center justify-center">
               <WalletGlyph className="w-4 h-4" />
             </span>
-            <h3 className="text-base font-bold text-[#ececee]">Connect Wallet</h3>
+            <h3 className="text-base font-bold text-text-primary">Connect Wallet</h3>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full text-[#6d6e77] hover:bg-[#1c1d22] hover:text-[#ececee] transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-text-tertiary hover:bg-background-hover hover:text-text-primary transition-colors"
             aria-label="Close"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,13 +82,13 @@ export const WalletPicker: React.FC<{ onClose: () => void }> = ({ onClose }) => 
             <div className="space-y-2">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="flex items-center gap-3 p-3 rounded-xl animate-pulse">
-                  <div className="w-9 h-9 rounded-lg bg-[#1c1d22]" />
-                  <div className="h-3.5 w-28 bg-[#1c1d22] rounded" />
+                  <div className="w-9 h-9 rounded-lg bg-background-hover" />
+                  <div className="h-3.5 w-28 bg-background-hover rounded" />
                 </div>
               ))}
             </div>
           ) : wallets.length === 0 ? (
-            <p className="text-center text-sm text-[#9b9ca4] py-8">No Stellar wallets detected.</p>
+            <p className="text-center text-sm text-text-secondary py-8">No Stellar wallets detected.</p>
           ) : (
             <div className="space-y-1">
               {wallets.map((w) => (
@@ -96,16 +96,16 @@ export const WalletPicker: React.FC<{ onClose: () => void }> = ({ onClose }) => 
                   key={w.id}
                   onClick={() => handleSelect(w)}
                   disabled={connecting}
-                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-[#1c1d22] border border-transparent hover:border-[#262830] transition-colors text-left disabled:opacity-60 group"
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-background-hover border border-transparent hover:border-border-default transition-colors text-left disabled:opacity-60 group"
                 >
                   <img src={w.icon} alt="" className="w-9 h-9 rounded-lg object-contain flex-shrink-0" />
-                  <span className="flex-1 text-sm font-semibold text-[#ececee]">{w.name}</span>
+                  <span className="flex-1 text-sm font-semibold text-text-primary">{w.name}</span>
                   {pendingId === w.id ? (
                     <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
                   ) : w.isAvailable ? (
-                    <span className="text-xs font-medium text-[#6d6e77] group-hover:text-[#9b9ca4]">Connect</span>
+                    <span className="text-xs font-medium text-text-tertiary group-hover:text-text-secondary">Connect</span>
                   ) : (
-                    <span className="text-xs font-medium text-[#6d6e77] flex items-center gap-1">
+                    <span className="text-xs font-medium text-text-tertiary flex items-center gap-1">
                       Install
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
@@ -121,9 +121,9 @@ export const WalletPicker: React.FC<{ onClose: () => void }> = ({ onClose }) => 
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-3 border-t border-[#262830] flex items-center justify-center gap-1.5">
+        <div className="px-5 py-3 border-t border-border-default flex items-center justify-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span className="text-xs text-[#6d6e77]">Stellar {networkLabel}</span>
+          <span className="text-xs text-text-tertiary">Stellar {networkLabel}</span>
         </div>
       </div>
 
@@ -153,10 +153,10 @@ const WalletButton: React.FC = () => {
         <button
           onClick={() => setPickerOpen(true)}
           disabled={connecting}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-gray-200 text-[#0b0c0e] text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-inverse hover:bg-inverse-hover text-inverse-ink text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {connecting ? (
-            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#0b0c0e]" />
+            <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-background-body" />
           ) : (
             <WalletGlyph className="w-[18px] h-[18px]" />
           )}
@@ -168,23 +168,23 @@ const WalletButton: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center gap-1 rounded-xl border border-[#262830] bg-[#1c1d22] p-1.5 pl-2.5">
+    <div className="flex items-center gap-1 rounded-xl border border-border-default bg-background-hover p-1.5 pl-2.5">
       {/* Click the chip to open your profile */}
       <Link to="/profile" className="flex-1 min-w-0 group" title="Open profile">
-        <div className="text-sm font-semibold text-[#ececee] font-mono truncate group-hover:text-[#9b9ca4] transition-colors">
+        <div className="text-sm font-semibold text-text-primary font-mono truncate group-hover:text-text-secondary transition-colors">
           {shortenAddress(address)}
         </div>
         <div className="mt-0.5 flex items-center gap-1.5">
           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isMainnet ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
             {networkLabel}
           </span>
-          <span className="text-[10px] text-[#6d6e77]">Stellar</span>
+          <span className="text-[10px] text-text-tertiary">Stellar</span>
         </div>
       </Link>
       <button
         onClick={disconnect}
         title="Disconnect"
-        className="w-8 h-8 flex items-center justify-center rounded-lg text-[#6d6e77] hover:text-rose-400 hover:bg-[#262830] transition-colors flex-shrink-0"
+        className="w-8 h-8 flex items-center justify-center rounded-lg text-text-tertiary hover:text-rose-400 hover:bg-background-active transition-colors flex-shrink-0"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

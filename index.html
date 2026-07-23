@@ -8,18 +8,64 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <script>
+      // Apply the saved (or system) theme before first paint to avoid a flash.
+      (function () {
+        try {
+          var saved = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var theme = saved || 'dark'; // default dark (brand)
+          var root = document.documentElement;
+          root.classList.remove('light', 'dark');
+          root.classList.add(theme);
+          root.style.colorScheme = theme;
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <style>
-      /* Single dark theme (Packet-inspired). */
-      :root {
+      /* Theme tokens — dark is the brand default, light is a clean Base/Warpcast-style surface. */
+      :root, .dark {
         --color-background-body: #0b0c0e;
         --color-background-card: #141519;
         --color-background-hover: #1c1d22;
+        --color-background-active: #262830;
         --color-text-primary: #ececee;
         --color-text-secondary: #9b9ca4;
+        --color-text-tertiary: #6d6e77;
         --color-border-default: #262830;
+        --color-border-strong: #33353d;
+        /* Inverse = high-contrast solid (primary buttons, active pills). Flips with theme. */
+        --color-inverse: #ffffff;
+        --color-inverse-hover: #e5e7eb;
+        --color-inverse-ink: #0b0c0e;
+        --color-scroll-track: #141519;
+        --color-scroll-thumb: #2c2e37;
+        --color-scroll-thumb-hover: #3a3d47;
         --color-base-blue: #4c6ef5;
         --color-base-green: #22C55E;
         --color-base-red: #EF4444;
+      }
+      .light {
+        --color-background-body: #ffffff;
+        --color-background-card: #f7f8fa;
+        --color-background-hover: #eef0f3;
+        --color-background-active: #e5e8ee;
+        --color-text-primary: #14151a;
+        --color-text-secondary: #5b5e69;
+        --color-text-tertiary: #868a94;
+        --color-border-default: #e4e6eb;
+        --color-border-strong: #d3d6dd;
+        --color-inverse: #14151a;
+        --color-inverse-hover: #2b2d36;
+        --color-inverse-ink: #ffffff;
+        --color-scroll-track: #eef0f3;
+        --color-scroll-thumb: #cbced5;
+        --color-scroll-thumb-hover: #b4b8c1;
+        --color-base-blue: #3b5bdb;
+        --color-base-green: #16a34a;
+        --color-base-red: #dc2626;
       }
     </style>
     <script>
@@ -38,9 +84,15 @@
               'background-body': 'var(--color-background-body)',
               'background-card': 'var(--color-background-card)',
               'background-hover': 'var(--color-background-hover)',
+              'background-active': 'var(--color-background-active)',
               'text-primary': 'var(--color-text-primary)',
               'text-secondary': 'var(--color-text-secondary)',
+              'text-tertiary': 'var(--color-text-tertiary)',
               'border-default': 'var(--color-border-default)',
+              'border-strong': 'var(--color-border-strong)',
+              'inverse': 'var(--color-inverse)',
+              'inverse-hover': 'var(--color-inverse-hover)',
+              'inverse-ink': 'var(--color-inverse-ink)',
             },
           },
         },
@@ -48,7 +100,7 @@
     </script>
 <link rel="stylesheet" href="/index.css">
 </head>
-  <body class="bg-[#0b0c0e] text-[#ececee]">
+  <body class="bg-background-body text-text-primary">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

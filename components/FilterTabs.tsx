@@ -32,7 +32,7 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#141519] border-b border-[#262830]">
+    <div className="w-full bg-background-card border-b border-border-default">
       <div className="w-full px-3 md:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-2 md:py-4 gap-2 md:gap-4">
           
@@ -40,7 +40,7 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
           <div className="md:hidden w-full relative">
             <button
               onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-              className="w-full px-4 py-2.5 bg-[#1c1d22] border border-[#262830] rounded-lg flex items-center justify-between text-sm font-medium text-[#ececee]"
+              className="w-full px-4 py-2.5 bg-background-hover border border-border-default rounded-lg flex items-center justify-between text-sm font-medium text-text-primary"
             >
               <span>{activeCategory}</span>
               <svg className={`w-4 h-4 transition-transform ${isCategoryDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -54,7 +54,7 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
                   className="fixed inset-0 z-40 bg-black/50" 
                   onClick={() => setIsCategoryDropdownOpen(false)}
                 />
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#141519] border border-[#262830] rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-background-card border border-border-default rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                   {CATEGORIES.map(category => (
                     <button
                       key={category}
@@ -64,8 +64,8 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
                       }}
                       className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
                         activeCategory === category
-                          ? 'bg-white !text-[#0b0c0e]'
-                          : 'text-[#9b9ca4] hover:bg-[#1c1d22]'
+                          ? 'bg-inverse !text-inverse-ink'
+                          : 'text-text-secondary hover:bg-background-hover'
                       }`}
                     >
                       {activeCategory === category && (
@@ -89,8 +89,8 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
                 onClick={() => setActiveCategory(category)}
                 className={`px-4 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${
                   activeCategory === category
-                    ? 'bg-white !text-[#0b0c0e]'
-                    : 'text-[#9b9ca4] hover:text-white hover:bg-[#1c1d22]'
+                    ? 'bg-inverse !text-inverse-ink'
+                    : 'text-text-secondary hover:text-white hover:bg-background-hover'
                 }`}
               >
                 {category}
@@ -104,7 +104,7 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
             <div className="md:hidden flex-1 relative">
               <button
                 onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                className="w-full px-4 py-2.5 bg-[#1c1d22] border border-[#262830] rounded-lg flex items-center justify-between text-sm font-medium text-[#ececee]"
+                className="w-full px-4 py-2.5 bg-background-hover border border-border-default rounded-lg flex items-center justify-between text-sm font-medium text-text-primary"
               >
                 <span>{activeStatus.join(', ')}</span>
                 <svg className={`w-4 h-4 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +118,7 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
                     className="fixed inset-0 z-40 bg-black/50" 
                     onClick={() => setIsStatusDropdownOpen(false)}
                   />
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#141519] border border-[#262830] rounded-lg shadow-lg z-50">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-background-card border border-border-default rounded-lg shadow-lg z-50">
                     {STATUS_FILTERS.map(status => (
                       <button
                         key={status}
@@ -127,8 +127,8 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
                         }}
                         className={`w-full px-4 py-3 text-left text-sm font-medium transition-colors ${
                           activeStatus.includes(status)
-                            ? 'bg-white !text-[#0b0c0e]'
-                            : 'text-[#9b9ca4] hover:bg-[#1c1d22]'
+                            ? 'bg-inverse !text-inverse-ink'
+                            : 'text-text-secondary hover:bg-background-hover'
                         }`}
                       >
                         {activeStatus.includes(status) && (
@@ -152,8 +152,8 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
                   onClick={() => handleStatusToggle(status)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-full transition-all whitespace-nowrap ${
                     activeStatus.includes(status)
-                      ? 'bg-white !text-[#0b0c0e]'
-                      : 'text-[#9b9ca4] hover:text-white hover:bg-[#1c1d22]'
+                      ? 'bg-inverse !text-inverse-ink'
+                      : 'text-text-secondary hover:text-white hover:bg-background-hover'
                   }`}
                 >
                   {status}
@@ -166,7 +166,7 @@ const FilterTabs: React.FC<FilterTabsProps> = ({
             {onCreateMarket && (
               <button
                 onClick={onCreateMarket}
-                className="hidden md:flex px-4 py-2 bg-white hover:bg-gray-200 text-[#0b0c0e] text-sm font-semibold rounded-lg transition-colors"
+                className="hidden md:flex px-4 py-2 bg-inverse hover:bg-inverse-hover text-inverse-ink text-sm font-semibold rounded-lg transition-colors"
               >
                 Create Market
               </button>

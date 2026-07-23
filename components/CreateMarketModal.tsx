@@ -88,28 +88,28 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
 
   return (
     <div className="fixed inset-0 bg-black/60 z-[9998] flex justify-center items-center p-2 md:p-4 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-[#141519] rounded-xl shadow-2xl p-0 w-full max-w-[95vw] md:max-w-2xl max-h-[95vh] overflow-y-auto m-2 md:m-4 relative animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-background-card rounded-xl shadow-2xl p-0 w-full max-w-[95vw] md:max-w-2xl max-h-[95vh] overflow-y-auto m-2 md:m-4 relative animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
         {/* Success Notification */}
         {showSuccess && (
-          <div className="absolute inset-0 bg-[#141519]/95 backdrop-blur-sm z-50 rounded-xl flex items-center justify-center">
+          <div className="absolute inset-0 bg-background-card/95 backdrop-blur-sm z-50 rounded-xl flex items-center justify-center">
             <div className="text-center">
               <div className="w-20 h-20 mx-auto mb-4 bg-green-500/10 rounded-full flex items-center justify-center">
                 <svg className="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-[#ececee] mb-2">Market Created!</h3>
-              <p className="text-[#9b9ca4]">Your market has been created successfully</p>
+              <h3 className="text-2xl font-bold text-text-primary mb-2">Market Created!</h3>
+              <p className="text-text-secondary">Your market has been created successfully</p>
             </div>
           </div>
         )}
 
         {/* Header */}
-        <div className="sticky top-0 bg-[#141519] border-b border-[#262830] px-4 md:px-6 py-3 md:py-4 flex items-center justify-between rounded-t-xl z-10">
-          <h3 className="text-lg md:text-xl font-bold text-[#ececee]">Create Market</h3>
+        <div className="sticky top-0 bg-background-card border-b border-border-default px-4 md:px-6 py-3 md:py-4 flex items-center justify-between rounded-t-xl z-10">
+          <h3 className="text-lg md:text-xl font-bold text-text-primary">Create Market</h3>
           <button
             onClick={onClose}
-            className="text-[#6d6e77] hover:text-[#9b9ca4] transition-colors"
+            className="text-text-tertiary hover:text-text-secondary transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -121,14 +121,14 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
         <div className="p-6 space-y-6">
           <div className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Market Question <span className="text-red-500">*</span>
               </label>
               <textarea
                 rows={3}
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-[#33353d] transition-colors placeholder-[#6d6e77] resize-none"
+                className="w-full px-4 py-2.5 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-border-strong transition-colors placeholder-text-tertiary resize-none"
                 placeholder="e.g., Will ETH reach $5000 by the end of Q4?"
               />
               {!question.trim() && <p className="mt-1.5 text-xs text-amber-400">Question is required.</p>}
@@ -138,20 +138,20 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Category <span className="text-red-500">*</span>
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-[#33353d] transition-colors"
+                className="w-full px-4 py-2.5 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-border-strong transition-colors"
               >
                 {CATEGORIES.filter(c => c !== 'All').map(cat => (<option key={cat} value={cat}>{cat}</option>))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#9b9ca4] mb-2">
+              <label className="block text-sm font-medium text-text-secondary mb-2">
                 Expiry Date <span className="text-red-500">*</span>
               </label>
               <DateTimePicker
@@ -161,23 +161,23 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
                 max={maxDate}
                 placeholder="Select expiry date & time"
               />
-              <p className="text-xs text-[#9b9ca4] mt-1.5">Minimum: 1 hour from now · up to {MAX_YEARS_AHEAD} years ahead</p>
+              <p className="text-xs text-text-secondary mt-1.5">Minimum: 1 hour from now · up to {MAX_YEARS_AHEAD} years ahead</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#9b9ca4] mb-2">Sources (Optional)</label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Sources (Optional)</label>
               <div className="flex gap-2">
                 <input
                   type="url"
                   value={newSource}
                   onChange={(e) => setNewSource(e.target.value)}
-                  className="flex-1 px-4 py-2.5 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-[#33353d] transition-colors placeholder-[#6d6e77]"
+                  className="flex-1 px-4 py-2.5 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-border-strong transition-colors placeholder-text-tertiary"
                   placeholder="https://example.com/source"
                 />
                 <button
                   type="button"
                   onClick={() => { if (newSource.trim()) { setSources(prev => [...prev, newSource.trim()]); setNewSource(''); } }}
-                  className="px-5 py-2.5 bg-white hover:bg-gray-200 !text-[#0b0c0e] rounded-lg text-sm font-semibold transition-colors"
+                  className="px-5 py-2.5 bg-inverse hover:bg-inverse-hover !text-inverse-ink rounded-lg text-sm font-semibold transition-colors"
                 >
                   Add
                 </button>
@@ -185,8 +185,8 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
               {!!sources.length && (
                 <div className="mt-3 space-y-2">
                   {sources.map((source, idx) => (
-                    <div key={idx} className="flex items-center justify-between bg-[#1c1d22] rounded-lg px-4 py-3 border border-[#262830]">
-                      <span className="text-sm text-[#ececee] truncate flex-1 mr-3">{source}</span>
+                    <div key={idx} className="flex items-center justify-between bg-background-hover rounded-lg px-4 py-3 border border-border-default">
+                      <span className="text-sm text-text-primary truncate flex-1 mr-3">{source}</span>
                       <button
                         type="button"
                         onClick={() => setSources(prev => prev.filter((_, i) => i !== idx))}
@@ -201,12 +201,12 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-[#9b9ca4] mb-2">Info (Optional)</label>
+              <label className="block text-sm font-medium text-text-secondary mb-2">Info (Optional)</label>
               <textarea
                 rows={4}
                 value={info}
                 onChange={(e) => setInfo(e.target.value)}
-                className="w-full px-4 py-2.5 bg-[#1c1d22] border border-[#262830] rounded-lg text-[#ececee] focus:outline-none focus:border-[#33353d] transition-colors placeholder-[#6d6e77] resize-none"
+                className="w-full px-4 py-2.5 bg-background-hover border border-border-default rounded-lg text-text-primary focus:outline-none focus:border-border-strong transition-colors placeholder-text-tertiary resize-none"
                 placeholder="Add additional context, notes, or description for this market"
               />
             </div>
@@ -214,11 +214,11 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
         </div>
 
         {/* Footer with action buttons */}
-        <div className="sticky bottom-0 p-6 border-t border-[#262830] bg-[#141519]/95 backdrop-blur-sm rounded-b-xl">
+        <div className="sticky bottom-0 p-6 border-t border-border-default bg-background-card/95 backdrop-blur-sm rounded-b-xl">
           <div className="flex justify-between items-center">
             <button
               onClick={onClose}
-              className="px-6 py-2.5 rounded-lg border border-[#262830] text-[#9b9ca4] font-semibold hover:bg-[#1c1d22] transition-colors"
+              className="px-6 py-2.5 rounded-lg border border-border-default text-text-secondary font-semibold hover:bg-background-hover transition-colors"
             >
               Cancel
             </button>
@@ -226,7 +226,7 @@ const CreateMarketModal: React.FC<CreateMarketModalProps> = ({ isOpen, onClose, 
             <button
               onClick={handleCreate}
               disabled={!basicsValid || isSubmitting}
-              className="px-8 py-2.5 rounded-lg bg-white hover:bg-gray-200 !text-[#0b0c0e] font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              className="px-8 py-2.5 rounded-lg bg-inverse hover:bg-inverse-hover !text-inverse-ink font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
               {isSubmitting ? (
                 <span className="flex items-center gap-2">

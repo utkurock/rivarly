@@ -62,18 +62,18 @@ const Onboarding: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-[#141519] rounded-2xl border border-[#262830] shadow-2xl overflow-hidden animate-onb-in">
+      <div className="w-full max-w-md bg-background-card rounded-2xl border border-border-default shadow-2xl overflow-hidden animate-onb-in">
         {/* Accent header */}
         <div className="relative h-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500" />
 
         <div className="p-6 md:p-7">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6d6e77]">
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
               Step {step + 1} of {STEPS.length}
             </span>
             <button
               onClick={finish}
-              className="text-xs font-medium text-[#6d6e77] hover:text-[#ececee] transition-colors"
+              className="text-xs font-medium text-text-tertiary hover:text-text-primary transition-colors"
             >
               Skip
             </button>
@@ -83,15 +83,15 @@ const Onboarding: React.FC = () => {
             {s.icon}
           </div>
 
-          <h2 className="mt-5 text-xl font-bold text-[#ececee]">{s.title}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-[#9b9ca4]">{s.body}</p>
+          <h2 className="mt-5 text-xl font-bold text-text-primary">{s.title}</h2>
+          <p className="mt-2 text-sm leading-relaxed text-text-secondary">{s.body}</p>
 
           {/* Progress dots */}
           <div className="mt-6 flex items-center gap-1.5">
             {STEPS.map((_, i) => (
               <span
                 key={i}
-                className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-white' : 'w-1.5 bg-[#33353d]'}`}
+                className={`h-1.5 rounded-full transition-all ${i === step ? 'w-6 bg-inverse' : 'w-1.5 bg-border-strong'}`}
               />
             ))}
           </div>
@@ -101,14 +101,14 @@ const Onboarding: React.FC = () => {
             {step > 0 && (
               <button
                 onClick={() => setStep((v) => v - 1)}
-                className="px-4 py-2.5 rounded-xl text-sm font-semibold text-[#9b9ca4] hover:text-[#ececee] hover:bg-[#1c1d22] transition-colors"
+                className="px-4 py-2.5 rounded-xl text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-background-hover transition-colors"
               >
                 Back
               </button>
             )}
             <button
               onClick={() => (isLast ? finish() : setStep((v) => v + 1))}
-              className="flex-1 py-2.5 rounded-xl bg-white hover:bg-gray-200 text-[#0b0c0e] text-sm font-semibold transition-colors"
+              className="flex-1 py-2.5 rounded-xl bg-inverse hover:bg-inverse-hover text-inverse-ink text-sm font-semibold transition-colors"
             >
               {isLast ? 'Get started' : 'Next'}
             </button>
