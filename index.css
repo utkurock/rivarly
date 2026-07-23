@@ -22,11 +22,6 @@ body {
   min-height: 100vh;
 }
 
-/* The wordmark PNG is dark ink — flip it to read on the dark UI. */
-.logo-invert {
-  filter: brightness(0) invert(1);
-}
-
 /* Custom scrollbar styling (dark) */
 ::-webkit-scrollbar {
   width: 8px;

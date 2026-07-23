@@ -390,8 +390,8 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                 onClick={() => setActiveTab('foryou')}
                 className={`flex-1 py-3 px-4 text-center font-semibold text-sm transition-all ${
                   activeTab === 'foryou'
-                    ? 'bg-[#23DD9A1A] text-[#23DD9A]'
-                    : 'text-[#9b9ca4] hover:text-[#23DD9A] hover:bg-[#23DD9A1A]'
+                    ? 'bg-[#1c1d22] text-[#ececee]'
+                    : 'text-[#9b9ca4] hover:text-[#ececee] hover:bg-[#141519]'
                 } rounded-lg`}
               >
                 For you
@@ -400,8 +400,8 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                 onClick={() => setActiveTab('following')}
                 className={`flex-1 py-3 px-4 text-center font-semibold text-sm transition-all ${
                   activeTab === 'following'
-                    ? 'bg-[#23DD9A1A] text-[#23DD9A]'
-                    : 'text-[#9b9ca4] hover:text-[#23DD9A] hover:bg-[#23DD9A1A]'
+                    ? 'bg-[#1c1d22] text-[#ececee]'
+                    : 'text-[#9b9ca4] hover:text-[#ececee] hover:bg-[#141519]'
                 } rounded-lg`}
               >
                 Following

@@ -289,7 +289,7 @@ const FeedComposer: React.FC<FeedComposerProps> = ({ onPostCreated, marketId }) 
               onDrop={handleDrop}
               onDragOver={(e) => e.preventDefault()}
               onPaste={handlePaste}
-              className="w-full px-0 py-2 text-[#ececee] placeholder-gray-500 text-xl resize-none focus:outline-none border-none"
+              className="w-full px-0 py-2 bg-transparent text-[#ececee] placeholder-[#6d6e77] text-xl resize-none focus:outline-none border-none"
               placeholder="What's happening?"
               rows={4}
               maxLength={maxChars}

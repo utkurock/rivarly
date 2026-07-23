@@ -135,8 +135,11 @@ const AppContent: React.FC = () => {
         {/* Mobile Header - Only visible on mobile */}
         <div className="md:hidden sticky top-0 z-50 bg-[#0b0c0e] border-b border-[#262830] px-4 py-3 flex items-center justify-between">
           {/* Logo - Clickable */}
-          <Link to="/social" className="flex items-center">
-            <img src="/starcast-logo.png" alt="Starcast" className="h-7 w-auto object-contain logo-invert" />
+          <Link to="/social" className="flex items-center gap-1.5">
+            <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.9 5.7 21.4 8 14 2 9.4h7.6z" />
+            </svg>
+            <span className="text-lg font-extrabold tracking-tight text-[#ececee]">Starcast</span>
           </Link>
 
           {/* Hamburger Menu Button */}

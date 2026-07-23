@@ -548,12 +548,12 @@ const Profile: React.FC = () => {
                             backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)',
                             backgroundSize: '32px 32px'
                         }} />
-                        <img
-                            src="/starcast-logo.png"
-                            alt=""
+                        <span
                             aria-hidden="true"
-                            className="absolute right-5 bottom-4 h-5 md:h-7 opacity-25 invert pointer-events-none"
-                        />
+                            className="absolute right-5 bottom-4 text-sm md:text-base font-extrabold tracking-tight text-white/25 pointer-events-none select-none"
+                        >
+                            Starcast
+                        </span>
                     </div>
 
                     {/* Body — relative z-10 so the avatar/content paints above the

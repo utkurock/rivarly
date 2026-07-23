@@ -61,8 +61,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onCreateMarket, isMobileMenuOpen, set
             ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>
             <Link to="/" className="px-4 pt-4 pb-5 flex-shrink-0 border-b border-[#20222a] hover:bg-[#141519] transition-colors cursor-pointer">
-                <div className="w-full flex items-center justify-center">
-                    <img src="/starcast-logo.png" alt="Starcast" className="h-8 w-auto object-contain logo-invert" style={{ maxWidth: '80%' }} />
+                <div className="w-full flex items-center justify-center gap-2">
+                    <svg className="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.9 5.7 21.4 8 14 2 9.4h7.6z" />
+                    </svg>
+                    <span className="text-2xl font-extrabold tracking-tight text-[#ececee]">Starcast</span>
                 </div>
             </Link>
 
