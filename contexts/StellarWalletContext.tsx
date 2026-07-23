@@ -1,6 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { StellarWalletsKit, Networks, KitEventType } from '@creit.tech/stellar-wallets-kit';
+import { StellarWalletsKit, Networks, KitEventType, type ISupportedWallet } from '@creit.tech/stellar-wallets-kit';
 import { defaultModules } from '@creit.tech/stellar-wallets-kit/modules/utils';
+
+export type { ISupportedWallet };
 
 // Network is env-driven: default testnet, flip to mainnet with
 // VITE_STELLAR_NETWORK=mainnet. Passphrase is what wallets sign against.
@@ -46,7 +48,8 @@ interface StellarWalletContextValue {
   connecting: boolean;
   isMainnet: boolean;
   networkLabel: string;
-  connect: () => Promise<void>;
+  listWallets: () => Promise<ISupportedWallet[]>;
+  selectWallet: (id: string) => Promise<void>;
   disconnect: () => Promise<void>;
 }
 
@@ -55,7 +58,8 @@ const StellarWalletContext = createContext<StellarWalletContextValue>({
   connecting: false,
   isMainnet: IS_MAINNET,
   networkLabel: STELLAR_NETWORK_LABEL,
-  connect: async () => {},
+  listWallets: async () => [],
+  selectWallet: async () => {},
   disconnect: async () => {},
 });
 
@@ -77,14 +81,22 @@ export const StellarWalletProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, []);
 
-  const connect = useCallback(async () => {
+  // Supported wallets for our own site-styled picker (each has id, name, icon,
+  // isAvailable, url).
+  const listWallets = useCallback(() => {
+    ensureInit();
+    return StellarWalletsKit.refreshSupportedWallets();
+  }, []);
+
+  // Activate a wallet by id and fetch its address (prompts the wallet). Throws
+  // if the user rejects, so the caller can keep the picker open.
+  const selectWallet = useCallback(async (id: string) => {
     ensureInit();
     setConnecting(true);
     try {
-      const { address: addr } = await StellarWalletsKit.authModal();
+      StellarWalletsKit.setWallet(id);
+      const { address: addr } = await StellarWalletsKit.fetchAddress();
       if (addr) setAddress(addr);
-    } catch {
-      // User closed the modal or a wallet error occurred — leave state as-is.
     } finally {
       setConnecting(false);
     }
@@ -101,7 +113,7 @@ export const StellarWalletProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <StellarWalletContext.Provider
-      value={{ address, connecting, isMainnet: IS_MAINNET, networkLabel: STELLAR_NETWORK_LABEL, connect, disconnect }}
+      value={{ address, connecting, isMainnet: IS_MAINNET, networkLabel: STELLAR_NETWORK_LABEL, listWallets, selectWallet, disconnect }}
     >
       {children}
     </StellarWalletContext.Provider>
