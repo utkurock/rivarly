@@ -84,5 +84,11 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+
+    // Daily leaderboard tallies: public read; server-written only.
+    match /dailyPoints/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

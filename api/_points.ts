@@ -15,6 +15,29 @@ const BET_POINTS = 50; // awarded once per market for a user's first prediction
 const rewardForStreak = (streak: number): number =>
   DAILY_BASE + Math.min(Math.max(streak - 1, 0), STREAK_BONUS_CAP) * STREAK_BONUS;
 
+// Maintain a per-day, per-user points tally for the daily leaderboard. Display
+// fields are denormalized from the user doc so the board is a single query.
+async function bumpDailyLeaderboard(db: any, uid: string, userData: any, amount: number): Promise<void> {
+  if (amount <= 0) return;
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+  await db
+    .collection('dailyPoints')
+    .doc(`${today}__${uid}`)
+    .set(
+      {
+        uid,
+        date: today,
+        points: FieldValue.increment(amount),
+        username: userData.username || userData.displayName || 'Anonymous',
+        handle: userData.handle || '',
+        avatar: userData.avatar || userData.avatarUrl || '',
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    )
+    .catch(() => {});
+}
+
 export interface HandlerResult {
   status: number;
   body: Record<string, unknown>;
@@ -64,6 +87,7 @@ export async function handleClaim(input: { uid?: string; txHash?: string }): Pro
     },
     { merge: true }
   );
+  await bumpDailyLeaderboard(db, uid, data, reward);
 
   return { status: 200, body: { reward, streak } };
 }
@@ -137,6 +161,7 @@ export async function handleBet(input: {
   if (isNew) {
     awarded = BET_POINTS;
     await userRef.set({ points: FieldValue.increment(BET_POINTS), betCount: FieldValue.increment(1) }, { merge: true });
+    await bumpDailyLeaderboard(db, uid, userData, BET_POINTS);
   }
 
   return { status: 200, body: { awarded, side, isNew } };
