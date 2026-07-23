@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 import { getNews } from './api/_news';
 import { getEcosystemProjects } from './api/_ecosystem';
 import { getStellarTweets } from './api/_tweets';
+import { getPrices, getKlines, COINS, type Coin } from './api/_prices';
 
 // Serve /api/news during `vite dev` so local development matches the deployed
 // Vercel Edge function without needing `vercel dev` or a CORS proxy.
@@ -59,6 +60,26 @@ function devTweetsApi(): Plugin {
         const tweets = await getStellarTweets(q);
         res.setHeader('content-type', 'application/json; charset=utf-8');
         res.end(JSON.stringify(tweets));
+      });
+    },
+  };
+}
+
+// Serve /api/prices during `vite dev` — live spot prices + 1m klines for Perp.
+function devPricesApi(): Plugin {
+  return {
+    name: 'dev-prices-api',
+    configureServer(server) {
+      server.middlewares.use('/api/prices', async (req, res) => {
+        const url = new URL(req.originalUrl || req.url || '', 'http://localhost');
+        res.setHeader('content-type', 'application/json; charset=utf-8');
+        const klines = url.searchParams.get('klines') as Coin | null;
+        if (klines && COINS.includes(klines)) {
+          const limit = Number(url.searchParams.get('limit')) || 60;
+          res.end(JSON.stringify(await getKlines(klines, limit)));
+          return;
+        }
+        res.end(JSON.stringify((await getPrices()) || {}));
       });
     },
   };
@@ -121,7 +142,7 @@ export default defineConfig(({ mode }) => {
         port: 3000,
         host: '0.0.0.0',
       },
-      plugins: [react(), devNewsApi(), devEcosystemApi(), devTweetsApi(), devRewardApi()],
+      plugins: [react(), devNewsApi(), devEcosystemApi(), devTweetsApi(), devPricesApi(), devRewardApi()],
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
