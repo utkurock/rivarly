@@ -1,5 +1,5 @@
 import { doc, onSnapshot, type Timestamp } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 
 // Points are awarded ONLY by the trusted server endpoint (/api/claim), which
 // verifies the on-chain claim tx and writes via Firebase Admin. The client just
@@ -68,14 +68,18 @@ export class ClaimError extends Error {}
 /**
  * Ask the trusted server to award the daily claim for a verified on-chain tx.
  * The server re-verifies the tx, enforces the cooldown and writes the points.
+ * Identity is proven with a Firebase ID token (not a client-supplied uid).
  */
-export const recordDailyClaim = async (uid: string, txHash: string): Promise<{ reward: number; streak: number }> => {
+export const recordDailyClaim = async (txHash: string): Promise<{ reward: number; streak: number }> => {
+  const idToken = await auth.currentUser?.getIdToken();
+  if (!idToken) throw new ClaimError('Please wait for your session to finish loading.');
+
   let res: Response;
   try {
     res = await fetch('/api/claim', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ uid, txHash }),
+      body: JSON.stringify({ idToken, txHash }),
     });
   } catch {
     throw new ClaimError('Could not reach the rewards server. Please try again.');

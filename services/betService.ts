@@ -1,4 +1,5 @@
 import { submitBetTx, ClaimTxError, type BetSide } from './stellarTx';
+import { auth } from '../firebase';
 
 export class BetError extends Error {}
 
@@ -9,8 +10,9 @@ export interface BetResult {
 }
 
 /**
- * Place a market prediction: sign+submit the on-chain bet tx, then ask the
- * trusted server to verify it, record the position and award points.
+ * Place a market prediction: sign+submit the on-chain bet tx (memo bound to the
+ * uid), then ask the trusted server to verify it, record the position and award
+ * points. Identity is proven with a Firebase ID token.
  */
 export const placeBet = async (
   uid: string,
@@ -19,9 +21,12 @@ export const placeBet = async (
   side: BetSide,
   sign: (xdr: string) => Promise<string>
 ): Promise<BetResult> => {
+  const idToken = await auth.currentUser?.getIdToken();
+  if (!idToken) throw new BetError('Please wait for your session to finish loading.');
+
   let txHash: string;
   try {
-    txHash = await submitBetTx(address, marketId, side, sign);
+    txHash = await submitBetTx(address, uid, marketId, side, sign);
   } catch (e) {
     throw new BetError(e instanceof ClaimTxError ? e.message : 'Could not submit your prediction.');
   }
@@ -31,7 +36,7 @@ export const placeBet = async (
     res = await fetch('/api/bet', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ uid, txHash, marketId, side }),
+      body: JSON.stringify({ idToken, txHash, marketId, side }),
     });
   } catch {
     throw new BetError('Could not reach the prediction server. Please try again.');

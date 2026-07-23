@@ -3,8 +3,11 @@
 // on-chain verification, so the client can never grant itself points.
 
 import { FieldValue } from 'firebase-admin/firestore';
-import { getAdminDb } from './_adminFirebase';
-import { verifyAppTx, CLAIM_MEMO, betMemo } from './_serverStellar';
+import { getAdminDb, verifyUid } from './_adminFirebase';
+import { verifyAppTx, claimMemoHash, betMemoHash } from './_serverStellar';
+
+// Firestore doc-id / market-id safety: no path separators or control chars.
+const isSafeId = (s: string) => /^[A-Za-z0-9_-]{1,128}$/.test(s);
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DAILY_BASE = 100;
@@ -43,13 +46,16 @@ export interface HandlerResult {
   body: Record<string, unknown>;
 }
 
-export async function handleClaim(input: { uid?: string; txHash?: string }): Promise<HandlerResult> {
-  const uid = typeof input.uid === 'string' ? input.uid : '';
-  const txHash = typeof input.txHash === 'string' ? input.txHash : '';
-  if (!uid || !txHash) return { status: 400, body: { error: 'Missing uid or txHash.' } };
-
+export async function handleClaim(input: { idToken?: string; txHash?: string }): Promise<HandlerResult> {
   const db = getAdminDb();
   if (!db) return { status: 503, body: { error: 'Rewards are not available right now.' } };
+
+  // Identity comes from a verified Firebase ID token, never from the body.
+  const uid = await verifyUid(input.idToken);
+  if (!uid) return { status: 401, body: { error: 'Not signed in.' } };
+
+  const txHash = typeof input.txHash === 'string' ? input.txHash : '';
+  if (!txHash || !isSafeId(txHash)) return { status: 400, body: { error: 'Invalid transaction.' } };
 
   const ref = db.collection('users').doc(uid);
   const snap = await ref.get();
@@ -69,8 +75,8 @@ export async function handleClaim(input: { uid?: string; txHash?: string }): Pro
     return { status: 429, body: { error: 'You have already claimed today.' } };
   }
 
-  // On-chain verification.
-  const verify = await verifyAppTx({ txHash, expectedSource: wallet, expectedMemo: CLAIM_MEMO });
+  // On-chain verification: memo is hash-bound to this uid (anti cross-user replay).
+  const verify = await verifyAppTx({ txHash, expectedSource: wallet, expectedMemoHash: claimMemoHash(uid) });
   if (!verify.ok) return { status: 400, body: { error: verify.reason || 'Transaction could not be verified.' } };
 
   const continuing = lastMs > 0 && Date.now() - lastMs < 2 * DAY_MS;
@@ -93,21 +99,23 @@ export async function handleClaim(input: { uid?: string; txHash?: string }): Pro
 }
 
 export async function handleBet(input: {
-  uid?: string;
+  idToken?: string;
   txHash?: string;
   marketId?: string;
   side?: string;
 }): Promise<HandlerResult> {
-  const uid = typeof input.uid === 'string' ? input.uid : '';
+  const db = getAdminDb();
+  if (!db) return { status: 503, body: { error: 'Predictions are not available right now.' } };
+
+  const uid = await verifyUid(input.idToken);
+  if (!uid) return { status: 401, body: { error: 'Not signed in.' } };
+
   const txHash = typeof input.txHash === 'string' ? input.txHash : '';
   const marketId = typeof input.marketId === 'string' ? input.marketId : '';
   const side = input.side === 'yes' || input.side === 'no' ? input.side : '';
-  if (!uid || !txHash || !marketId || !side) {
-    return { status: 400, body: { error: 'Missing bet details.' } };
+  if (!txHash || !isSafeId(txHash) || !marketId || !isSafeId(marketId) || !side) {
+    return { status: 400, body: { error: 'Invalid prediction details.' } };
   }
-
-  const db = getAdminDb();
-  if (!db) return { status: 503, body: { error: 'Predictions are not available right now.' } };
 
   const userRef = db.collection('users').doc(uid);
   const userSnap = await userRef.get();
@@ -124,8 +132,8 @@ export async function handleBet(input: {
     return { status: 409, body: { error: 'This transaction has already been used.' } };
   }
 
-  // On-chain verification (memo binds the tx to this exact market + side).
-  const verify = await verifyAppTx({ txHash, expectedSource: wallet, expectedMemo: betMemo(marketId, side) });
+  // On-chain verification (memo hash-binds the tx to this uid + market + side).
+  const verify = await verifyAppTx({ txHash, expectedSource: wallet, expectedMemoHash: betMemoHash(uid, marketId, side) });
   if (!verify.ok) return { status: 400, body: { error: verify.reason || 'Transaction could not be verified.' } };
 
   const isNew = !betSnap.exists;

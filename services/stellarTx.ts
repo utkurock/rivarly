@@ -1,14 +1,16 @@
-import { Horizon, TransactionBuilder, Operation, Memo, BASE_FEE } from '@stellar/stellar-sdk';
+import { Horizon, TransactionBuilder, Operation, Memo, hash, BASE_FEE } from '@stellar/stellar-sdk';
 import { HORIZON_URL, STELLAR_NETWORK } from '../contexts/StellarWalletContext';
 
 const server = new Horizon.Server(HORIZON_URL);
 const IS_TESTNET = STELLAR_NETWORK.includes('Test SDF Network');
 
-// Memos the server checks to confirm a tx is a genuine Rivarly reward action.
-// betMemo must stay byte-identical to the server's (api/_serverStellar.ts).
-export const CLAIM_MEMO = 'rvly:claim';
 export type BetSide = 'yes' | 'no';
-export const betMemo = (marketId: string, side: BetSide): string => `rvly:bet:${side}:${marketId}`.slice(0, 28);
+
+// Hash memos bound to the acting uid — must match the server's sha256 inputs
+// (api/_serverStellar.ts). Binding to uid stops one user replaying another's tx.
+const claimMemo = (uid: string): Memo => Memo.hash(hash(Buffer.from(`claim:${uid}`)) as Buffer);
+const betMemoObj = (uid: string, marketId: string, side: BetSide): Memo =>
+  Memo.hash(hash(Buffer.from(`bet:${side}:${marketId}:${uid}`)) as Buffer);
 
 // Fund a brand-new testnet account via friendbot so it can pay tx fees.
 async function fundWithFriendbot(address: string): Promise<void> {
@@ -44,7 +46,7 @@ export class ClaimTxError extends Error {}
  */
 async function submitMemoTx(
   address: string,
-  memoText: string,
+  memo: Memo,
   sign: (xdr: string) => Promise<string>
 ): Promise<string> {
   let account;
@@ -65,7 +67,7 @@ async function submitMemoTx(
     // No-op: bumping below the current sequence changes nothing on-chain, so the
     // only cost is the base network fee.
     .addOperation(Operation.bumpSequence({ bumpTo: '0' }))
-    .addMemo(Memo.text(memoText))
+    .addMemo(memo)
     .setTimeout(120)
     .build();
 
@@ -85,10 +87,10 @@ async function submitMemoTx(
   }
 }
 
-/** Daily-claim tx. Returns the tx hash. */
-export const submitDailyClaimTx = (address: string, sign: (xdr: string) => Promise<string>) =>
-  submitMemoTx(address, CLAIM_MEMO, sign);
+/** Daily-claim tx (memo bound to uid). Returns the tx hash. */
+export const submitDailyClaimTx = (address: string, uid: string, sign: (xdr: string) => Promise<string>) =>
+  submitMemoTx(address, claimMemo(uid), sign);
 
-/** Market prediction tx for a given market/side. Returns the tx hash. */
-export const submitBetTx = (address: string, marketId: string, side: BetSide, sign: (xdr: string) => Promise<string>) =>
-  submitMemoTx(address, betMemo(marketId, side), sign);
+/** Market prediction tx (memo bound to uid + market + side). Returns the tx hash. */
+export const submitBetTx = (address: string, uid: string, marketId: string, side: BetSide, sign: (xdr: string) => Promise<string>) =>
+  submitMemoTx(address, betMemoObj(uid, marketId, side), sign);

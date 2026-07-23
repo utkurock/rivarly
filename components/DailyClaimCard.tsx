@@ -58,8 +58,8 @@ const DailyClaimCard: React.FC = () => {
     setError(null);
     setClaiming(true);
     try {
-      const txHash = await submitDailyClaimTx(address, signTransaction);
-      const { reward } = await recordDailyClaim(user.uid, txHash);
+      const txHash = await submitDailyClaimTx(address, user.uid, signTransaction);
+      const { reward } = await recordDailyClaim(txHash);
       setFlash(`+${fmt(reward)} points claimed!`);
       setTimeout(() => setFlash(null), 3500);
     } catch (e) {
