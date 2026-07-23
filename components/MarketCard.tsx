@@ -1,7 +1,67 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Market } from '../types';
 import { useCountdown } from '../hooks/useCountdown';
+import { useFirebase } from '../contexts/FirebaseContext';
+import { useStellarWallet } from '../contexts/StellarWalletContext';
+import { useToast } from '../contexts/ToastContext';
+import { placeBet } from '../services/betService';
+import type { BetSide } from '../services/stellarTx';
+
+// YES/NO prediction buttons: sign an on-chain bet tx, then the server verifies
+// it and awards points. Lives inside a card Link, so clicks must not navigate.
+const BetButtons: React.FC<{ market: Market; probability: number; disabled?: boolean }> = ({ market, probability, disabled }) => {
+  const { user } = useFirebase();
+  const { address } = useStellarWallet();
+  const wallet = useStellarWallet();
+  const { addToast } = useToast();
+  const [pending, setPending] = useState<BetSide | null>(null);
+
+  const bet = async (e: React.MouseEvent, side: BetSide) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (disabled || pending) return;
+    if (!user?.uid) { addToast({ type: 'info', title: 'Sign in first', message: 'Your session is still loading.' }); return; }
+    if (!address) { addToast({ type: 'info', title: 'Connect your wallet', message: 'Connect a Stellar wallet to predict.' }); return; }
+    setPending(side);
+    try {
+      const r = await placeBet(user.uid, address, market.id, side, wallet.signTransaction);
+      addToast({
+        type: 'success',
+        title: r.isNew ? `Predicted ${side.toUpperCase()}` : `Switched to ${side.toUpperCase()}`,
+        message: r.awarded ? `+${r.awarded} points` : 'Prediction updated',
+      });
+    } catch (err: any) {
+      addToast({ type: 'error', title: 'Prediction failed', message: err?.message || 'Please try again.' });
+    } finally {
+      setPending(null);
+    }
+  };
+
+  const btn = 'w-full py-2.5 px-4 text-sm font-semibold rounded-lg transition-colors disabled:opacity-60 flex items-center justify-center gap-2';
+  return (
+    <div className="space-y-2 mb-4">
+      <button
+        className={btn}
+        style={{ backgroundColor: 'rgba(35, 221, 154, 0.2)', color: '#23DD9A' }}
+        onClick={(e) => bet(e, 'yes')}
+        disabled={disabled || !!pending}
+      >
+        {pending === 'yes' && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />}
+        YES {Math.round(probability * 100)}%
+      </button>
+      <button
+        className={btn}
+        style={{ backgroundColor: 'rgba(255, 16, 16, 0.2)', color: '#FF1010' }}
+        onClick={(e) => bet(e, 'no')}
+        disabled={disabled || !!pending}
+      >
+        {pending === 'no' && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />}
+        NO {Math.round((1 - probability) * 100)}%
+      </button>
+    </div>
+  );
+};
 
 interface MarketCardProps {
   market: Market;
@@ -160,29 +220,8 @@ const MarketContent: React.FC<{ market: Market }> = ({ market }) => {
         )}
       </div>
       
-      {/* Betting Buttons */}
-      <div className="space-y-2 mb-4">
-        <button 
-          className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg transition-colors"
-          style={{
-            backgroundColor: 'rgba(35, 221, 154, 0.2)', // #23DD9A with 20% opacity
-            color: '#23DD9A'
-          }}
-          onClick={(e) => e.preventDefault()}
-        >
-          YES {Math.round(probability * 100)}%
-        </button>
-        <button 
-          className="w-full py-2.5 px-4 text-sm font-semibold rounded-lg transition-colors"
-          style={{
-            backgroundColor: 'rgba(255, 16, 16, 0.2)', // #FF1010 with 20% opacity
-            color: '#FF1010'
-          }}
-          onClick={(e) => e.preventDefault()}
-        >
-          NO {Math.round((1 - probability) * 100)}%
-        </button>
-      </div>
+      {/* Prediction Buttons */}
+      <BetButtons market={market} probability={probability} disabled={status !== 'open'} />
       
       {/* Footer with Volume, Category and Timer */}
       <div className="pt-3 border-t border-gray-100">

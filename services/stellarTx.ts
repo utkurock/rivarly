@@ -4,9 +4,11 @@ import { HORIZON_URL, STELLAR_NETWORK } from '../contexts/StellarWalletContext';
 const server = new Horizon.Server(HORIZON_URL);
 const IS_TESTNET = STELLAR_NETWORK.includes('Test SDF Network');
 
-// Memo the server checks to confirm a tx is a Rivarly daily claim (not some
-// unrelated payment the user happened to make).
+// Memos the server checks to confirm a tx is a genuine Rivarly reward action.
+// betMemo must stay byte-identical to the server's (api/_serverStellar.ts).
 export const CLAIM_MEMO = 'rvly:claim';
+export type BetSide = 'yes' | 'no';
+export const betMemo = (marketId: string, side: BetSide): string => `rvly:bet:${side}:${marketId}`.slice(0, 28);
 
 // Fund a brand-new testnet account via friendbot so it can pay tx fees.
 async function fundWithFriendbot(address: string): Promise<void> {
@@ -36,15 +38,13 @@ async function loadAccountFunded(address: string) {
 export class ClaimTxError extends Error {}
 
 /**
- * Build, sign and submit the daily-claim transaction. It's a side-effect-free
- * bumpSequence op — the user only pays the tiny network fee, which is the point:
- * a real on-chain action gating the daily reward. Returns the tx hash.
- *
- * @param address  connected wallet public key
- * @param sign     signs an XDR with the wallet, returns signed XDR
+ * Build, sign and submit a memo-tagged, side-effect-free transaction. It's a
+ * bumpSequence no-op, so the user only pays the tiny network fee — the point is
+ * a real, verifiable on-chain action. Returns the tx hash.
  */
-export async function submitDailyClaimTx(
+async function submitMemoTx(
   address: string,
+  memoText: string,
   sign: (xdr: string) => Promise<string>
 ): Promise<string> {
   let account;
@@ -62,10 +62,10 @@ export async function submitDailyClaimTx(
     fee: BASE_FEE,
     networkPassphrase: STELLAR_NETWORK,
   })
-    // No-op operation: bumping to a value below the current sequence changes
-    // nothing on-chain, so the only cost is the base network fee.
+    // No-op: bumping below the current sequence changes nothing on-chain, so the
+    // only cost is the base network fee.
     .addOperation(Operation.bumpSequence({ bumpTo: '0' }))
-    .addMemo(Memo.text(CLAIM_MEMO))
+    .addMemo(Memo.text(memoText))
     .setTimeout(120)
     .build();
 
@@ -84,3 +84,11 @@ export async function submitDailyClaimTx(
     throw new ClaimTxError('The network rejected the transaction. Please try again.');
   }
 }
+
+/** Daily-claim tx. Returns the tx hash. */
+export const submitDailyClaimTx = (address: string, sign: (xdr: string) => Promise<string>) =>
+  submitMemoTx(address, CLAIM_MEMO, sign);
+
+/** Market prediction tx for a given market/side. Returns the tx hash. */
+export const submitBetTx = (address: string, marketId: string, side: BetSide, sign: (xdr: string) => Promise<string>) =>
+  submitMemoTx(address, betMemo(marketId, side), sign);

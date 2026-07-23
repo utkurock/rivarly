@@ -53,20 +53,22 @@ function devRewardApi(): Plugin {
   return {
     name: 'dev-reward-api',
     configureServer(server) {
-      server.middlewares.use('/api/claim', async (req, res) => {
+      const handle = (name: 'handleClaim' | 'handleBet') => async (req: IncomingMessage, res: any) => {
         res.setHeader('content-type', 'application/json; charset=utf-8');
         if (req.method !== 'POST') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Method not allowed' })); return; }
         try {
           const body = await readJsonBody(req);
-          const { handleClaim } = await import('./api/_points');
-          const { status, body: out } = await handleClaim(body);
+          const mod = await import('./api/_points');
+          const { status, body: out } = await mod[name](body);
           res.statusCode = status;
           res.end(JSON.stringify(out));
         } catch {
           res.statusCode = 500;
           res.end(JSON.stringify({ error: 'Server error' }));
         }
-      });
+      };
+      server.middlewares.use('/api/claim', handle('handleClaim'));
+      server.middlewares.use('/api/bet', handle('handleBet'));
     },
   };
 }
