@@ -1,50 +1,59 @@
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, orderBy, where, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { NewsItem } from '../types';
 
-// Create a new news item
-export const createNewsItem = async (
-  newsData: Omit<NewsItem, 'id' | 'createdAt' | 'createdBy'>,
-  creatorId: string
-): Promise<string> => {
+// News mutations go through the trusted admin endpoint (server-only password +
+// Admin SDK), since the `news` collection is not client-writable.
+const ADMIN_PW_KEY = 'rivarly_admin_pw';
+export const getStoredAdminPassword = () => sessionStorage.getItem(ADMIN_PW_KEY) || '';
+export const setStoredAdminPassword = (pw: string) => sessionStorage.setItem(ADMIN_PW_KEY, pw);
+export const clearStoredAdminPassword = () => sessionStorage.removeItem(ADMIN_PW_KEY);
+
+const adminNews = async (payload: Record<string, unknown>): Promise<any> => {
+  const res = await fetch('/api/admin-news', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ password: getStoredAdminPassword(), ...payload }),
+  });
+  const out = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(out.error || 'Request failed.');
+  return out;
+};
+
+/** Validate an admin password against the server (used by the login gate). */
+export const verifyAdminPassword = async (password: string): Promise<boolean> => {
   try {
-    const newsRef = collection(db, 'news');
-    const docRef = await addDoc(newsRef, {
-      ...newsData,
-      createdAt: new Date().toISOString(),
-      createdBy: creatorId, // Admin user id
+    const res = await fetch('/api/admin-news', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ password, action: 'ping' }),
     });
-    
-    return docRef.id;
-  } catch (error) {
-    console.error('Error creating news item:', error);
-    throw error;
+    return res.ok;
+  } catch {
+    return false;
   }
 };
 
-// Update a news item
+// Create a new news item (server-side).
+export const createNewsItem = async (
+  newsData: Omit<NewsItem, 'id' | 'createdAt' | 'createdBy'>,
+  _creatorId?: string
+): Promise<string> => {
+  const out = await adminNews({ action: 'create', item: newsData });
+  return out.id;
+};
+
+// Update a news item (server-side).
 export const updateNewsItem = async (
   newsId: string,
   updates: Partial<Omit<NewsItem, 'id' | 'createdAt' | 'createdBy'>>
 ): Promise<void> => {
-  try {
-    const newsRef = doc(db, 'news', newsId);
-    await updateDoc(newsRef, updates);
-  } catch (error) {
-    console.error('Error updating news item:', error);
-    throw error;
-  }
+  await adminNews({ action: 'update', id: newsId, item: updates });
 };
 
-// Delete a news item
+// Delete a news item (server-side).
 export const deleteNewsItem = async (newsId: string): Promise<void> => {
-  try {
-    const newsRef = doc(db, 'news', newsId);
-    await deleteDoc(newsRef);
-  } catch (error) {
-    console.error('Error deleting news item:', error);
-    throw error;
-  }
+  await adminNews({ action: 'delete', id: newsId });
 };
 
 // Get all news items, sorted by publishedAt (newest first)

@@ -4,13 +4,15 @@ import { collection, query, getDocs, updateDoc, doc, orderBy } from 'firebase/fi
 import { db } from '../firebase';
 import type { AdminStats, MarketWithCreator } from '../types';
 import NewsManagement from './NewsManagement';
+import { verifyAdminPassword, setStoredAdminPassword, getStoredAdminPassword } from '../services/newsService';
 
 const AdminDashboard: React.FC = () => {
   const { user, userProfile } = useFirebase();
 
-  const [isAdmin, setIsAdmin] = useState(() => sessionStorage.getItem('adminAuthed') === 'true');
+  const [isAdmin, setIsAdmin] = useState(() => !!getStoredAdminPassword());
   const [passwordInput, setPasswordInput] = useState('');
   const [authError, setAuthError] = useState(false);
+  const [authChecking, setAuthChecking] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [markets, setMarkets] = useState<MarketWithCreator[]>([]);
@@ -19,14 +21,16 @@ const AdminDashboard: React.FC = () => {
   const [resolving, setResolving] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'markets' | 'news'>('markets');
 
-  // Admin gate: password check against VITE_ADMIN_PASSWORD
-  const handleAdminLogin = (e: React.FormEvent) => {
+  // Admin gate: validate the password against the server (never in the client).
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-    if (adminPassword && passwordInput === adminPassword) {
-      sessionStorage.setItem('adminAuthed', 'true');
+    setAuthChecking(true);
+    setAuthError(false);
+    const ok = await verifyAdminPassword(passwordInput);
+    setAuthChecking(false);
+    if (ok) {
+      setStoredAdminPassword(passwordInput);
       setIsAdmin(true);
-      setAuthError(false);
     } else {
       setAuthError(true);
     }
@@ -197,9 +201,10 @@ const AdminDashboard: React.FC = () => {
             )}
             <button
               type="submit"
-              className="w-full px-4 py-2 bg-black hover:bg-gray-800 !text-white font-semibold rounded-lg transition-colors"
+              disabled={authChecking || !passwordInput}
+              className="w-full px-4 py-2 bg-black hover:bg-gray-800 !text-white font-semibold rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Unlock
+              {authChecking ? 'Checking…' : 'Unlock'}
             </button>
           </form>
         </div>

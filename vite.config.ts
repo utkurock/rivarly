@@ -69,6 +69,20 @@ function devRewardApi(): Plugin {
       };
       server.middlewares.use('/api/claim', handle('handleClaim'));
       server.middlewares.use('/api/bet', handle('handleBet'));
+      server.middlewares.use('/api/admin-news', async (req: IncomingMessage, res: any) => {
+        res.setHeader('content-type', 'application/json; charset=utf-8');
+        if (req.method !== 'POST') { res.statusCode = 405; res.end(JSON.stringify({ error: 'Method not allowed' })); return; }
+        try {
+          const body = await readJsonBody(req);
+          const { handleAdminNews } = await import('./api/_adminNews');
+          const { status, body: out } = await handleAdminNews(body);
+          res.statusCode = status;
+          res.end(JSON.stringify(out));
+        } catch {
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: 'Server error' }));
+        }
+      });
     },
   };
 }
@@ -76,7 +90,7 @@ function devRewardApi(): Plugin {
 export default defineConfig(({ mode }) => {
     // Expose the vars the dev reward endpoints need (server-side, non-VITE too).
     const env = loadEnv(mode, process.cwd(), '');
-    for (const key of ['FIREBASE_SERVICE_ACCOUNT', 'VITE_STELLAR_NETWORK', 'STELLAR_NETWORK']) {
+    for (const key of ['FIREBASE_SERVICE_ACCOUNT', 'VITE_STELLAR_NETWORK', 'STELLAR_NETWORK', 'ADMIN_PASSWORD']) {
       if (env[key]) process.env[key] = env[key];
     }
 

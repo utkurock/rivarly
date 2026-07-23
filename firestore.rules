@@ -74,10 +74,12 @@ service cloud.firestore {
                     && request.auth.uid == resource.data.userAddress;
     }
 
-    // News items, written from the admin panel
+    // News items: public read; writes only via the trusted admin endpoint
+    // (server-only ADMIN_PASSWORD + Admin SDK). Not client-writable, so no one
+    // can inject news/phishing items directly.
     match /news/{newsId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if false;
     }
 
     // Public news cache: one doc per view (ALL/XLM/BTC/ETH/SOL). Read by anyone
