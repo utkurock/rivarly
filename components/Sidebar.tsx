@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useFirebase } from '../contexts/FirebaseContext';
-import WalletButton from './WalletButton';
+import AccountMenu from './AccountMenu';
 
 // Get user profile from Firebase context
 export const useUserProfile = () => {
@@ -38,8 +38,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ onCreateMarket, isMobileMenuOpen, setIsMobileMenuOpen }) => {
-    const { userProfile } = useFirebase();
-
     // Close mobile menu on route change
     const location = useLocation();
     useEffect(() => {
@@ -152,56 +150,9 @@ const Sidebar: React.FC<SidebarProps> = ({ onCreateMarket, isMobileMenuOpen, set
                 </NavLink>
             </nav>
 
-            <div className="flex-shrink-0 p-4 border-t border-gray-100 space-y-3">
-                 {/* Stellar wallet */}
-                 <WalletButton />
-
-                 {/* Profile + Avatar */}
-                 {userProfile && (
-                     <Link
-                         to="/profile"
-                         onClick={() => setIsMobileMenuOpen(false)}
-                         className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                     >
-                         <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0">
-                             {(() => {
-                                 // Check if user has a custom avatar (base64 or URL, but not blob)
-                                 const hasCustomAvatar = userProfile?.avatar &&
-                                     userProfile.avatar.trim() !== '' &&
-                                     !userProfile.avatar.startsWith('blob:');
-
-                                 if (hasCustomAvatar) {
-                                     return (
-                                         <img
-                                             src={userProfile.avatar}
-                                             alt={userProfile.username}
-                                             className="w-full h-full object-cover"
-                                             onError={(e) => {
-                                                 // Fallback to initial if image fails
-                                                 e.currentTarget.style.display = 'none';
-                                             }}
-                                         />
-                                     );
-                                 }
-
-                                 // Instagram-style placeholder
-                                 return (
-                                     <span className="text-sm font-bold text-gray-600">
-                                         {userProfile.username?.[0]?.toUpperCase() || 'U'}
-                                     </span>
-                                 );
-                             })()}
-                         </div>
-                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">
-                                {userProfile.username || userProfile.displayName || 'Profile'}
-                            </p>
-                             <p className="text-xs text-gray-500 truncate">
-                                 @{userProfile.username || 'user'}
-                             </p>
-                         </div>
-                     </Link>
-                 )}
+            <div className="flex-shrink-0 p-4 border-t border-gray-100">
+                 {/* Combined wallet + profile account menu */}
+                 <AccountMenu onNavigate={() => setIsMobileMenuOpen(false)} />
             </div>
         </aside>
         </>
