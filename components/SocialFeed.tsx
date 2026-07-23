@@ -4,6 +4,7 @@ import { useFirebase } from '../contexts/FirebaseContext';
 import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc, increment, arrayUnion, arrayRemove, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import FeedComposer from './FeedComposer';
+import StellarTweets from './StellarTweets';
 import { detectMarketLinks, parseTextWithMarketLinks } from '../utils/marketLinkDetector';
 import { subscribeToFollowingList } from '../services/followService';
 import { subscribeToReplies } from '../services/feed';
@@ -27,7 +28,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
   const { user, userProfile } = useFirebase();
   const navigate = useNavigate();
   const [socialPosts, setSocialPosts] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'foryou' | 'following'>('foryou');
+  const [activeTab, setActiveTab] = useState<'foryou' | 'following' | 'stellar'>('foryou');
   const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
   const [repostedPosts, setRepostedPosts] = useState<Set<string>>(new Set());
   const [openReplyId, setOpenReplyId] = useState<string | null>(null);
@@ -406,12 +407,28 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
               >
                 Following
               </button>
+              <button
+                onClick={() => setActiveTab('stellar')}
+                className={`flex-1 py-3 px-4 text-center font-semibold text-sm transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'stellar'
+                    ? 'bg-background-hover text-text-primary'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-background-card'
+                } rounded-lg`}
+              >
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor" aria-hidden="true">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+                Stellar
+              </button>
             </div>
           </div>
         </div>
 
+        {/* Stellar: live tweets from X (read-only, external) */}
+        {activeTab === 'stellar' && <StellarTweets />}
+
         {/* Post Composer - Twitter style */}
-        {user ? (
+        {activeTab !== 'stellar' && (user ? (
           <div className="border-b border-border-default px-6 py-3">
             <FeedComposer onPostCreated={() => {}} />
           </div>
@@ -422,11 +439,12 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
               If posting stays unavailable, enable Anonymous sign-in in your Firebase project.
             </p>
           </div>
-        )}
+        ))}
 
         {/* Posts Feed */}
         <div className="pb-24">
           {(() => {
+            if (activeTab === 'stellar') return null;
             // Filter posts based on active tab
             let filteredPosts = socialPosts;
             if (activeTab === 'following') {
