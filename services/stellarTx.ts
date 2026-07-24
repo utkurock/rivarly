@@ -13,6 +13,8 @@ const betMemoObj = (uid: string, marketId: string, side: BetSide): Memo =>
   Memo.hash(hash(Buffer.from(`bet:${side}:${marketId}:${uid}`)) as Buffer);
 const taskMemoObj = (uid: string, taskId: string): Memo =>
   Memo.hash(hash(Buffer.from(`task:${taskId}:${uid}`)) as Buffer);
+const voteMemoObj = (uid: string, launchId: string): Memo =>
+  Memo.hash(hash(Buffer.from(`vote:${launchId}:${uid}`)) as Buffer);
 const perpMemoObj = (uid: string, coin: string, direction: string, durationSec: number, stake: number): Memo =>
   Memo.hash(hash(Buffer.from(`perp:${direction}:${coin}:${durationSec}:${stake}:${uid}`)) as Buffer);
 
@@ -102,6 +104,10 @@ export const submitBetTx = (address: string, uid: string, marketId: string, side
 /** Task completion tx (memo bound to uid + taskId). Returns the tx hash. */
 export const submitTaskTx = (address: string, uid: string, taskId: string, sign: (xdr: string) => Promise<string>) =>
   submitMemoTx(address, taskMemoObj(uid, taskId), sign);
+
+/** Launch upvote/un-vote tx (memo bound to uid + launch). Returns the tx hash. */
+export const submitVoteTx = (address: string, uid: string, launchId: string, sign: (xdr: string) => Promise<string>) =>
+  submitMemoTx(address, voteMemoObj(uid, launchId), sign);
 
 /** Perp open tx (memo bound to uid + coin + direction + duration + stake). Returns the tx hash. */
 export const submitPerpTx = (

@@ -111,5 +111,31 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == resource.data.uid;
       allow write: if false;
     }
+
+    // Launches (Product Hunt-style): public read. A signed-in user may submit a
+    // launch they own, with zeroed tallies, and edit only its descriptive
+    // fields. The vote tallies (voteCount/voteWeight) are server-owned — only
+    // the trusted /api/vote endpoint (Admin SDK, after on-chain verification)
+    // may change them — so no one can inflate a ranking from the client.
+    match /launches/{launchId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.submittedBy == request.auth.uid
+                    && request.resource.data.voteCount == 0
+                    && request.resource.data.voteWeight == 0;
+      allow update: if request.auth != null
+                    && resource.data.submittedBy == request.auth.uid
+                    && !request.resource.data.diff(resource.data).affectedKeys().hasAny(
+                         ['voteCount', 'voteWeight', 'submittedBy', 'status']);
+      allow delete: if request.auth != null && resource.data.submittedBy == request.auth.uid;
+    }
+
+    // Launch votes: public read (so tallies/who-voted can be shown); only the
+    // trusted server may write, after verifying the on-chain vote tx and
+    // snapshotting the voter's stake power. Voting never spends points.
+    match /launchVotes/{voteId} {
+      allow read: if true;
+      allow write: if false;
+    }
   }
 }

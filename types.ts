@@ -97,3 +97,36 @@ export interface MarketWithCreator extends Market {
   totalBets: number;
   participantCount: number;
 }
+
+// Product Hunt-style launch. Community ranks it by "stake power" — each voter's
+// points act as their vote weight (votes never spend points). All voting is an
+// on-chain Stellar action, verified and tallied by the trusted server.
+export interface Launch {
+  id: string;
+  name: string;
+  tagline: string;               // one-line pitch
+  url: string;                   // product link
+  category: string;
+  description?: string;
+  logoUrl?: string;              // optional square logo
+  tags?: string[];
+  submittedBy: string;           // uid
+  submitterProfile?: {
+    username: string;
+    avatar?: string;
+  };
+  voteCount: number;             // distinct active voters (server-owned)
+  voteWeight: number;            // summed stake power (server-owned)
+  status: 'live' | 'hidden';
+  createdAt?: unknown;           // Firestore Timestamp
+}
+
+export interface NewLaunch {
+  name: string;
+  tagline: string;
+  url: string;
+  category: string;
+  description?: string;
+  logoUrl?: string;
+  tags?: string[];
+}

@@ -18,6 +18,7 @@ export const claimMemoHash = (uid: string) => sha256b64(`claim:${uid}`);
 export const betMemoHash = (uid: string, marketId: string, side: 'yes' | 'no') =>
   sha256b64(`bet:${side}:${marketId}:${uid}`);
 export const taskMemoHash = (uid: string, taskId: string) => sha256b64(`task:${taskId}:${uid}`);
+export const voteMemoHash = (uid: string, launchId: string) => sha256b64(`vote:${launchId}:${uid}`);
 export const perpMemoHash = (uid: string, coin: string, direction: 'long' | 'short', durationSec: number, stake: number) =>
   sha256b64(`perp:${direction}:${coin}:${durationSec}:${stake}:${uid}`);
 

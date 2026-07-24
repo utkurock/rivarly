@@ -142,6 +142,7 @@ function devRewardApi(): Plugin {
           res.end(JSON.stringify({ error: 'Server error' }));
         }
       });
+      server.middlewares.use('/api/vote', post('vote', async () => (await import('./api/_launches')).handleVote));
       server.middlewares.use('/api/admin-news', post('admin-news', async () => (await import('./api/_adminNews')).handleAdminNews));
       server.middlewares.use('/api/news-cache', post('news-cache', async () => (await import('./api/_newsCache')).refreshNewsCache));
     },

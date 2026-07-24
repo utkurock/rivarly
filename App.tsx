@@ -22,6 +22,7 @@ import PostDetail from './components/PostDetail';
 import CreateMarketModal from './components/CreateMarketModal';
 import CryptoNewsFeed from './components/CryptoNewsFeed';
 import Ecosystem from './components/Ecosystem';
+import Launches from './components/Launches';
 import Tasks from './components/Tasks';
 import Leaderboard from './components/Leaderboard';
 import MarketTicker from './components/MarketTicker';
@@ -204,6 +205,9 @@ const AppContent: React.FC = () => {
 
               {/* Ecosystem - Stellar project directory */}
               <Route path="/ecosystem" element={<Ecosystem />} />
+
+              {/* Launches - Product Hunt-style, ranked by stake power */}
+              <Route path="/launches" element={<Launches />} />
 
               {/* Tasks - earn points */}
               <Route path="/tasks" element={<Tasks />} />
