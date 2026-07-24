@@ -4,39 +4,94 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // A follow document is the proof that a follower/followee relationship
+    // exists; the follower counts below are only allowed to move in step with it.
+    function followDoc(followerUid, followedUid) {
+      return /databases/$(database)/documents/follows/$(followerUid + '_' + followedUid);
+    }
+
     // User profiles: public read, owner-only write — EXCEPT the reward fields
     // (points/streak/claim state), which only the trusted server may write via
     // the Admin SDK. This makes points impossible to grant from the client.
+    // followersCount is excluded from self-writes too: it is not the owner's to
+    // set, it moves only through the follow rule below.
     match /users/{userId} {
       allow read: if true;
+
       allow create: if request.auth != null && request.auth.uid == userId
                     && !request.resource.data.keys().hasAny(
-                         ['points', 'streak', 'lastClaimAt', 'claimCount', 'lastClaimTxHash', 'completedTasks', 'taskTxHashes']);
+                         ['points', 'streak', 'lastClaimAt', 'claimCount', 'lastClaimTxHash', 'completedTasks', 'taskTxHashes'])
+                    && (!('followersCount' in request.resource.data) || request.resource.data.followersCount == 0);
+
       allow update: if request.auth != null && request.auth.uid == userId
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(
                          ['points', 'streak', 'lastClaimAt', 'claimCount', 'lastClaimTxHash', 'completedTasks', 'taskTxHashes',
-                          'openPerpCount', 'perpWins', 'perpCount']);
+                          'openPerpCount', 'perpWins', 'perpCount', 'followersCount']);
+
+      // Following someone bumps their followersCount by one. Anyone could
+      // otherwise inflate any profile, so the change must match a follow
+      // document that this user actually owns: +1 only once it exists, -1 only
+      // once it is gone. Nothing else in the profile may change.
+      allow update: if request.auth != null && request.auth.uid != userId
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['followersCount'])
+                    && (
+                         (request.resource.data.followersCount == resource.data.get('followersCount', 0) + 1
+                          && exists(followDoc(request.auth.uid, userId)))
+                         ||
+                         (request.resource.data.followersCount == resource.data.get('followersCount', 0) - 1
+                          && !exists(followDoc(request.auth.uid, userId)))
+                       );
+    }
+
+    // Follow graph: one document per relationship, id "<follower>_<followed>".
+    // Public read (profiles show follower lists); only the follower may create
+    // or remove their own edge, and the id has to match who they claim to be.
+    match /follows/{followId} {
+      allow read: if true;
+      allow create: if request.auth != null
+                    && request.resource.data.followerId == request.auth.uid
+                    && request.resource.data.followingId is string
+                    && request.resource.data.followerId != request.resource.data.followingId
+                    && followId == request.auth.uid + '_' + request.resource.data.followingId;
+      allow delete: if request.auth != null && resource.data.followerId == request.auth.uid;
+      allow update: if false;
     }
 
     // Prediction markets: public read. A signed-in user may create a market they
-    // own and edit only its descriptive fields — the YES/NO tallies, status,
-    // volume and creator are server/creation-owned (the bet endpoint updates
-    // tallies via Admin), so clients can't inflate or self-resolve a market.
+    // own, with zeroed tallies and open status, and afterwards edit only its
+    // descriptive fields (title, slug, info, sources). The YES/NO tallies,
+    // volume, status and creator are server/creation-owned — the bet endpoint
+    // updates them via Admin — so clients can neither inflate nor self-resolve.
     match /markets/{marketId} {
       allow read: if true;
+
       allow create: if request.auth != null
-                    && request.resource.data.creator == request.auth.uid;
+                    && request.resource.data.creator == request.auth.uid
+                    && request.resource.data.yesBets == 0
+                    && request.resource.data.noBets == 0
+                    && request.resource.data.get('volumeUSD', 0) == 0
+                    && request.resource.data.status == 'open';
+
       allow update: if request.auth != null
                     && resource.data.creator == request.auth.uid
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(
                          ['yesBets', 'noBets', 'creator', 'creatorProfile', 'status', 'volumeUSD', 'metrics']);
+
       allow delete: if request.auth != null && resource.data.creator == request.auth.uid;
+    }
+
+    // Probability history behind the market chart: public read, server-written.
+    // A client that could write here could draw any price history it liked.
+    match /prices/{pointId} {
+      allow read: if true;
+      allow write: if false;
     }
 
     // Social feed posts
     match /feed/{postId} {
       allow read: if true;
       allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
                     && request.resource.data.keys().hasAll(['uid', 'displayName', 'handle', 'text', 'createdAt'])
                     && request.resource.data.text is string
                     && request.resource.data.text.size() <= 500;
@@ -67,10 +122,17 @@ service cloud.firestore {
                              && resource.data.uid == request.auth.uid;
     }
 
-    // Market comments (userAddress holds the Firebase uid)
+    // Market comments (userAddress holds the Firebase uid). A comment must be
+    // signed by whoever is writing it — otherwise anyone could post under
+    // someone else's name.
     match /comments/{commentId} {
       allow read: if true;
-      allow create: if request.auth != null;
+      allow create: if request.auth != null
+                    && request.resource.data.userAddress == request.auth.uid
+                    && request.resource.data.marketId is string
+                    && request.resource.data.content is string
+                    && request.resource.data.content.size() <= 1000;
+      allow update: if false;
       allow delete: if request.auth != null
                     && request.auth.uid == resource.data.userAddress;
     }
@@ -112,6 +174,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Single-use guards keyed by transaction hash, written by the perp endpoint
+    // to stop one on-chain tx from opening two positions. Server-only, and
+    // there is nothing here worth reading from a client.
+    match /perpTx/{txHash} {
+      allow read, write: if false;
+    }
+
     // Launches (Product Hunt-style): public read. A signed-in user may submit a
     // launch they own, with zeroed tallies, and edit only its descriptive
     // fields. The vote tallies (voteCount/voteWeight) are server-owned — only
@@ -122,7 +191,8 @@ service cloud.firestore {
       allow create: if request.auth != null
                     && request.resource.data.submittedBy == request.auth.uid
                     && request.resource.data.voteCount == 0
-                    && request.resource.data.voteWeight == 0;
+                    && request.resource.data.voteWeight == 0
+                    && request.resource.data.status == 'live';
       allow update: if request.auth != null
                     && resource.data.submittedBy == request.auth.uid
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(
@@ -137,5 +207,7 @@ service cloud.firestore {
       allow read: if true;
       allow write: if false;
     }
+
+    // Anything not matched above stays denied.
   }
 }
