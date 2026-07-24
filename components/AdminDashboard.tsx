@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import type { AdminStats, MarketWithCreator } from '../types';
 import NewsManagement from './NewsManagement';
 import { verifyAdminPassword, setStoredAdminPassword, getStoredAdminPassword } from '../services/newsService';
+import MarketLinksPanel from './MarketLinksPanel';
 
 const AdminDashboard: React.FC = () => {
   const { user, userProfile } = useFirebase();
@@ -312,6 +313,9 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Readable market links (/market/<slug>) */}
+      <MarketLinksPanel />
 
       {/* Filters */}
       <div className="bg-background-card border border-border-default rounded-xl p-6 shadow-sm">

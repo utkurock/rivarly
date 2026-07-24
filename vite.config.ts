@@ -144,6 +144,7 @@ function devRewardApi(): Plugin {
       });
       server.middlewares.use('/api/vote', post('vote', async () => (await import('./api/_launches')).handleVote));
       server.middlewares.use('/api/admin-news', post('admin-news', async () => (await import('./api/_adminNews')).handleAdminNews));
+      server.middlewares.use('/api/admin-markets', post('admin-markets', async () => (await import('./api/_adminMarkets')).handleAdminMarkets));
       server.middlewares.use('/api/news-cache', post('news-cache', async () => (await import('./api/_newsCache')).refreshNewsCache));
     },
   };
