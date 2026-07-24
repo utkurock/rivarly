@@ -4,9 +4,8 @@ import {
   getDoc, 
   setDoc, 
   deleteDoc, 
-  query, 
-  where, 
-  getDocs, 
+  query,
+  where,
   onSnapshot,
   increment,
   updateDoc
@@ -147,40 +146,6 @@ export const getFollowingCount = async (userId: string): Promise<number> => {
   } catch (error) {
     console.error('Error getting following count:', error);
     return 0;
-  }
-};
-
-/**
- * Get list of users that a user is following
- */
-export const getFollowingList = async (userId: string): Promise<string[]> => {
-  try {
-    const q = query(
-      collection(db, 'follows'),
-      where('followerId', '==', userId)
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data().followingId);
-  } catch (error) {
-    console.error('Error getting following list:', error);
-    return [];
-  }
-};
-
-/**
- * Get list of users following a user
- */
-export const getFollowersList = async (userId: string): Promise<string[]> => {
-  try {
-    const q = query(
-      collection(db, 'follows'),
-      where('followingId', '==', userId)
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => doc.data().followerId);
-  } catch (error) {
-    console.error('Error getting followers list:', error);
-    return [];
   }
 };
 

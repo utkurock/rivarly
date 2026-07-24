@@ -109,26 +109,3 @@ export async function getSpotPrice(coin: Coin): Promise<number | null> {
   const p = map?.[coin]?.price;
   return typeof p === 'number' && Number.isFinite(p) && p > 0 ? p : null;
 }
-
-export interface Candle { t: number; o: number; h: number; l: number; c: number }
-
-/** Recent 1-minute klines for the mini chart (Binance only; [] if unavailable). */
-export async function getKlines(coin: Coin, limit = 60): Promise<Candle[]> {
-  try {
-    const res = await timedFetch(
-      `https://api.binance.com/api/v3/klines?symbol=${BINANCE_SYMBOL[coin]}&interval=1m&limit=${Math.min(Math.max(limit, 1), 200)}`
-    );
-    if (!res.ok) return [];
-    const arr = await res.json();
-    if (!Array.isArray(arr)) return [];
-    return arr.map((k: any[]) => ({
-      t: Number(k[0]),
-      o: Number(k[1]),
-      h: Number(k[2]),
-      l: Number(k[3]),
-      c: Number(k[4]),
-    }));
-  } catch {
-    return [];
-  }
-}

@@ -63,15 +63,6 @@ export interface Post {
   sharedBy?: string[]; // Array of user ids who shared this post
 }
 
-export interface MarketComment {
-  id: string;
-  marketId: string;
-  userAddress: string;
-  content: string;
-  timestamp: string;
-  createdAt: Date;
-}
-
 // Admin Dashboard Types
 export interface AdminStats {
   totalUsers: number;

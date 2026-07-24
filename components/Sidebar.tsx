@@ -1,15 +1,8 @@
 import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useFirebase } from '../contexts/FirebaseContext';
 import AccountMenu from './AccountMenu';
 import ThemeToggle from './ThemeToggle';
 import Logo from './Logo';
-
-// Get user profile from Firebase context
-export const useUserProfile = () => {
-    const { userProfile } = useFirebase();
-    return userProfile;
-};
 
 const NavLink: React.FC<{ to: string; icon: React.ReactNode; children: React.ReactNode; onClick?: (e: React.MouseEvent) => void }> = ({ to, icon, children, onClick }) => {
     const location = useLocation();

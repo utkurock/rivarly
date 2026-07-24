@@ -94,8 +94,3 @@ export const parseTextWithMarketLinks = (text: string): TextPart[] => {
   
   return parts;
 };
-
-// Validate market ID format
-export const isValidMarketId = (marketId: string): boolean => {
-  return /^[a-zA-Z0-9_-]+$/.test(marketId);
-};

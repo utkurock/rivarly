@@ -9,9 +9,6 @@ import type { NewsItem } from '../types';
 // and returns JSON (Vercel Edge function in api/news.ts; a Vite middleware serves
 // it in dev). No third-party proxy involved.
 
-// Public news is always available.
-export const hasPublicNews = true;
-
 /**
  * Fetch public crypto news. Pass a currency code (e.g. "XLM", "BTC") to narrow
  * results to that asset. Returns [] on any network error.
@@ -28,12 +25,6 @@ export const fetchPublicNews = async (currency?: string): Promise<NewsItem[]> =>
     return [];
   }
 };
-
-/**
- * Fetch Stellar-specific news. Kept separate so XLM coverage can be merged into
- * the default feed even when the general feed surfaces little Stellar activity.
- */
-export const fetchStellarNews = (): Promise<NewsItem[]> => fetchPublicNews('XLM');
 
 // ---- Firestore write-through cache -----------------------------------------
 // The edge aggregation is slow on a cold cache (~several seconds fetching many

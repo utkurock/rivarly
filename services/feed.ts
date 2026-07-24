@@ -1,11 +1,5 @@
-import { 
-  ref, 
-  uploadBytesResumable, 
-  getDownloadURL,
-  deleteObject 
-} from 'firebase/storage';
-import { 
-  collection, 
+import {
+  collection,
   addDoc, 
   updateDoc, 
   deleteDoc, 
@@ -26,7 +20,7 @@ import {
   startAt,
   endAt
 } from 'firebase/firestore';
-import { storage, db } from '../firebase';
+import { db } from '../firebase';
 import type { Timestamp } from 'firebase/firestore';
 
 // Types
@@ -217,73 +211,6 @@ export const uploadMediaAsBase64 = async (
       reader.onerror = () => reject(new Error('Failed to read file'));
       reader.readAsDataURL(file);
     });
-  } catch (error) {
-    console.error('Error uploading media:', error);
-    throw new Error('Failed to upload media');
-  }
-};
-
-// Original Firebase Storage upload (kept for future use)
-export const uploadMedia = async (
-  file: File, 
-  userId: string, 
-  folder: 'posts' | 'comments' | 'avatars' = 'posts'
-): Promise<MediaItem> => {
-  try {
-    // Validate file
-    const validation = validateFile(file);
-    if (!validation.valid) {
-      throw new Error(validation.error);
-    }
-
-    // Compress image if needed
-    const processedFile = await compressImage(file);
-    
-    // Create storage reference
-    const timestamp = Date.now();
-    const fileName = `${timestamp}-${processedFile.name}`;
-    const storageRef = ref(storage, `${folder}/${userId}/${fileName}`);
-    
-    // Upload file with metadata
-    const metadata = {
-      contentType: processedFile.type,
-      customMetadata: {
-        originalName: processedFile.name,
-        uploadedAt: timestamp.toString(),
-      }
-    };
-    
-    const uploadTask = uploadBytesResumable(storageRef, processedFile, metadata);
-    
-    // Wait for upload to complete
-    await new Promise((resolve, reject) => {
-      uploadTask.on('state_changed',
-        (snapshot) => {
-          // Progress tracking could be added here
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          
-        },
-        (error) => {
-          console.error('Upload error:', error);
-          reject(error);
-        },
-        () => {
-          resolve(uploadTask.snapshot);
-        }
-      );
-    });
-    
-    // Get download URL
-    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-    
-    // Determine media type
-    const mediaType = processedFile.type.startsWith('video/') ? 'video' : 'image';
-    
-    return {
-      url: downloadURL,
-      type: mediaType,
-      // Note: width/height could be extracted from image metadata if needed
-    };
   } catch (error) {
     console.error('Error uploading media:', error);
     throw new Error('Failed to upload media');
@@ -491,43 +418,6 @@ export const replyToPost = async ({
 };
 
 // Subscribe to posts feed
-export const subscribeToFeed = (
-  callback: (posts: FeedPost[]) => void,
-  pageSize: number = 50
-) => {
-  const q = query(
-    collection(db, 'feed'),
-    orderBy('createdAt', 'desc'),
-    limit(pageSize)
-  );
-  
-  return onSnapshot(q, (snapshot) => {
-    const posts: FeedPost[] = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      posts.push({
-        id: doc.id,
-        uid: data.uid,
-        displayName: data.displayName,
-        handle: data.handle,
-        avatarUrl: data.avatarUrl,
-        text: data.text,
-        media: data.media || [],
-        marketId: data.marketId,
-        createdAt: data.createdAt,
-        likeCount: data.likeCount || 0,
-        replyCount: data.replyCount || 0,
-        repostCount: data.repostCount || 0,
-        likedBy: data.likedBy || [],
-        repostedBy: data.repostedBy || [],
-        reposterProfile: data.reposterProfile,
-      } as FeedPost);
-    });
-    
-    callback(posts);
-  });
-};
-
 // Subscribe to replies for a post
 export const subscribeToReplies = (
   postId: string,
@@ -555,30 +445,6 @@ export const subscribeToReplies = (
     });
     callback(replies);
   });
-};
-
-// Check if user has liked a post
-export const checkUserLiked = async (postId: string, uid: string): Promise<boolean> => {
-  try {
-    const likeRef = doc(db, 'feed', postId, 'likes', uid);
-    const likeDocSnap = await getDoc(likeRef);
-    return likeDocSnap.exists();
-  } catch (error) {
-    console.error('Error checking like status:', error);
-    return false;
-  }
-};
-
-// Check if user has reposted a post
-export const checkUserReposted = async (postId: string, uid: string): Promise<boolean> => {
-  try {
-    const repostRef = doc(db, 'feed', postId, 'reposts', uid);
-    const repostDocSnap = await getDoc(repostRef);
-    return repostDocSnap.exists();
-  } catch (error) {
-    console.error('Error checking repost status:', error);
-    return false;
-  }
 };
 
 // Get user's liked posts

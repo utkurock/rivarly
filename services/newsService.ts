@@ -7,7 +7,6 @@ import type { NewsItem } from '../types';
 const ADMIN_PW_KEY = 'starcast_admin_pw';
 export const getStoredAdminPassword = () => sessionStorage.getItem(ADMIN_PW_KEY) || '';
 export const setStoredAdminPassword = (pw: string) => sessionStorage.setItem(ADMIN_PW_KEY, pw);
-export const clearStoredAdminPassword = () => sessionStorage.removeItem(ADMIN_PW_KEY);
 
 const adminNews = async (payload: Record<string, unknown>): Promise<any> => {
   const res = await fetch('/api/admin-news', {
@@ -113,29 +112,4 @@ export const getNewsByCategory = async (category: string): Promise<NewsItem[]> =
   }
 };
 
-// Get recent news (last N items)
-export const getRecentNews = async (limit: number = 10): Promise<NewsItem[]> => {
-  try {
-    const newsRef = collection(db, 'news');
-    const q = query(newsRef, orderBy('publishedAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    
-    const news: NewsItem[] = [];
-    let count = 0;
-    querySnapshot.forEach((doc) => {
-      if (count < limit) {
-        news.push({
-          id: doc.id,
-          ...doc.data(),
-        } as NewsItem);
-        count++;
-      }
-    });
-    
-    return news;
-  } catch (error) {
-    console.error('Error fetching recent news:', error);
-    throw error;
-  }
-};
 
