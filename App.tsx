@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -63,16 +63,28 @@ const MarketsRoute: React.FC<MarketsRouteProps> = ({
 }) => {
   const { coinSlug } = useParams<{ coinSlug?: string }>();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const coin = coinFromSlug(coinSlug) || 'BTC';
-  const side = searchParams.get('side');
-  const direction: PerpDirection | undefined = side === 'long' || side === 'short' ? side : undefined;
+
+  // The preselected side travels in router state, not the query string: it is a
+  // one-off hint from the coin card, and /perp/solana is the address worth
+  // sharing. Links that still carry ?side= keep working and get cleaned up.
+  const sideParam = searchParams.get('side');
+  const sideState = (location.state as { side?: string } | null)?.side;
+  const rawSide = sideState || sideParam;
+  const direction: PerpDirection | undefined = rawSide === 'long' || rawSide === 'short' ? rawSide : undefined;
 
   // An unknown coin in the URL settles on the canonical address instead of 404.
   useEffect(() => {
     if (perp && coinSlug && !coinFromSlug(coinSlug)) navigate(`/perp/${COIN_SLUG[coin]}`, { replace: true });
   }, [perp, coinSlug, coin, navigate]);
+
+  useEffect(() => {
+    if (!perp || !sideParam) return;
+    navigate(`/perp/${COIN_SLUG[coin]}`, { replace: true, state: direction ? { side: direction } : undefined });
+  }, [perp, sideParam, coin, direction, navigate]);
 
   const handleCategory = (category: string) => {
     if (category === 'Perp') {
@@ -92,7 +104,7 @@ const MarketsRoute: React.FC<MarketsRouteProps> = ({
       onCreateMarket={onCreateMarket}
       perpCoin={perp ? coin : undefined}
       perpDirection={perp ? direction : undefined}
-      onPerpTrade={(c, d) => navigate(`/perp/${COIN_SLUG[c]}?side=${d}`)}
+      onPerpTrade={(c, d) => navigate(`/perp/${COIN_SLUG[c]}`, { state: { side: d } })}
       onPerpCoinChange={(c) => navigate(`/perp/${COIN_SLUG[c]}`)}
     />
   );
