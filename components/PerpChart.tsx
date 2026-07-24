@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, ReferenceDot } from 'recharts';
 import { fetchKlines, type Coin, type Interval } from '../services/pricesService';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -35,31 +35,54 @@ const PerpChart: React.FC<Props> = ({ coin, interval, height = 340, livePrice })
   const [data, setData] = useState<Point[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'empty'>('loading');
 
+  // History refreshes on a timer; the live spot keeps the tail moving in
+  // between. Poll spacing matches the server-side kline cache, so polling
+  // faster would only return the same series.
+  const POLL_MS = 15000;
+  // First load can land while an upstream is rate-limiting or unreachable —
+  // retry with a backoff instead of parking on "Chart unavailable".
+  const RETRY_MS = [2000, 4000, 8000, 15000];
+
   useEffect(() => {
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    let failures = 0;
+    let hasData = false;
+
     setState('loading');
     setData([]);
 
     const load = async () => {
       const candles = await fetchKlines(coin, interval, 90);
       if (cancelled) return;
+
       if (candles.length) {
+        failures = 0;
+        hasData = true;
         setData(candles.map((c) => ({ t: c.t, p: c.c })));
         setState('ready');
-      } else {
-        setState((s) => (s === 'loading' ? 'empty' : s));
+      } else if (!hasData) {
+        // Nothing to show yet: stay in "loading" while retries are pending,
+        // and only give up after the backoff is exhausted.
+        failures += 1;
+        setState(failures > RETRY_MS.length ? 'empty' : 'loading');
       }
+      // With data already on screen a failed poll changes nothing — the last
+      // known series stays up and the live tail keeps it current.
+
+      const wait = candles.length || hasData ? POLL_MS : RETRY_MS[Math.min(failures - 1, RETRY_MS.length - 1)];
+      timer = setTimeout(load, wait);
     };
 
     load();
-    const timer = setInterval(load, 5000);
     return () => {
       cancelled = true;
-      clearInterval(timer);
+      clearTimeout(timer);
     };
   }, [coin, interval]);
 
-  // Overlay the live spot onto the last point between 5s polls.
+  // Overlay the live spot onto the tail so the line tracks the ticker between
+  // polls: the in-progress candle's close is exactly the current price.
   const series = useMemo(() => {
     if (!data.length || !livePrice || !Number.isFinite(livePrice)) return data;
     const copy = data.slice();
@@ -144,6 +167,8 @@ const PerpChart: React.FC<Props> = ({ coin, interval, height = 340, livePrice })
             }}
           />
           <ReferenceLine y={last} stroke={color} strokeDasharray="4 4" strokeOpacity={0.5} />
+          {/* Live marker on the tail so the current price is visibly moving. */}
+          <ReferenceDot x={series[series.length - 1].t} y={last} r={3.5} fill={color} stroke="none" />
           <Area
             type="monotone"
             dataKey="p"

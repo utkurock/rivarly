@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useFirebase } from '../contexts/FirebaseContext';
 import { useStellarWallet, stellarExpertTxUrl } from '../contexts/StellarWalletContext';
-import { usePrices } from '../hooks/usePrices';
+import { usePrices, usePriceTick } from '../hooks/usePrices';
 import { useCountdown } from '../hooks/useCountdown';
 import { subscribeToPoints } from '../services/pointsService';
 import {
@@ -36,6 +36,21 @@ const mmss = (total: number): string => {
 };
 
 const CHART_INTERVAL: Record<number, Interval> = { 60: '1m', 300: '5m', 900: '15m' };
+
+// The headline spot price, tinted for a beat whenever it ticks so the number
+// reads as live instead of silently changing.
+const LivePrice: React.FC<{ price?: number }> = ({ price }) => {
+  const dir = usePriceTick(price);
+  return (
+    <div
+      className={`text-2xl font-bold tabular-nums transition-colors duration-300 ${
+        dir === 'up' ? 'text-emerald-400' : dir === 'down' ? 'text-rose-400' : 'text-text-primary'
+      }`}
+    >
+      {typeof price === 'number' ? `$${fmtPrice(price)}` : '—'}
+    </div>
+  );
+};
 
 // ---- A single position row (live countdown + auto-settle) -------------------
 const PositionRow: React.FC<{ pos: PerpPosition; livePrice?: number }> = ({ pos, livePrice }) => {
@@ -225,9 +240,7 @@ const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection
               </div>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-text-primary tabular-nums">
-                {live ? `$${fmtPrice(live.price)}` : '—'}
-              </div>
+              <LivePrice price={live?.price} />
               {live && (
                 <div className={`text-xs font-semibold ${live.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                   {live.change24h >= 0 ? '+' : ''}{live.change24h.toFixed(2)}% · 24h

@@ -1,33 +1,48 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchPrices, type PriceMap } from '../services/pricesService';
+import { getLatestPrices, subscribeToPrices, type Coin, type PriceMap } from '../services/pricesService';
 
 /**
- * Poll the live price feed on an interval. Returns the latest price map plus a
- * loading flag for the first fetch. Keeps polling while mounted.
+ * Read the shared live price feed. Every consumer attaches to one poll loop in
+ * pricesService, so mounting more tickers never means more upstream requests.
+ * The interval argument is accepted for call-site compatibility and ignored.
  */
-export function usePrices(intervalMs = 4000): { prices: PriceMap; loading: boolean } {
-  const [prices, setPrices] = useState<PriceMap>({});
-  const [loading, setLoading] = useState(true);
-  const alive = useRef(true);
+export function usePrices(_intervalMs?: number): { prices: PriceMap; loading: boolean } {
+  const [prices, setPrices] = useState<PriceMap>(getLatestPrices);
+  const [loading, setLoading] = useState(() => Object.keys(getLatestPrices()).length === 0);
 
   useEffect(() => {
-    alive.current = true;
-    let timer: ReturnType<typeof setTimeout>;
-
-    const tick = async () => {
-      const data = await fetchPrices();
-      if (!alive.current) return;
-      if (Object.keys(data).length) setPrices(data);
+    const unsub = subscribeToPrices((next) => {
+      setPrices(next);
       setLoading(false);
-      timer = setTimeout(tick, intervalMs);
-    };
-    tick();
-
-    return () => {
-      alive.current = false;
-      clearTimeout(timer);
-    };
-  }, [intervalMs]);
+    });
+    return unsub;
+  }, []);
 
   return { prices, loading };
 }
+
+export type TickDirection = 'up' | 'down' | null;
+
+/**
+ * Direction of the last price change, so a number can flash green or red as it
+ * moves. Resets shortly after the tick, which is what makes the value read as
+ * live rather than as a static figure that quietly changes.
+ */
+export function usePriceTick(price?: number, holdMs = 700): TickDirection {
+  const [dir, setDir] = useState<TickDirection>(null);
+  const prev = useRef<number | undefined>(price);
+
+  useEffect(() => {
+    if (typeof price !== 'number' || !Number.isFinite(price)) return;
+    const before = prev.current;
+    prev.current = price;
+    if (typeof before !== 'number' || before === price) return;
+    setDir(price > before ? 'up' : 'down');
+    const t = setTimeout(() => setDir(null), holdMs);
+    return () => clearTimeout(t);
+  }, [price, holdMs]);
+
+  return dir;
+}
+
+export type { Coin, PriceMap };

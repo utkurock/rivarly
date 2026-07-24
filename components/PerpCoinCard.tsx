@@ -1,4 +1,5 @@
 import React from 'react';
+import { usePriceTick } from '../hooks/usePrices';
 import CoinIcon from './CoinIcon';
 import { COIN_META, type Coin, type CoinPrice } from '../services/pricesService';
 import type { PerpDirection } from '../services/perpService';
@@ -20,6 +21,7 @@ interface Props {
 const PerpCoinCard: React.FC<Props> = ({ coin, price, onTrade }) => {
   const meta = COIN_META[coin];
   const up = (price?.change24h ?? 0) >= 0;
+  const tick = usePriceTick(price?.price);
 
   return (
     <div className="group bg-background-card border border-border-default rounded-2xl p-4 flex flex-col hover:border-border-strong transition-colors">
@@ -39,7 +41,11 @@ const PerpCoinCard: React.FC<Props> = ({ coin, price, onTrade }) => {
         onClick={() => onTrade(coin, up ? 'long' : 'short')}
         className="flex-1 flex flex-col items-center justify-center py-5"
       >
-        <div className="text-2xl md:text-3xl font-extrabold text-text-primary tabular-nums">
+        <div
+          className={`text-2xl md:text-3xl font-extrabold tabular-nums transition-colors duration-300 ${
+            tick === 'up' ? 'text-emerald-400' : tick === 'down' ? 'text-rose-400' : 'text-text-primary'
+          }`}
+        >
           {price ? `$${fmtPrice(price.price)}` : '—'}
         </div>
         {price && (
