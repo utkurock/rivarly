@@ -3,7 +3,10 @@ import MarketCard from './MarketCard';
 import InfiniteScrollSentinel from './InfiniteScrollSentinel';
 import FilterTabs from './FilterTabs';
 import PerpMarkets from './PerpMarkets';
+import PerpCardsRow from './PerpCardsRow';
 import { useInfiniteMarkets } from '../hooks/useInfiniteMarkets';
+import type { Coin } from '../services/pricesService';
+import type { PerpDirection } from '../services/perpService';
 
 interface MainContentProps {
   activeCategory: string;
@@ -15,6 +18,12 @@ interface MainContentProps {
 
 const MainContent: React.FC<MainContentProps> = ({ activeCategory, setActiveCategory, searchTerm, setSearchTerm, onCreateMarket }) => {
   const [activeStatus, setActiveStatus] = useState<string[]>(['Open']);
+  const [perpPreset, setPerpPreset] = useState<{ coin: Coin; direction: PerpDirection } | undefined>();
+
+  const goPerp = (coin: Coin, direction: PerpDirection) => {
+    setPerpPreset({ coin, direction });
+    setActiveCategory('Perp');
+  };
 
   // Use infinite scroll hook
   const {
@@ -47,9 +56,10 @@ const MainContent: React.FC<MainContentProps> = ({ activeCategory, setActiveCate
       />
 
       {activeCategory === 'Perp' ? (
-        <PerpMarkets />
+        <PerpMarkets initialCoin={perpPreset?.coin} initialDirection={perpPreset?.direction} />
       ) : (
       <div className="max-w-[1600px] mx-auto px-3 md:px-6 py-4 md:py-8 pb-24 md:pb-6 min-h-full bg-background-body">
+        {activeCategory === 'All' && <PerpCardsRow onTrade={goPerp} />}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-3 md:gap-6">
             {Array.from({ length: 8 }).map((_, index) => (

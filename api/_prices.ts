@@ -86,9 +86,18 @@ async function fromCoinGecko(): Promise<PriceMap | null> {
   }
 }
 
+// Small in-memory cache so frequent polling (and the CoinGecko fallback, which
+// rate-limits) doesn't hammer the upstreams. In production the edge cache does
+// this too; this also protects the Vite dev server, which has no CDN in front.
+let cache: { at: number; map: PriceMap } | null = null;
+const CACHE_MS = 2500;
+
 /** All four spot prices. Returns null only if every source fails. */
 export async function getPrices(): Promise<PriceMap | null> {
-  return (await fromBinance()) || (await fromCoinGecko());
+  if (cache && Date.now() - cache.at < CACHE_MS) return cache.map;
+  const map = (await fromBinance()) || (await fromCoinGecko());
+  if (map) cache = { at: Date.now(), map };
+  return map;
 }
 
 /**

@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { AreaChart, Area, YAxis, ResponsiveContainer } from 'recharts';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useFirebase } from '../contexts/FirebaseContext';
 import { usePrices } from '../hooks/usePrices';
 import { useCountdown } from '../hooks/useCountdown';
@@ -12,8 +11,9 @@ import {
   type PerpDirection,
   type PerpPosition,
 } from '../services/perpService';
-import { COINS, COIN_META, fetchKlines, type Coin, type Candle } from '../services/pricesService';
+import { COINS, COIN_META, type Coin } from '../services/pricesService';
 import CoinIcon from './CoinIcon';
+import TradingViewChart from './TradingViewChart';
 
 const DURATIONS: { sec: number; label: string }[] = [
   { sec: 60, label: '1m' },
@@ -34,51 +34,7 @@ const mmss = (total: number): string => {
   return `${m}:${String(s).padStart(2, '0')}`;
 };
 
-// ---- Mini price chart (from 1m klines) --------------------------------------
-const PerpChart: React.FC<{ coin: Coin; up: boolean }> = ({ coin, up }) => {
-  const [candles, setCandles] = useState<Candle[]>([]);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    let alive = true;
-    setLoaded(false);
-    fetchKlines(coin, 60).then((c) => {
-      if (!alive) return;
-      setCandles(c);
-      setLoaded(true);
-    });
-    const t = setInterval(() => fetchKlines(coin, 60).then((c) => alive && c.length && setCandles(c)), 15000);
-    return () => { alive = false; clearInterval(t); };
-  }, [coin]);
-
-  const data = useMemo(() => candles.map((c) => ({ t: c.t, c: c.c })), [candles]);
-  const color = up ? '#22C55E' : '#EF4444';
-
-  if (loaded && data.length === 0) {
-    return (
-      <div className="h-40 flex items-center justify-center text-text-tertiary text-sm">
-        Chart unavailable — trading uses the live server price.
-      </div>
-    );
-  }
-
-  return (
-    <div className="h-40">
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
-          <defs>
-            <linearGradient id={`perp-${coin}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <YAxis domain={['dataMin', 'dataMax']} hide />
-          <Area type="monotone" dataKey="c" stroke={color} strokeWidth={2} fill={`url(#perp-${coin})`} isAnimationActive={false} />
-        </AreaChart>
-      </ResponsiveContainer>
-    </div>
-  );
-};
+const TV_INTERVAL: Record<number, string> = { 60: '1', 300: '5', 900: '15' };
 
 // ---- A single position row (live countdown + auto-settle) -------------------
 const PositionRow: React.FC<{ pos: PerpPosition; livePrice?: number }> = ({ pos, livePrice }) => {
@@ -155,13 +111,18 @@ const PositionRow: React.FC<{ pos: PerpPosition; livePrice?: number }> = ({ pos,
 };
 
 // ---- Main -------------------------------------------------------------------
-const PerpMarkets: React.FC = () => {
+interface PerpMarketsProps {
+  initialCoin?: Coin;
+  initialDirection?: PerpDirection;
+}
+
+const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection }) => {
   const { userProfile, user } = useFirebase();
   const uid = userProfile?.uid || user?.uid || null;
   const { prices } = usePrices(3000);
 
-  const [coin, setCoin] = useState<Coin>('BTC');
-  const [direction, setDirection] = useState<PerpDirection>('long');
+  const [coin, setCoin] = useState<Coin>(initialCoin || 'BTC');
+  const [direction, setDirection] = useState<PerpDirection>(initialDirection || 'long');
   const [durationSec, setDurationSec] = useState(60);
   const [stake, setStake] = useState('');
   const [points, setPoints] = useState(0);
@@ -259,7 +220,7 @@ const PerpMarkets: React.FC = () => {
               )}
             </div>
           </div>
-          <PerpChart coin={coin} up={(live?.change24h ?? 0) >= 0} />
+          <TradingViewChart coin={coin} interval={TV_INTERVAL[durationSec] || '1'} height={340} />
         </div>
 
         {/* Trade panel */}
