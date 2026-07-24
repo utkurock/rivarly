@@ -59,9 +59,15 @@ service cloud.firestore {
 
     // Prediction markets: public read. A signed-in user may create a market they
     // own, with zeroed tallies and open status, and afterwards edit only its
-    // descriptive fields (title, slug, info, sources). The YES/NO tallies,
-    // volume, status and creator are server/creation-owned — the bet endpoint
-    // updates them via Admin — so clients can neither inflate nor self-resolve.
+    // descriptive fields (title, slug, info, sources).
+    //
+    // Everything that decides an outcome or describes standing is server-owned:
+    // the tallies and volume come from the bet endpoint, and status/probability
+    // /resolvedAt come from /api/admin-markets. A creator could otherwise
+    // display any odds they liked, or settle their own market.
+    //
+    // The deadline can still be corrected, but only while nobody has predicted
+    // yet — moving it under an open position would change the game mid-play.
     match /markets/{marketId} {
       allow read: if true;
 
@@ -75,7 +81,12 @@ service cloud.firestore {
       allow update: if request.auth != null
                     && resource.data.creator == request.auth.uid
                     && !request.resource.data.diff(resource.data).affectedKeys().hasAny(
-                         ['yesBets', 'noBets', 'creator', 'creatorProfile', 'status', 'volumeUSD', 'metrics']);
+                         ['yesBets', 'noBets', 'creator', 'creatorProfile', 'volumeUSD', 'metrics',
+                          'status', 'probability', 'resolvedAt', 'resolvedBy', 'previousStatus'])
+                    && (
+                         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['resolvesAt'])
+                         || (resource.data.get('yesBets', 0) == 0 && resource.data.get('noBets', 0) == 0)
+                       );
 
       allow delete: if request.auth != null && resource.data.creator == request.auth.uid;
     }

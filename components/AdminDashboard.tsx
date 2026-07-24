@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useFirebase } from '../contexts/FirebaseContext';
-import { collection, query, getDocs, updateDoc, doc, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { AdminStats, MarketWithCreator } from '../types';
 import NewsManagement from './NewsManagement';
 import { verifyAdminPassword, setStoredAdminPassword, getStoredAdminPassword } from '../services/newsService';
 import MarketLinksPanel from './MarketLinksPanel';
+import { resolveMarket } from '../services/adminMarketService';
 import { formatPoints } from '../utils/format';
 
 const AdminDashboard: React.FC = () => {
-  const { user, userProfile } = useFirebase();
+  const { user } = useFirebase();
 
   const [isAdmin, setIsAdmin] = useState(() => !!getStoredAdminPassword());
   const [passwordInput, setPasswordInput] = useState('');
@@ -117,34 +118,33 @@ const AdminDashboard: React.FC = () => {
     fetchAdminData();
   }, [isAdmin, user]);
 
-  // Resolve market
-  const handleResolveMarket = async (marketId: string, outcome: 'yes' | 'no') => {
-    if (!confirm(`Are you sure you want to resolve this market as ${outcome.toUpperCase()}?`)) {
+  // Resolve market. This goes through the trusted endpoint: a market's outcome
+  // decides who was right, so `status` is not client-writable at all.
+  const handleResolveMarket = async (marketId: string, outcome: 'yes' | 'no', force = false) => {
+    if (!force && !confirm(`Are you sure you want to resolve this market as ${outcome.toUpperCase()}?`)) {
       return;
     }
 
     setResolving(marketId);
     try {
-      // Update market status
-      const marketRef = doc(db, 'markets', marketId);
-      await updateDoc(marketRef, {
-        status: outcome === 'yes' ? 'resolved_yes' : 'resolved_no',
-        resolvedAt: new Date().toISOString(),
-        resolvedBy: userProfile?.uid ?? user?.uid ?? 'admin',
-        probability: outcome === 'yes' ? 1 : 0, // Set final probability
-      });
+      const res = await resolveMarket(marketId, outcome, force);
 
       // Update local state
-      setMarkets(prev => prev.map(m =>
-        m.id === marketId
-          ? { ...m, status: outcome === 'yes' ? 'resolved_yes' : 'resolved_no' }
-          : m
-      ));
+      setMarkets(prev => prev.map(m => (m.id === marketId ? { ...m, status: res.status } : m)));
 
       alert(`Market resolved as ${outcome.toUpperCase()} successfully!`);
-    } catch (error) {
+    } catch (error: any) {
+      const message = String(error?.message || '');
+      // Already settled: offer the deliberate override rather than failing flat.
+      if (!force && message.toLowerCase().includes('already resolved')) {
+        setResolving(null);
+        if (confirm(`${message}\n\nOverride it and resolve as ${outcome.toUpperCase()}?`)) {
+          await handleResolveMarket(marketId, outcome, true);
+        }
+        return;
+      }
       console.error('Error resolving market:', error);
-      alert('Failed to resolve market. Please try again.');
+      alert(message || 'Failed to resolve market. Please try again.');
     } finally {
       setResolving(null);
     }

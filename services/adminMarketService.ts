@@ -38,3 +38,20 @@ export const fetchSlugStatus = (): Promise<SlugStatus> => adminMarkets({ action:
  */
 export const backfillMarketSlugs = (regenerate = false): Promise<SlugBackfillResult> =>
   adminMarkets({ action: 'backfill-slugs', regenerate });
+
+export interface ResolveResult {
+  id: string;
+  status: 'resolved_yes' | 'resolved_no';
+  overridden: boolean;
+}
+
+/**
+ * Settle a market. Clients cannot write `status` at all — resolution decides
+ * who was right, so it only happens on the trusted server. An already resolved
+ * market comes back as an error unless `force` is passed.
+ */
+export const resolveMarket = (
+  marketId: string,
+  outcome: 'yes' | 'no',
+  force = false
+): Promise<ResolveResult> => adminMarkets({ action: 'resolve', marketId, outcome, force });

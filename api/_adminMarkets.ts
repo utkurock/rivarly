@@ -76,6 +76,51 @@ async function backfillSlugs(
   };
 }
 
+const isSafeId = (s: unknown) => typeof s === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(s);
+
+/**
+ * Settle a market. Resolution decides who was right, so it is the one write a
+ * client must never make: the rules keep `status` server-owned and it happens
+ * here, behind the admin password, with a fixed set of fields. Re-resolving an
+ * already settled market needs an explicit force, so a stray click cannot flip
+ * an outcome.
+ */
+async function resolveMarket(
+  db: FirebaseFirestore.Firestore,
+  marketId: unknown,
+  outcome: unknown,
+  force: boolean
+): Promise<AdminMarketsResult> {
+  if (!isSafeId(marketId)) return { status: 400, body: { error: 'Invalid market id.' } };
+  if (outcome !== 'yes' && outcome !== 'no') return { status: 400, body: { error: 'Outcome must be yes or no.' } };
+
+  const ref = db.collection('markets').doc(marketId as string);
+  const snap = await ref.get();
+  if (!snap.exists) return { status: 404, body: { error: 'Market not found.' } };
+
+  const data = snap.data() as any;
+  const current = String(data?.status || 'open');
+  const settled = current === 'resolved_yes' || current === 'resolved_no';
+  if (settled && !force) {
+    return { status: 409, body: { error: `This market is already resolved (${current}).`, status_: current } };
+  }
+
+  const status = outcome === 'yes' ? 'resolved_yes' : 'resolved_no';
+  await ref.set(
+    {
+      status,
+      probability: outcome === 'yes' ? 1 : 0,
+      resolvedAt: new Date().toISOString(),
+      resolvedBy: 'admin',
+      // Keep what it was, so an overridden resolution is not silent.
+      ...(settled ? { previousStatus: current } : {}),
+    },
+    { merge: true }
+  );
+
+  return { status: 200, body: { id: marketId, status, overridden: settled } };
+}
+
 export async function handleAdminMarkets(input: any): Promise<AdminMarketsResult> {
   const db = getAdminDb();
   if (!db) return { status: 503, body: { error: 'Admin server is not configured.' } };
@@ -101,6 +146,8 @@ export async function handleAdminMarkets(input: any): Promise<AdminMarketsResult
   }
 
   if (action === 'backfill-slugs') return backfillSlugs(db, input?.regenerate === true);
+
+  if (action === 'resolve') return resolveMarket(db, input?.marketId, input?.outcome, input?.force === true);
 
   return { status: 400, body: { error: 'Unknown action.' } };
 }
