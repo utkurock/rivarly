@@ -297,9 +297,9 @@ const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection
           </div>
 
           {/* Payout hint */}
-          <div className="text-xs text-text-tertiary mb-3">
+          <div className="text-xs text-text-tertiary mb-3 text-center">
             Win → <span className="text-emerald-400 font-semibold">+{fmtPts(stakeNum)}</span> · Lose →{' '}
-            <span className="text-rose-400 font-semibold">-{fmtPts(stakeNum)}</span> · double-or-nothing
+            <span className="text-rose-400 font-semibold">-{fmtPts(stakeNum)}</span>
           </div>
 
           {/* Submit */}
@@ -342,14 +342,18 @@ const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection
         )}
       </div>
 
-      {history.length > 0 && (
-        <div className="mt-4 bg-background-card border border-border-default rounded-2xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-border-default">
-            <h3 className="text-sm font-bold text-text-primary">History</h3>
-          </div>
-          {history.map((p) => <PositionRow key={p.id} pos={p} />)}
+      {/* Activity */}
+      <div className="mt-4 bg-background-card border border-border-default rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border-default flex items-center justify-between">
+          <h3 className="text-sm font-bold text-text-primary">Activity</h3>
+          <span className="text-xs text-text-tertiary">{history.length} settled</span>
         </div>
-      )}
+        {history.length === 0 ? (
+          <div className="px-4 py-8 text-center text-sm text-text-secondary">No activity yet. Your settled trades show up here.</div>
+        ) : (
+          history.map((p) => <PositionRow key={p.id} pos={p} />)
+        )}
+      </div>
     </div>
   );
 };
