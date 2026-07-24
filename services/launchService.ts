@@ -18,15 +18,71 @@ import type { Launch, NewLaunch } from '../types';
 
 export class LaunchError extends Error {}
 
+// --- Logo upload -----------------------------------------------------------
+// Logos are stored inline as a data URL, the same approach services/feed.ts uses
+// for post media: no Storage CORS setup, and a 256px square costs far less than
+// the 1MB Firestore document limit.
+
+export const LOGO_MAX_BYTES = 5 * 1024 * 1024;
+const LOGO_SIZE = 256;
+
+/**
+ * Validate, centre-crop and downscale a picked image into a square data URL
+ * ready to be stored on the launch document.
+ */
+export const processLogoFile = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new LaunchError('Please choose an image file.'));
+      return;
+    }
+    if (file.size > LOGO_MAX_BYTES) {
+      reject(new LaunchError('That image is larger than 5MB.'));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new LaunchError('Could not read that file.'));
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onerror = () => reject(new LaunchError('That image could not be loaded.'));
+      img.onload = () => {
+        // Centre crop to a square, then paint it at LOGO_SIZE.
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2;
+        const sy = (img.height - side) / 2;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = LOGO_SIZE;
+        canvas.height = LOGO_SIZE;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new LaunchError('Could not process that image.'));
+          return;
+        }
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, LOGO_SIZE, LOGO_SIZE);
+
+        // Keep alpha for PNG-ish sources; photos go out as JPEG to stay small.
+        const keepsAlpha = /png|webp|svg|gif/i.test(file.type);
+        resolve(canvas.toDataURL(keepsAlpha ? 'image/png' : 'image/jpeg', 0.9));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+
 const parseLaunch = (id: string, data: any): Launch => ({
   id,
   name: data?.name || 'Untitled',
   tagline: data?.tagline || '',
   url: data?.url || '',
   category: data?.category || 'Other',
+  network: data?.network === 'testnet' ? 'testnet' : 'mainnet',
   description: data?.description || undefined,
   logoUrl: data?.logoUrl || undefined,
   tags: Array.isArray(data?.tags) ? data.tags : undefined,
+  twitter: data?.twitter || undefined,
+  github: data?.github || undefined,
   submittedBy: data?.submittedBy || '',
   submitterProfile: data?.submitterProfile || undefined,
   voteCount: Number(data?.voteCount) || 0,
@@ -72,9 +128,12 @@ export const submitLaunch = async (data: NewLaunch): Promise<string> => {
     tagline: data.tagline.trim(),
     url: data.url.trim(),
     category: data.category,
+    network: data.network === 'testnet' ? 'testnet' : 'mainnet',
     description: data.description?.trim() || null,
     logoUrl: data.logoUrl?.trim() || null,
     tags: data.tags && data.tags.length ? data.tags : null,
+    twitter: data.twitter?.trim() || null,
+    github: data.github?.trim() || null,
     submittedBy: user.uid,
     submitterProfile: {
       username: user.displayName || 'Anonymous',

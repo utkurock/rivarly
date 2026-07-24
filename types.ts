@@ -101,15 +101,20 @@ export interface MarketWithCreator extends Market {
 // Product Hunt-style launch. Community ranks it by "stake power" — each voter's
 // points act as their vote weight (votes never spend points). All voting is an
 // on-chain Stellar action, verified and tallied by the trusted server.
+export type LaunchNetwork = 'mainnet' | 'testnet';
+
 export interface Launch {
   id: string;
   name: string;
   tagline: string;               // one-line pitch
   url: string;                   // product link
   category: string;
+  network: LaunchNetwork;        // where the product actually runs today
   description?: string;
   logoUrl?: string;              // optional square logo
   tags?: string[];
+  twitter?: string;              // X handle, stored without the @
+  github?: string;               // repo URL, optional
   submittedBy: string;           // uid
   submitterProfile?: {
     username: string;
@@ -126,7 +131,10 @@ export interface NewLaunch {
   tagline: string;
   url: string;
   category: string;
+  network: LaunchNetwork;
   description?: string;
   logoUrl?: string;
   tags?: string[];
+  twitter?: string;
+  github?: string;
 }
