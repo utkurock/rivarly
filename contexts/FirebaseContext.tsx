@@ -16,12 +16,16 @@ import {
   collection, 
   addDoc, 
   updateDoc, 
-  query, 
-  orderBy, 
+  query,
+  orderBy,
   onSnapshot,
-  serverTimestamp 
+  serverTimestamp,
+  getDocs,
+  limit,
+  where
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { slugify } from '../utils/slug';
 import type { Market, Post, UserProfile } from '../types';
 
 interface FirebaseContextType {
@@ -169,6 +173,26 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     }
   };
 
+  /**
+   * A URL-safe slug for the market's title, suffixed with -2, -3… when another
+   * market already claimed it. Falls back to no slug if the lookup fails, in
+   * which case links simply keep using the document id.
+   */
+  const buildMarketSlug = async (title: string): Promise<string | null> => {
+    const base = slugify(title);
+    if (!base) return null;
+    try {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const candidate = attempt === 0 ? base : `${base}-${attempt + 1}`;
+        const snap = await getDocs(query(collection(db, 'markets'), where('slug', '==', candidate), limit(1)));
+        if (snap.empty) return candidate;
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  };
+
   const createMarket = async (marketData: Omit<Market, 'id' | 'creator'>): Promise<string> => {
     // Allow market creation even without Firebase authentication
     // Use the authenticated user's uid as creator, otherwise anonymous
@@ -231,7 +255,10 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
     if ((marketData as any).sourceUrl) {
       marketPayload.sourceUrl = (marketData as any).sourceUrl;
     }
-    
+
+    const slug = await buildMarketSlug(marketPayload.title);
+    if (slug) marketPayload.slug = slug;
+
     const marketRef = await addDoc(collection(db, 'markets'), marketPayload);
     
     return marketRef.id;

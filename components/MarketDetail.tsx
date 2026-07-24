@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
+import { looksLikeDocId, slugify } from '../utils/slug';
 import { useQuery } from '@tanstack/react-query';
 import { getPricePoints } from '../services/commentsService';
 import { db } from '../firebase';
@@ -9,9 +10,29 @@ import type { Market } from '../types';
 import { useCountdown } from '../hooks/useCountdown';
 import { useFirebase } from '../contexts/FirebaseContext';
 
-async function fetchMarket(marketId: string): Promise<Market | null> {
+async function fetchMarketById(marketId: string): Promise<Market | null> {
   const snap = await getDoc(doc(db, 'markets', marketId));
   return snap.exists() ? ({ id: snap.id, ...(snap.data() as any) }) as Market : null;
+}
+
+async function fetchMarketBySlug(slug: string): Promise<Market | null> {
+  try {
+    const snap = await getDocs(query(collection(db, 'markets'), where('slug', '==', slug), limit(1)));
+    const d = snap.docs[0];
+    return d ? ({ id: d.id, ...(d.data() as any) }) as Market : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The URL segment is either a readable slug or a document id. Markets created
+ * before slugs existed are still linked by id, so both have to resolve — the
+ * likely shape is tried first and the other is the fallback.
+ */
+async function fetchMarketByParam(param: string): Promise<Market | null> {
+  if (looksLikeDocId(param)) return (await fetchMarketById(param)) || (await fetchMarketBySlug(param));
+  return (await fetchMarketBySlug(param)) || (await fetchMarketById(param));
 }
 
 async function fetchComments(marketId: string) {
@@ -30,9 +51,9 @@ async function fetchComments(marketId: string) {
 }
 
 const MarketDetail: React.FC = () => {
-  // Params first
-  const { marketId = '' } = useParams<{ marketId: string }>();
-  const hasMarketId = Boolean(marketId);
+  // Params first — this is a slug for markets that have one, an id otherwise.
+  const { marketId: routeParam = '' } = useParams<{ marketId: string }>();
+  const navigate = useNavigate();
 
   // Identity
   const { user, userProfile } = useFirebase();
@@ -46,11 +67,15 @@ const MarketDetail: React.FC = () => {
 
   // Queries (stable order)
   const marketQ = useQuery({
-    queryKey: ['market', marketId],
-    queryFn: () => fetchMarket(marketId),
-    enabled: hasMarketId,
+    queryKey: ['market', routeParam],
+    queryFn: () => fetchMarketByParam(routeParam),
+    enabled: Boolean(routeParam),
     staleTime: 30000,
   });
+
+  // Everything else keys off the real document id, never the URL segment.
+  const marketId = marketQ.data?.id || '';
+  const hasMarketId = Boolean(marketId);
 
   const commentsQ = useQuery({
     queryKey: ['comments', marketId],
@@ -107,8 +132,38 @@ const MarketDetail: React.FC = () => {
 
   // Effects
   useEffect(() => {
-    if (hasMarketId && marketQ.isError) setErrorMsg('Failed to load market.');
-  }, [hasMarketId, marketQ.isError]);
+    if (routeParam && marketQ.isError) setErrorMsg('Failed to load market.');
+  }, [routeParam, marketQ.isError]);
+
+  // Keep one canonical address per market: an id-based link swaps itself for
+  // the readable one as soon as the document says it has a slug.
+  useEffect(() => {
+    const m = marketQ.data;
+    if (m?.slug && routeParam !== m.slug) navigate(`/market/${m.slug}`, { replace: true });
+  }, [marketQ.data, routeParam, navigate]);
+
+  // Markets created before slugs existed pick one up the first time their
+  // creator opens them; Firestore rules only let the owner write the document.
+  useEffect(() => {
+    const m = marketQ.data;
+    if (!m || m.slug || !userKey || (m as any).creator !== userKey) return;
+    const slug = slugify(m.title || m.question || '');
+    if (!slug) return;
+    let cancelled = false;
+    (async () => {
+      if (await fetchMarketBySlug(slug)) return; // already taken by another market
+      if (cancelled) return;
+      try {
+        await updateDoc(doc(db, 'markets', m.id), { slug });
+        if (!cancelled) navigate(`/market/${slug}`, { replace: true });
+      } catch {
+        // Not permitted or offline — the id link keeps working either way.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [marketQ.data, userKey, navigate]);
 
   // Live comments subscription so new comments appear immediately for everyone
   useEffect(() => {

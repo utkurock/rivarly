@@ -11,6 +11,7 @@ import { subscribeToReplies } from '../services/feed';
 import type { Market } from '../types';
 import type { FeedReply } from '../services/feed';
 import { searchUsers } from '../services/feed';
+import { marketPath } from '../utils/slug';
 
 interface SocialFeedProps {
   posts?: any[];
@@ -551,7 +552,7 @@ const SocialFeed: React.FC<SocialFeedProps> = ({
                               className="mb-3 border border-border-default rounded-xl bg-background-card p-4 hover:bg-background-hover transition-colors cursor-pointer"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/market/${market.id}`);
+                                navigate(marketPath(market));
                               }}
                             >
                               <p className="text-sm font-semibold text-text-primary leading-snug">

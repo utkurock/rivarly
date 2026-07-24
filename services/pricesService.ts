@@ -10,6 +10,24 @@ export const COIN_META: Record<Coin, { name: string; color: string }> = {
   XLM: { name: 'Stellar', color: '#7D00FF' },
 };
 
+// Each perp has its own address — /perp/stellar, /perp/solana — so a single
+// market can be linked to directly. The ticker works as an alias (/perp/xlm).
+export const COIN_SLUG: Record<Coin, string> = {
+  BTC: 'bitcoin',
+  ETH: 'ethereum',
+  SOL: 'solana',
+  XLM: 'stellar',
+};
+
+/** Resolve a URL segment to a coin, by name ("stellar") or ticker ("xlm"). */
+export const coinFromSlug = (slug?: string): Coin | null => {
+  if (!slug) return null;
+  const key = slug.trim().toLowerCase();
+  const byTicker = COINS.find((c) => c.toLowerCase() === key);
+  if (byTicker) return byTicker;
+  return COINS.find((c) => COIN_SLUG[c] === key) || null;
+};
+
 export interface CoinPrice {
   symbol: Coin;
   price: number;

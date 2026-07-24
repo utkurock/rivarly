@@ -142,9 +142,11 @@ const PositionRow: React.FC<{ pos: PerpPosition; livePrice?: number }> = ({ pos,
 interface PerpMarketsProps {
   initialCoin?: Coin;
   initialDirection?: PerpDirection;
+  /** Reports coin switches so the route can follow (/perp/stellar, …). */
+  onCoinChange?: (coin: Coin) => void;
 }
 
-const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection }) => {
+const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection, onCoinChange }) => {
   const { userProfile, user } = useFirebase();
   const { address, signTransaction } = useStellarWallet();
   const uid = userProfile?.uid || user?.uid || null;
@@ -159,6 +161,21 @@ const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
   const [posTab, setPosTab] = useState<'open' | 'activity'>('open');
+
+  // Follow the address: /perp/solana while sitting on BTC (back button, a
+  // pasted link) has to move the view, not just the URL.
+  useEffect(() => {
+    if (initialCoin && initialCoin !== coin) setCoin(initialCoin);
+  }, [initialCoin]);
+
+  useEffect(() => {
+    if (initialDirection && initialDirection !== direction) setDirection(initialDirection);
+  }, [initialDirection]);
+
+  const selectCoin = (next: Coin) => {
+    setCoin(next);
+    onCoinChange?.(next);
+  };
 
   useEffect(() => {
     if (!uid) return;
@@ -207,7 +224,7 @@ const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection
           return (
             <button
               key={c}
-              onClick={() => setCoin(c)}
+              onClick={() => selectCoin(c)}
               className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border whitespace-nowrap transition-all ${
                 active
                   ? 'bg-background-card border-border-strong'

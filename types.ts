@@ -1,5 +1,6 @@
 export interface Market {
   id: string;
+  slug?: string;                 // readable URL segment derived from the title
   title: string;
   category: 'Crypto' | 'Ecosystem' | 'Other';
   probability: number;           // 0..1

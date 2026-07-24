@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Link } from 'react-router-dom';
+import { marketPath } from '../utils/slug';
 
 interface MarketTickerData {
   id: string;
@@ -101,7 +102,7 @@ const MarketTicker: React.FC = () => {
         {displayMarkets.map((market, index) => (
           <Link
             key={`${market.id}-${index}`}
-            to={`/market/${market.id}`}
+            to={marketPath(market)}
             className="flex items-center gap-2 md:gap-3 whitespace-nowrap flex-shrink-0 hover:opacity-70 transition-opacity px-2 md:px-4"
           >
             {/* Category Badge */}

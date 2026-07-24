@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -11,6 +11,8 @@ import { useCustomModal } from './hooks/useCustomModal';
 import CustomModal from './components/CustomModal';
 import type { Market, NewMarket, Post, UserProfile } from './types';
 import { isFirebaseConfigured } from './firebase';
+import { COIN_SLUG, coinFromSlug } from './services/pricesService';
+import type { PerpDirection } from './services/perpService';
 
 // Component imports
 import Sidebar from './components/Sidebar';
@@ -38,6 +40,63 @@ const queryClient = new QueryClient({
     queries: { retry: isFirebaseConfigured ? 3 : false },
   },
 });
+
+// The markets view, mounted both at "/" and at the addressable perp routes
+// (/perp/stellar, /perp/solana, …). Keeping one component means the category
+// tabs and the create-market button behave identically on either address.
+interface MarketsRouteProps {
+  perp?: boolean;
+  activeCategory: string;
+  setActiveCategory: (category: string) => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  onCreateMarket: () => void;
+}
+
+const MarketsRoute: React.FC<MarketsRouteProps> = ({
+  perp,
+  activeCategory,
+  setActiveCategory,
+  searchTerm,
+  setSearchTerm,
+  onCreateMarket,
+}) => {
+  const { coinSlug } = useParams<{ coinSlug?: string }>();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const coin = coinFromSlug(coinSlug) || 'BTC';
+  const side = searchParams.get('side');
+  const direction: PerpDirection | undefined = side === 'long' || side === 'short' ? side : undefined;
+
+  // An unknown coin in the URL settles on the canonical address instead of 404.
+  useEffect(() => {
+    if (perp && coinSlug && !coinFromSlug(coinSlug)) navigate(`/perp/${COIN_SLUG[coin]}`, { replace: true });
+  }, [perp, coinSlug, coin, navigate]);
+
+  const handleCategory = (category: string) => {
+    if (category === 'Perp') {
+      navigate(`/perp/${COIN_SLUG[coin]}`);
+      return;
+    }
+    setActiveCategory(category);
+    if (perp) navigate('/');
+  };
+
+  return (
+    <MainContent
+      activeCategory={perp ? 'Perp' : activeCategory}
+      setActiveCategory={handleCategory}
+      searchTerm={searchTerm}
+      setSearchTerm={setSearchTerm}
+      onCreateMarket={onCreateMarket}
+      perpCoin={perp ? coin : undefined}
+      perpDirection={perp ? direction : undefined}
+      onPerpTrade={(c, d) => navigate(`/perp/${COIN_SLUG[c]}?side=${d}`)}
+      onPerpCoinChange={(c) => navigate(`/perp/${COIN_SLUG[c]}`)}
+    />
+  );
+};
 
 const AppContent: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -190,7 +249,7 @@ const AppContent: React.FC = () => {
 
               {/* Markets - Second */}
               <Route path="/" element={
-                <MainContent
+                <MarketsRoute
                   activeCategory={activeCategory}
                   setActiveCategory={setActiveCategory}
                   searchTerm={searchTerm}
@@ -199,6 +258,24 @@ const AppContent: React.FC = () => {
                 />
               } />
               <Route path="/market/:marketId" element={<MarketDetail />} />
+
+              {/* Perp - one address per coin: /perp/stellar, /perp/solana, … */}
+              {['/perp', '/perp/:coinSlug'].map((path) => (
+                <Route
+                  key={path}
+                  path={path}
+                  element={
+                    <MarketsRoute
+                      perp
+                      activeCategory={activeCategory}
+                      setActiveCategory={setActiveCategory}
+                      searchTerm={searchTerm}
+                      setSearchTerm={setSearchTerm}
+                      onCreateMarket={() => setIsModalOpen(true)}
+                    />
+                  }
+                />
+              ))}
 
               {/* News - Third */}
               <Route path="/news" element={<CryptoNewsFeed />} />

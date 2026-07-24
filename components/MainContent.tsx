@@ -14,13 +14,34 @@ interface MainContentProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   onCreateMarket?: () => void;
+  /** Coin to show when the perp view is active — comes from the URL. */
+  perpCoin?: Coin;
+  perpDirection?: PerpDirection;
+  /** Opening a perp changes the address, so the market can be linked to. */
+  onPerpTrade?: (coin: Coin, direction: PerpDirection) => void;
+  /** Switching coins inside the perp view keeps the address in step. */
+  onPerpCoinChange?: (coin: Coin) => void;
 }
 
-const MainContent: React.FC<MainContentProps> = ({ activeCategory, setActiveCategory, searchTerm, setSearchTerm, onCreateMarket }) => {
+const MainContent: React.FC<MainContentProps> = ({
+  activeCategory,
+  setActiveCategory,
+  searchTerm,
+  setSearchTerm,
+  onCreateMarket,
+  perpCoin,
+  perpDirection,
+  onPerpTrade,
+  onPerpCoinChange,
+}) => {
   const [activeStatus, setActiveStatus] = useState<string[]>(['Open']);
   const [perpPreset, setPerpPreset] = useState<{ coin: Coin; direction: PerpDirection } | undefined>();
 
   const goPerp = (coin: Coin, direction: PerpDirection) => {
+    if (onPerpTrade) {
+      onPerpTrade(coin, direction);
+      return;
+    }
     setPerpPreset({ coin, direction });
     setActiveCategory('Perp');
   };
@@ -56,7 +77,11 @@ const MainContent: React.FC<MainContentProps> = ({ activeCategory, setActiveCate
       />
 
       {activeCategory === 'Perp' ? (
-        <PerpMarkets initialCoin={perpPreset?.coin} initialDirection={perpPreset?.direction} />
+        <PerpMarkets
+          initialCoin={perpCoin || perpPreset?.coin}
+          initialDirection={perpDirection || perpPreset?.direction}
+          onCoinChange={onPerpCoinChange}
+        />
       ) : (
       <div className="max-w-[1600px] mx-auto px-3 md:px-6 py-4 md:py-8 pb-24 md:pb-6 min-h-full bg-background-body">
         {activeCategory === 'All' && <PerpCardsRow onTrade={goPerp} />}

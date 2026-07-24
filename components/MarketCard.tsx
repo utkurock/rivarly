@@ -7,6 +7,7 @@ import { useStellarWallet } from '../contexts/StellarWalletContext';
 import { useToast } from '../contexts/ToastContext';
 import { placeBet } from '../services/betService';
 import type { BetSide } from '../services/stellarTx';
+import { marketPath } from '../utils/slug';
 
 // YES/NO prediction buttons: sign an on-chain bet tx, then the server verifies
 // it and awards points. Lives inside a card Link, so clicks must not navigate.
@@ -90,7 +91,7 @@ const MarketCard: React.FC<MarketCardProps> = ({ market }) => {
       } ${isResolved ? 'cursor-default' : 'hover:shadow-md'}`}
     >
       {!isResolved ? (
-        <Link to={`/market/${id}`} className="block h-full">
+        <Link to={marketPath(market)} className="block h-full">
           <MarketContent market={market} />
         </Link>
       ) : (

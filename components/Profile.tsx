@@ -13,6 +13,7 @@ import FeedCard from './FeedCard';
 import { useCustomModal } from '../hooks/useCustomModal';
 import CustomModal from './CustomModal';
 import InfiniteScrollSentinel from './InfiniteScrollSentinel';
+import { marketPath } from '../utils/slug';
 
 // A single post-shaped loading placeholder.
 const SkeletonCard: React.FC = () => (
@@ -58,7 +59,7 @@ const MarketActivityCard: React.FC<{ market: UserMarket }> = ({ market }) => {
 
     return (
         <Link
-            to={`/market/${market.id}`}
+            to={marketPath(market)}
             className="block bg-background-card rounded-2xl p-5 border border-border-default shadow-sm hover:border-border-strong hover:shadow-md transition-all"
         >
             <div className="flex items-start justify-between gap-3 mb-3">
