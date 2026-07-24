@@ -6,6 +6,7 @@ import type { AdminStats, MarketWithCreator } from '../types';
 import NewsManagement from './NewsManagement';
 import { verifyAdminPassword, setStoredAdminPassword, getStoredAdminPassword } from '../services/newsService';
 import MarketLinksPanel from './MarketLinksPanel';
+import { formatPoints } from '../utils/format';
 
 const AdminDashboard: React.FC = () => {
   const { user, userProfile } = useFirebase();
@@ -293,9 +294,9 @@ const AdminDashboard: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
             </div>
-            <div className="text-3xl font-bold text-text-primary">${stats.totalVolume.toFixed(2)}</div>
+            <div className="text-3xl font-bold text-text-primary tabular-nums">{formatPoints(stats.totalVolume)} <span className="text-base font-medium text-text-tertiary">pts</span></div>
             <div className="mt-2 text-sm text-text-secondary">
-              Daily: ${stats.dailyVolume.toFixed(2)} • Weekly: ${stats.weeklyVolume.toFixed(2)}
+              Daily: {formatPoints(stats.dailyVolume)} • Weekly: {formatPoints(stats.weeklyVolume)}
             </div>
           </div>
 
@@ -433,7 +434,7 @@ const AdminDashboard: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-text-primary font-medium">
-                        ${(market.volumeUSD || 0).toFixed(2)}
+                        {formatPoints(market.volumeUSD || 0)} pts
                       </td>
                       <td className="px-6 py-4 text-sm">
                         <div className="flex items-center gap-2">

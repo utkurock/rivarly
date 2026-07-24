@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { collection, doc, getDoc, getDocs, limit, onSnapshot, orderBy, query, updateDoc, where } from 'firebase/firestore';
 import { looksLikeDocId, slugify } from '../utils/slug';
+import { formatPoints } from '../utils/format';
+import MarketPriceChart from './MarketPriceChart';
 import { useQuery } from '@tanstack/react-query';
 import { getPricePoints } from '../services/commentsService';
 import { db } from '../firebase';
@@ -257,18 +258,19 @@ const MarketDetail: React.FC = () => {
   if (marketQ.isLoading) return <div className="p-6 text-white/70">Loading market…</div>;
   if (!market) return <div className="p-6 text-white/70">{errorMsg || 'Market not found.'}</div>;
 
-  const chartDataRaw = (livePrices ?? pricesQ.data ?? []).map((p: any) => {
-    const d = (typeof p?.timestamp?.toDate === 'function') ? p.timestamp.toDate() : new Date(p.timestamp);
-    const ts = d.getTime();
-    return {
-      ts,
-      label: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      price: Number(p.price),
-    };
-  });
-  const chartData = chartDataRaw.length > 0 ? chartDataRaw : [
-    { ts: Date.now() - 60000, label: new Date(Date.now() - 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), price: safeProbability },
-  ];
+  const chartPoints = (livePrices ?? pricesQ.data ?? [])
+    .map((p: any) => {
+      const d = typeof p?.timestamp?.toDate === 'function' ? p.timestamp.toDate() : new Date(p.timestamp);
+      return { ts: d.getTime(), price: Number(p.price) };
+    })
+    .filter((p) => Number.isFinite(p.ts) && Number.isFinite(p.price));
+
+  const marketCreatedAt = toJsDate((market as any).createdAt)?.getTime() ?? null;
+
+  // Move since the first recorded price, in percentage points. Null while the
+  // market has no history to compare against.
+  const priceChange =
+    chartPoints.length > 0 ? Math.round((safeProbability - chartPoints[0].price) * 100) : null;
 
   const creatorProfile = (market as any).creatorProfile;
   const creatorName = creatorProfile?.username || 'Anonymous';
@@ -319,18 +321,37 @@ const MarketDetail: React.FC = () => {
             </div>
 
             {/* Price History Chart - Mobile order-1 */}
-            <div className="rounded-xl bg-background-card border border-border-default p-5 shadow-sm order-1 lg:order-none">
-              <h3 className="text-lg font-semibold mb-4 text-text-primary">Price History</h3>
-              <div className="h-64 min-h-[256px] w-full">
-                <ResponsiveContainer width="100%" height="100%" minHeight={256}>
-                  <LineChart data={chartData}>
-                    <XAxis dataKey="ts" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} tickFormatter={(v: number) => new Date(v).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} type="number" domain={['dataMin', 'dataMax']} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} domain={[0,1]} />
-                    <Tooltip formatter={(v: any) => [`${Math.round(Number(v) * 100)}%`, 'Price']} labelFormatter={(l: any) => new Date(Number(l)).toLocaleTimeString()} />
-                    <Line type="monotone" dataKey="price" stroke="#3B82F6" strokeWidth={2} dot isAnimationActive animationDuration={500} animationEasing="ease-in-out" />
-                  </LineChart>
-                </ResponsiveContainer>
+            <div className="rounded-xl bg-background-card border border-border-default p-4 md:p-5 shadow-sm order-1 lg:order-none">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <h3 className="text-base font-bold text-text-primary">Price history</h3>
+                  <p className="text-xs text-text-tertiary mt-0.5">YES probability since the market opened</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-text-primary tabular-nums leading-none">
+                    {Math.round(safeProbability * 100)}%
+                  </div>
+                  <div
+                    className={`mt-1 text-xs font-semibold ${
+                      priceChange === null
+                        ? 'text-text-tertiary'
+                        : priceChange >= 0
+                        ? 'text-emerald-400'
+                        : 'text-rose-400'
+                    }`}
+                  >
+                    {priceChange === null
+                      ? 'No change yet'
+                      : `${priceChange >= 0 ? '+' : ''}${priceChange}% since open`}
+                  </div>
+                </div>
               </div>
+              <MarketPriceChart
+                points={chartPoints}
+                probability={safeProbability}
+                createdAt={marketCreatedAt}
+                height={260}
+              />
             </div>
 
             {/* Details card split into Sources and Info - Mobile order-4 */}
@@ -497,11 +518,11 @@ const MarketDetail: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-lg bg-background-hover border border-border-default p-3">
                   <div className="text-text-secondary text-xs">24h Volume</div>
-                  <div className="text-text-primary text-lg font-semibold">${volume24h.toFixed(2)}</div>
+                  <div className="text-text-primary text-lg font-semibold tabular-nums">{formatPoints(volume24h)} <span className="text-xs font-medium text-text-tertiary">pts</span></div>
                 </div>
                 <div className="rounded-lg bg-background-hover border border-border-default p-3">
                   <div className="text-text-secondary text-xs">Total Volume</div>
-                  <div className="text-text-primary text-lg font-semibold">${totalVolume.toFixed(2)}</div>
+                  <div className="text-text-primary text-lg font-semibold tabular-nums">{formatPoints(totalVolume)} <span className="text-xs font-medium text-text-tertiary">pts</span></div>
                 </div>
               </div>
               <div className="pt-2 border-t border-border-default space-y-2">

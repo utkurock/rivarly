@@ -8,6 +8,7 @@ import { useToast } from '../contexts/ToastContext';
 import { placeBet } from '../services/betService';
 import type { BetSide } from '../services/stellarTx';
 import { marketPath } from '../utils/slug';
+import { formatPoints } from '../utils/format';
 
 // YES/NO prediction buttons: sign an on-chain bet tx, then the server verifies
 // it and awards points. Lives inside a card Link, so clicks must not navigate.
@@ -227,7 +228,7 @@ const MarketContent: React.FC<{ market: Market }> = ({ market }) => {
       {/* Footer with Volume, Category and Timer */}
       <div className="pt-3 border-t border-border-default">
         <div className="flex items-center justify-between text-xs mb-2">
-          <span className="text-text-secondary">${totalVolume.toFixed(0)} volume</span>
+          <span className="text-text-secondary tabular-nums">{formatPoints(totalVolume)} pts volume</span>
           <span className="px-2 py-0.5 bg-background-hover text-text-secondary rounded font-medium">
             {category}
           </span>

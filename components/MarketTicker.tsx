@@ -3,6 +3,7 @@ import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Link } from 'react-router-dom';
 import { marketPath } from '../utils/slug';
+import { formatPoints } from '../utils/format';
 
 interface MarketTickerData {
   id: string;
@@ -122,7 +123,7 @@ const MarketTicker: React.FC = () => {
             
             {/* Volume - hide on very small screens */}
             <span className="hidden sm:inline text-text-secondary text-[10px] md:text-xs">
-              ${market.volumeUSD.toFixed(0)} vol
+              {formatPoints(market.volumeUSD)} pts vol
             </span>
 
             {/* Separator */}
