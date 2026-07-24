@@ -143,6 +143,7 @@ const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection
   const [positions, setPositions] = useState<PerpPosition[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'ok' | 'err'; text: string } | null>(null);
+  const [posTab, setPosTab] = useState<'open' | 'activity'>('open');
 
   useEffect(() => {
     if (!uid) return;
@@ -345,26 +346,36 @@ const PerpMarkets: React.FC<PerpMarketsProps> = ({ initialCoin, initialDirection
         </div>
       </div>
 
-      {/* Positions */}
+      {/* Open positions / Activity — switchable tabs */}
       <div className="mt-6 bg-background-card border border-border-default rounded-2xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-border-default flex items-center justify-between">
-          <h3 className="text-sm font-bold text-text-primary">Open positions</h3>
-          <span className="text-xs text-text-tertiary">{openPositions.length} open</span>
+        <div className="flex items-center gap-1 px-2 py-2 border-b border-border-default">
+          <button
+            onClick={() => setPosTab('open')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+              posTab === 'open' ? 'bg-background-hover text-text-primary' : 'text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            Open positions
+            <span className="ml-1.5 text-xs text-text-tertiary">{openPositions.length}</span>
+          </button>
+          <button
+            onClick={() => setPosTab('activity')}
+            className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
+              posTab === 'activity' ? 'bg-background-hover text-text-primary' : 'text-text-secondary hover:text-text-primary'
+            }`}
+          >
+            Activity
+            <span className="ml-1.5 text-xs text-text-tertiary">{history.length}</span>
+          </button>
         </div>
-        {openPositions.length === 0 ? (
-          <div className="px-4 py-8 text-center text-sm text-text-secondary">No open positions. Pick a side above.</div>
-        ) : (
-          openPositions.map((p) => <PositionRow key={p.id} pos={p} livePrice={prices[p.coin]?.price} />)
-        )}
-      </div>
 
-      {/* Activity */}
-      <div className="mt-4 bg-background-card border border-border-default rounded-2xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-border-default flex items-center justify-between">
-          <h3 className="text-sm font-bold text-text-primary">Activity</h3>
-          <span className="text-xs text-text-tertiary">{history.length} settled</span>
-        </div>
-        {history.length === 0 ? (
+        {posTab === 'open' ? (
+          openPositions.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-text-secondary">No open positions. Pick a side above.</div>
+          ) : (
+            openPositions.map((p) => <PositionRow key={p.id} pos={p} livePrice={prices[p.coin]?.price} />)
+          )
+        ) : history.length === 0 ? (
           <div className="px-4 py-8 text-center text-sm text-text-secondary">No activity yet. Your settled trades show up here.</div>
         ) : (
           history.map((p) => <PositionRow key={p.id} pos={p} />)
