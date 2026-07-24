@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  User, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
-  signOut, 
+import {
+  User,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
   onAuthStateChanged,
-  signInAnonymously 
+  signInAnonymously,
+  setPersistence,
+  browserLocalPersistence
 } from 'firebase/auth';
 import { 
   doc, 
@@ -36,6 +38,15 @@ interface FirebaseContextType {
 
 const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
 
+const safeParse = (raw: string | null): any => {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+};
+
 export const useFirebase = () => {
   const context = useContext(FirebaseContext);
   if (!context) {
@@ -53,97 +64,93 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({ children }) 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    let signingIn = false;
+
+    // Reuse the persisted anonymous session across reloads so a returning
+    // visitor keeps the same uid — one Auth entry per browser — instead of
+    // minting a fresh anonymous user on every load.
+    const persistenceReady = setPersistence(auth, browserLocalPersistence).catch(() => {});
+
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       setUser(authUser);
-      if (authUser) {
-        // Try to load from localStorage first (fast)
-        const cachedProfile = localStorage.getItem('userProfile');
-        if (cachedProfile) {
-          try {
-            const parsed = JSON.parse(cachedProfile);
-            if (parsed && parsed.username) {
-              setUserProfile(parsed);
-            }
-          } catch (e) {
-            // Silently handle parse errors
-          }
-        }
-        
-        // Load fresh data from Firestore (background)
-        const userDoc = await getDoc(doc(db, 'users', authUser.uid));
-        if (userDoc.exists()) {
-          const rawData = userDoc.data();
-          
-          // Keep localStorage avatar if it exists (preserve user's custom avatar)
-          const localStorageProfile = cachedProfile ? JSON.parse(cachedProfile) : null;
-          const preservedAvatar = localStorageProfile?.avatar || rawData.avatar || rawData.avatarUrl || '';
-          const preservedUsername = localStorageProfile?.username || rawData.username || rawData.displayName || 'Anonymous';
-          
-          // Normalize the profile data
-          const firestoreProfile: UserProfile = {
-            uid: rawData.uid || authUser.uid,
-            username: preservedUsername, // Preserve localStorage username
-            displayName: preservedUsername, // Sync displayName too
-            handle: localStorageProfile?.handle || rawData.handle || '', // Preserve handle
-            avatar: preservedAvatar, // Keep localStorage avatar
-            avatarUrl: preservedAvatar, // Sync avatarUrl too
-            bio: localStorageProfile?.bio || rawData.bio || '',
-            xHandle: localStorageProfile?.xHandle || rawData.xHandle || '',
-          };
-          
-          setUserProfile(firestoreProfile);
-          
-          // Sync with localStorage
-          localStorage.setItem('userProfile', JSON.stringify(firestoreProfile));
-          window.dispatchEvent(new Event('userProfileUpdated'));
-        }
-      } else {
+
+      // No session yet (first visit or after sign-out): restore or create the
+      // single anonymous identity. Guarded so a transient double-fire — or the
+      // re-fire triggered by our own sign-in — can't create a second user.
+      if (!authUser) {
         setUserProfile(null);
+        await persistenceReady;
+        if (cancelled || signingIn || auth.currentUser) return;
+        signingIn = true;
+        try {
+          await signInAnonymously(auth); // re-fires this listener with the new user
+        } catch {
+          // Anonymous auth disabled / offline — the app runs logged-out.
+        } finally {
+          signingIn = false;
+        }
+        return;
+      }
+
+      // Fast paint from cache while Firestore loads.
+      const cachedProfile = localStorage.getItem('userProfile');
+      const cached = safeParse(cachedProfile);
+      if (cached?.username) setUserProfile(cached);
+
+      // Load the profile for this uid, or create it the first time the uid is
+      // seen. Keyed by uid, so renames never spawn a new record.
+      const userRef = doc(db, 'users', authUser.uid);
+      let snap;
+      try {
+        snap = await getDoc(userRef);
+      } catch {
+        return; // offline / rules — keep the cached profile
+      }
+      if (cancelled) return;
+
+      if (snap.exists()) {
+        const rawData = snap.data();
+        // Keep the user's local edits (name/avatar) over server values.
+        const preservedAvatar = cached?.avatar || rawData.avatar || rawData.avatarUrl || '';
+        const preservedUsername = cached?.username || rawData.username || rawData.displayName || 'Anonymous';
+        const firestoreProfile: UserProfile = {
+          uid: rawData.uid || authUser.uid,
+          username: preservedUsername,
+          displayName: preservedUsername,
+          handle: cached?.handle || rawData.handle || '',
+          avatar: preservedAvatar,
+          avatarUrl: preservedAvatar,
+          bio: cached?.bio || rawData.bio || '',
+          xHandle: cached?.xHandle || rawData.xHandle || '',
+        };
+        setUserProfile(firestoreProfile);
+        localStorage.setItem('userProfile', JSON.stringify(firestoreProfile));
+        window.dispatchEvent(new Event('userProfileUpdated'));
+      } else {
+        const newProfile: UserProfile = {
+          uid: authUser.uid,
+          username: 'Anonymous',
+          displayName: 'Anonymous',
+          avatar: '',
+          avatarUrl: '',
+          bio: '',
+          xHandle: '',
+        };
+        try {
+          await setDoc(userRef, newProfile);
+        } catch {
+          // ignore — profile will be created on the next authenticated write
+        }
+        if (!cancelled) setUserProfile(newProfile);
       }
     });
 
-    return () => unsubscribe();
-  }, []);
-
-  // Auto-signin anonymously for development
-  useEffect(() => {
-    const autoSignIn = async () => {
-      try {
-        const result = await signInAnonymously(auth);
-        
-        // Check if user profile already exists
-        const userDocRef = doc(db, 'users', result.user.uid);
-        const userDoc = await getDoc(userDocRef);
-        
-        if (!userDoc.exists()) {
-          // Only create profile if it doesn't exist
-          const newProfile: UserProfile = {
-            uid: result.user.uid,
-            username: 'Anonymous',
-            displayName: 'Anonymous',
-            avatar: '',
-            avatarUrl: '',
-            bio: '',
-            xHandle: '',
-          };
-          
-          try {
-            await setDoc(userDocRef, newProfile);
-          } catch (profileError) {
-            console.error('❌ Error creating user profile:', profileError);
-          }
-        }
-        
-        
-      } catch (error: any) {
-        // Silently handle all Firebase errors
-        // App will work without Firebase authentication
-      }
+    return () => {
+      cancelled = true;
+      unsubscribe();
     };
-
-    // Always try to sign in anonymously
-    autoSignIn();
-  }, []); // Remove user dependency to always try
+  }, []);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
