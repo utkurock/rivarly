@@ -49,7 +49,17 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ onNavigate }) => {
   const { address, connecting, disconnect, signTransaction, networkLabel, isMainnet } = useStellarWallet();
   const [open, setOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+
+  const handleCopyAddress = async () => {
+    if (!address) return;
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* clipboard unavailable */ }
+  };
 
   // Points / daily-claim state.
   const [points, setPoints] = useState<PointsData | null>(null);
@@ -141,11 +151,6 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ onNavigate }) => {
               )}
             </div>
           </div>
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-            <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4L12 16.9 5.7 21.4 8 14 2 9.4h7.6z" />
-            </svg>
-          </div>
         </div>
 
         <div className="mt-2.5">
@@ -202,12 +207,9 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ onNavigate }) => {
           </div>
           <div className="flex-1 min-w-0 text-left">
             <p className="text-sm font-semibold text-text-primary truncate">{displayName}</p>
-            <p className="text-xs text-text-secondary truncate flex items-center gap-1">
+            <p className="text-xs text-text-secondary truncate">
               {address ? (
-                <>
-                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${isMainnet ? 'bg-emerald-500' : 'bg-amber-500'}`} />
-                  <span className="font-mono">{shortenAddress(address)}</span>
-                </>
+                <span className="font-mono">{`${address.slice(0, 7)}…${address.slice(-7)}`}</span>
               ) : (
                 `@${userProfile.username || 'user'}`
               )}
@@ -229,9 +231,28 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ onNavigate }) => {
               <p className="px-2 pt-1 pb-1.5 text-[10px] font-semibold uppercase tracking-wide text-text-tertiary">Wallet</p>
               {address ? (
                 <>
-                  <div className="flex items-center justify-between px-2 py-1.5">
+                  <div className="flex items-center justify-between gap-2 px-2 py-1.5">
                     <div className="min-w-0">
-                      <div className="text-sm font-semibold text-text-primary font-mono truncate">{shortenAddress(address)}</div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold text-text-primary font-mono truncate">{shortenAddress(address)}</span>
+                        <button
+                          onClick={handleCopyAddress}
+                          title={copied ? 'Copied!' : 'Copy address'}
+                          aria-label="Copy wallet address"
+                          className="flex-shrink-0 text-text-tertiary hover:text-text-primary transition-colors"
+                        >
+                          {copied ? (
+                            <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <rect x="9" y="9" width="11" height="11" rx="2" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 15V5a2 2 0 0 1 2-2h10" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                       <div className="mt-0.5 flex items-center gap-1.5">
                         <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isMainnet ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                           {networkLabel}
@@ -268,17 +289,6 @@ const AccountMenu: React.FC<AccountMenuProps> = ({ onNavigate }) => {
 
             {/* Account section */}
             <div className="p-2 border-t border-border-default">
-              <Link
-                to="/tasks"
-                onClick={() => { setOpen(false); onNavigate?.(); }}
-                className="w-full flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-medium text-text-secondary hover:text-white hover:bg-background-hover transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-6" />
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m9 11 3 3L22 4" />
-                </svg>
-                Tasks &amp; rewards
-              </Link>
               <Link
                 to="/profile"
                 onClick={() => { setOpen(false); onNavigate?.(); }}
